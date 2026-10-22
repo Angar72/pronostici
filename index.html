@@ -2365,11 +2365,17 @@ if (typeof module !== "undefined") module.exports = Model;
           const ev = await pr; if (!ev) continue;
           const id = Object.keys(ESPN_LG).find(i => k.startsWith(ESPN_LG[i]) && /^\d{4}-/.test(k.slice(ESPN_LG[i].length)));
           const L = state.raw[id]; if (!L) continue;
+          const seen = [];
           ev.forEach(e => (e.competitions?.[0]?.competitors || []).forEach(c => {
-            const logo = c.team?.logo || c.team?.logos?.[0]?.href; if (!logo) return;
-            const names = [c.team.displayName, c.team.shortDisplayName, c.team.name].filter(Boolean);
-            (L.teams || []).forEach(n => { if (!LOGOS[n] && Math.max(...names.map(x => eSim(n, x))) >= 0.99) LOGOS[n] = logo; });
+            const logo = c.team?.logo || c.team?.logos?.[0]?.href;
+            if (logo) seen.push({ logo, names: [c.team.displayName, c.team.shortDisplayName, c.team.name, c.team.location].filter(Boolean) });
           }));
+          (L.teams || []).forEach(n => {
+            if (LOGOS[n]) return;
+            let best = null, bs = 0;
+            seen.forEach(t => { const sc = Math.max(...t.names.map(x => eSim(n, x))); if (sc > bs) { bs = sc; best = t; } });
+            if (best && bs >= 0.5) LOGOS[n] = best.logo;
+          });
         }
       } catch (e) {}
       state.manual = { rows: rows.sort(), live, liveDate: t, liveRead: now, updated: new Date().toISOString() };
