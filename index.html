@@ -259,6 +259,8 @@ body[data-sec="bilancio"] .hero::before{opacity:.2;background-size:auto 120%;bac
 .match[open]{border-color:color-mix(in srgb,var(--accent) 55%,var(--line))}
 body[data-sec="lotto"] .ball{background:#FFFFFF;color:var(--ink);border:2px solid color-mix(in srgb,var(--comp) 70%,transparent)}
 body[data-sec="lotto"] .ball{background:var(--chip);color:var(--ink)}
+.tlogo{width:18px;height:18px;object-fit:contain;vertical-align:-4px;margin-right:6px;background:#FFFFFF;border-radius:50%;padding:1px;flex:none}
+.redbadge{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:600;color:var(--bad);white-space:nowrap;margin-left:4px}
 @media (max-width:420px){.hero h2{font-size:32px}.hero .kpi b{font-size:19px}}
 </style>
 
@@ -621,6 +623,10 @@ if (typeof module !== "undefined") module.exports = Model;
   const $ = s => document.querySelector(s);
   const pct = v => Math.round(v * 100);
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  // stemmi delle squadre (solo sul sito: arrivano da ESPN) ed espulsioni lette dai risultati in diretta
+  const LOGOS = {}, REDS = {};
+  const TL = n => (LOGOS[n] ? `<img class="tlogo" src="${esc(LOGOS[n])}" alt="" loading="lazy" decoding="async">` : "") + esc(n);
+  const RC = (id, h, a) => { const r = REDS[id + "|" + h + "|" + a]; return r && r.length ? ` <span class="redbadge" title="${esc(r.join(", "))}">${r.map(() => '<span class="red-ic"></span>').join("")} ${r.length === 1 ? "espulso" : r.length + " espulsi"}</span>` : ""; };
   const store = {
     get(k, d) { try { return localStorage.getItem(k) ?? d; } catch { return d; } },
     set(k, v) { try { localStorage.setItem(k, v); } catch {} }
@@ -848,7 +854,7 @@ if (typeof module !== "undefined") module.exports = Model;
       <summary>
         <div class="row1">
           <div class="time">${pending ? "—" : esc(m.t || "")}</div>
-          <div class="teams"><div>${esc(m.h)}</div><div>${esc(m.a)}</div></div>
+          <div class="teams"><div>${TL(m.h)}</div><div>${TL(m.a)}</div></div>
           <div class="tip ${p.conf}"><b>${p.tip}</b><small>${pending ? "in attesa" : "fiducia " + p.conf}</small></div>
         </div>
         <div class="bar" role="img" aria-label="Probabilità: 1 ${pct(p.p1)}%, X ${pct(p.px)}%, 2 ${pct(p.p2)}%">
@@ -890,7 +896,7 @@ if (typeof module !== "undefined") module.exports = Model;
     return `<div class="match"><div style="padding:12px 14px;display:grid;gap:8px">
       <div class="row1">
         <div class="time num" style="font-size:22px;color:var(--ink)">${m.hg}-${m.ag}</div>
-        <div class="teams"><div>${esc(m.h)}</div><div>${esc(m.a)}</div></div>
+        <div class="teams"><div>${TL(m.h)}</div><div>${TL(m.a)}</div></div>
         <div class="tip">${t ? `<b>${t.tip}</b><small class="${ok ? "ok" : "ko"}">${ok ? "✓ indovinato" : "✗ sbagliato"}</small>` : `<small>nessun pronostico salvato</small>`}</div>
       </div>
       ${t ? `<div class="note">Pronostico prima della partita: 1 ${pct(t.p1)}% · X ${pct(t.px)}% · 2 ${pct(t.p2)}%</div>` : ""}
@@ -928,7 +934,7 @@ if (typeof module !== "undefined") module.exports = Model;
     const maxP = Math.max(...Object.values(power));
     return `<div class="tbl-wrap"><table>
       <thead><tr><th class="t" colspan="2">Squadra</th><th>Pt</th><th>G</th><th>V</th><th>N</th><th>P</th><th>Gol</th><th class="t">Forma</th><th class="t">Forza modello</th></tr></thead>
-      <tbody>${rows.map((r, i) => `<tr><td class="pos">${i + 1}</td><td class="t">${esc(r.n)}</td><td class="pt">${r.pt}</td><td>${r.g}</td><td>${r.v}</td><td>${r.x}</td><td>${r.p}</td><td>${r.gf}:${r.gs}</td>
+      <tbody>${rows.map((r, i) => `<tr><td class="pos">${i + 1}</td><td class="t">${TL(r.n)}</td><td class="pt">${r.pt}</td><td>${r.g}</td><td>${r.v}</td><td>${r.x}</td><td>${r.p}</td><td>${r.gf}:${r.gs}</td>
         <td class="t"><span class="form">${r.form.map(x => `<i class="${x}" title="${x}"></i>`).join("")}</span></td>
         <td class="t"><div class="strength" title="${power[r.n].toFixed(2)}"><i style="width:${(power[r.n] / maxP * 100).toFixed(0)}%"></i></div></td></tr>`).join("")}</tbody>
     </table></div>
@@ -1404,7 +1410,7 @@ if (typeof module !== "undefined") module.exports = Model;
       return `finita ${r.res.hg}-${r.res.ag} · <b class="${ok ? "ok" : "ko"}">${ok ? "✓ indovinata" : "✗ sbagliata"}</b>`;
     };
     const line = (r, s = r.s) => `<div class="bet">
-        <div class="m">${esc(r.m.h)} – ${esc(r.m.a)}</div>
+        <div class="m">${TL(r.m.h)} – ${TL(r.m.a)}${RC(r.id, r.m.h, r.m.a)}</div>
         <div class="sel"><b>${esc(s.k)}</b><small>${s.odd ? "quota " + s.odd.toFixed(2) : "quota n.d."}</small></div>
         <div class="meta">${r.m.t ? esc(r.m.t) + " · " : ""}modello ${pct(s.prob)}% · ${r.past ? outcome(r, s) : `<b>${win(s.odd)}</b>`}${s.ev != null && !r.past ? ` · valore ${s.ev >= 0 ? "+" : ""}${pct(s.ev)}%` : ""}</div>
       </div>`;
@@ -1453,7 +1459,7 @@ if (typeof module !== "undefined") module.exports = Model;
       html += `<div class="ticket"${i ? ' style="border-color:var(--line)"' : ""}>
         <div class="sub">${names[i]} · ${tk.length} partite${(() => { const sh = tickets.slice(0, i).map((o, j) => o.some(x => tk.some(y => keyOf(x) === keyOf(y))) ? j + 1 : 0).filter(Boolean); return sh.length ? ` · ha partite in comune con la schedina ${sh.join(" e ")}` : ""; })()}</div>
         ${tk.map(r => `<div style="display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:baseline">
-            <span style="min-width:0;font-weight:600">${esc(r.m.h)} – ${esc(r.m.a)}${r.res ? ` <span class="note">${r.res.hg}-${r.res.ag}</span>` : ""}</span>
+            <span style="min-width:0;font-weight:600">${TL(r.m.h)} – ${TL(r.m.a)}${r.res ? ` <span class="note">${r.res.hg}-${r.res.ag}</span>${RC(r.id, r.m.h, r.m.a)}` : ""}</span>
             <b style="white-space:nowrap">${esc(r.s.k)} · ${fmtQ(r.s.odd)}${r.s.est ? "*" : ""}${r.res ? (hit(r.s.k, r.res) ? ' <span class="ok">✓</span>' : ' <span class="ko">✗</span>') : ""}</b>
             <span class="note">${r.m.d !== state.day ? esc(dayLabel(r.m.d)) + " " : ""}${r.m.t ? esc(r.m.t) + " · " : ""}${esc(r.L.d.name)} · indice di favore <b>${pct(r.s.prob)}</b> (${r.s.mkt == null ? `solo modello ${pct(r.s.model)}%, prudenzialmente ${pct(r.s.prob)}, quota stimata` : `modello ${pct(r.s.model)}%, bookmaker ${pct(r.s.mkt)}%${r.s.edge ? ", con valore" : ""}`})${(() => { if (r.res) return ""; const lv = liveFor(r.id, r.m.h, r.m.a); return lv ? ` · <span class="live-inline"><span class="dot"></span>in corso ${lv.hg}-${lv.ag} ${lv.min.txt === "intervallo" ? "all'intervallo" : "al " + minTxt(lv)}</span> per ora ${hit(r.s.k, lv) ? '<span class="ok">✓</span>' : '<span class="ko">✗</span>'}${eventsHtml(lv)}` : ""; })()}</span><span></span>
           </div>`).join("")}
@@ -1504,7 +1510,7 @@ if (typeof module !== "undefined") module.exports = Model;
     return `<div class="ticket" style="border-color:var(--warn)">${head}
       <p class="note">Una sola schedina con le partite più sicure non ancora iniziate: ${q * R.stake - R.stake >= R.lost - 0.005 ? `se vince copre i ${euro(R.lost)} persi e la nuova giocata da ${euro(R.stake)}` : `con le sole giocate sicure non si recuperano tutti i ${euro(R.lost)}: se vince ne recupera ${euro(q * R.stake - R.stake)}`}.</p>
       ${tk.map(r => `<div style="display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:baseline">
-          <span style="min-width:0;font-weight:600">${esc(r.m.h)} – ${esc(r.m.a)}${r.res ? ` <span class="note">${r.res.hg}-${r.res.ag}</span>` : ""}</span>
+          <span style="min-width:0;font-weight:600">${TL(r.m.h)} – ${TL(r.m.a)}${r.res ? ` <span class="note">${r.res.hg}-${r.res.ag}</span>${RC(r.id, r.m.h, r.m.a)}` : ""}</span>
           <b style="white-space:nowrap">${esc(r.s.k)} · ${fmtQ(r.s.odd)}${r.res ? (hit(r.s.k, r.res) ? ' <span class="ok">✓</span>' : ' <span class="ko">✗</span>') : ""}</b>
           <span class="note">${esc(dayLabel(r.m.d))}${r.m.t ? " " + esc(r.m.t) : ""} · ${esc(r.L.d.name)} · indice <b>${pct(r.s.prob)}</b> (modello ${pct(r.s.model)}%, bookmaker ${pct(r.s.mkt)}%)${(() => { if (r.res) return ""; const lv = liveFor(r.id, r.m.h, r.m.a); return lv ? ` · <span class="live-inline"><span class="dot"></span>in corso ${lv.hg}-${lv.ag} ${lv.min.txt === "intervallo" ? "all'intervallo" : "al " + minTxt(lv)}</span> per ora ${hit(r.s.k, lv) ? '<span class="ok">✓</span>' : '<span class="ko">✗</span>'}` : ""; })()}</span><span></span>
         </div>`).join("")}
@@ -2333,12 +2339,19 @@ if (typeof module !== "undefined") module.exports = Model;
         for (const day of [m.d, addDays(m.d, -1), addDays(m.d, 1)]) { const ev = await espnBoard(cache, ESPN_LG[m.id], day); if (ev && (hit = espnPick(ev, m.h, m.a))) break; }
         if (!hit) return;
         const s = hit.e.status?.type || {}, hg = +hit.H.score || 0, ag = +hit.A.score || 0;
+        {
+          const det = hit.e.competitions?.[0]?.details || [], tid = x => x.team?.id;
+          const who = x => tid(x) === (hit.H.team?.id || hit.H.id) ? m.h : m.a;
+          const lab = x => `${x.clock?.displayValue || ""} ${x.athletesInvolved?.[0]?.shortName || x.athletesInvolved?.[0]?.displayName || ""} (${who(x)})`.trim();
+          REDS[m.id + "|" + m.h + "|" + m.a] = det.filter(x => x.redCard).map(lab);
+          m.goals = det.filter(x => x.scoringPlay).map(lab).join(";");
+        }
         if (/postpon|cancel|abandon|suspend|delay/i.test(s.name || "")) return;
         if (s.completed) rows.push([m.id, m.d, m.h, m.a, hg, ag].join("|"));
         else if (s.state === "in") {
           const half = /HALFTIME|HALF_TIME|INTERMISSION/i.test(s.name || "");
           liveClock[m.id + "|" + m.h + "|" + m.a] = half ? null : { sec: +hit.e.status.clock || 0, period: +hit.e.status.period || 1, at: Date.now() };
-          live.push([m.id, m.h, m.a, hg, ag, half ? "intervallo" : clockTxt(liveClock[m.id + "|" + m.h + "|" + m.a]), "", ""].join("|"));
+          live.push([m.id, m.h, m.a, hg, ag, half ? "intervallo" : clockTxt(liveClock[m.id + "|" + m.h + "|" + m.a]), m.goals || "", (REDS[m.id + "|" + m.h + "|" + m.a] || []).join(";")].join("|"));
         }
       }));
       state.manual = { rows: rows.sort(), live, liveDate: t, liveRead: now, updated: new Date().toISOString() };
@@ -2347,8 +2360,29 @@ if (typeof module !== "undefined") module.exports = Model;
       render();
     } finally { espnBusy = false; }
   }
+  async function loadLogos() {
+    let cached = null; try { cached = JSON.parse(localStorage.getItem("pr.logos") || "null"); } catch (e) {}
+    if (cached && cached.day === today() && Object.keys(cached.map || {}).length) { Object.assign(LOGOS, cached.map); render(); return; }
+    const map = {};
+    await Promise.all(Object.entries(ESPN_LG).map(async ([id, lg]) => {
+      const L = state.raw[id]; if (!L) return;
+      try {
+        const j = await (await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${lg}/teams`)).json();
+        const teams = (j.sports?.[0]?.leagues?.[0]?.teams || []).map(x => x.team);
+        (L.teams || []).forEach(n => {
+          let best = null, bs = 0;
+          teams.forEach(t => { const sc = Math.max(...[t.displayName, t.shortDisplayName, t.name, t.location].filter(Boolean).map(x => eSim(n, x))); if (sc > bs) { bs = sc; best = t; } });
+          const href = best?.logos?.[0]?.href;
+          if (best && bs >= 0.5 && href && !map[n]) map[n] = href.replace("/500/", "/500-dark/").replace("/500-dark/", "/500/");
+        });
+      } catch (e) {}
+    }));
+    Object.assign(LOGOS, map);
+    try { localStorage.setItem("pr.logos", JSON.stringify({ day: today(), map })); } catch (e) {}
+    render();
+  }
   if (SITE) {
-    const kick = setInterval(() => { if (state.ready) { clearInterval(kick); espnSync(); } }, 300);
+    const kick = setInterval(() => { if (state.ready) { clearInterval(kick); espnSync(); loadLogos(); } }, 300);
     setInterval(() => { if (!document.hidden) espnSync(); }, 30000);
     // il minuto avanza da solo tra una lettura e l'altra
     setInterval(() => {
