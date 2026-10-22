@@ -736,7 +736,7 @@ if (typeof module !== "undefined") module.exports = Model;
   // parziale letto all'ultimo aggiornamento (solo partite di oggi ancora in corso)
   // minuto di gioco: quello della fonte se c'è, altrimenti stimato da calcio d'inizio e ora della lettura
   function playMinute(st, kickoff, read) {
-    if (/^\d+\+?\d*'?$/.test(st.trim())) return { txt: st.replace(/'?$/, "'"), est: false };
+    if (/^\d+'?(\+\d+'?)?$/.test(st.trim()) || /suppl/.test(st)) return { txt: /'/.test(st) ? st : st + "'", est: false };
     if (/intervallo/i.test(st)) return { txt: "intervallo", est: false };
     if (!kickoff || !read) return { txt: st, est: false };
     const mins = s => { const [h, m] = s.split(":").map(Number); return h * 60 + m; };
@@ -2216,7 +2216,7 @@ if (typeof module !== "undefined") module.exports = Model;
   const ESPN_LG = { it_1: "ita.1", it_2: "ita.2", en_1: "eng.1", es_1: "esp.1", de_1: "ger.1", fr_1: "fra.1", nl_1: "ned.1", pt_1: "por.1", be_1: "bel.1", no_1: "nor.1", se_1: "swe.1", cl: "uefa.champions", el: "uefa.europa", ecl: "uefa.europa.conf" };
   const E_ALIAS = { "psg": "paris saint germain", "inter": "internazionale", "man united": "manchester united", "man utd": "manchester united", "man city": "manchester city",
     "wolves": "wolverhampton", "spurs": "tottenham", "atletico": "atletico madrid", "bayern": "bayern munich", "gladbach": "monchengladbach", "sporting": "sporting cp",
-    "athletic": "athletic club", "betis": "real betis", "leverkusen": "bayer leverkusen", "paris": "paris fc",
+    "athletic": "athletic club", "betis": "real betis", "leverkusen": "bayer leverkusen", "paris": "paris fc", "rennes": "stade rennais", "lione": "lyon", "marsiglia": "marseille",
     "stoccarda": "stuttgart", "barcellona": "barcelona", "siviglia": "sevilla", "lipsia": "leipzig", "bayern monaco": "bayern munich", "aek atene": "aek athens",
     "slavia praga": "slavia prague", "dinamo zagabria": "dinamo zagreb", "salisburgo": "salzburg", "sparta praga": "sparta prague", "ofi creta": "ofi crete", "copenaghen": "kobenhavn", "hajduk spalato": "hajduk split", "stella rossa": "red star belgrade", "zalgiris kaunas": "kauno zalgiris", "craiova": "csu craiova", "agf aarhus": "agf", "hearts": "heart of midlothian", "inter escaldes": "inter d escaldes", "union saint gilloise": "union st gilloise", "nordsjaelland": "nordsjaelland", "lilla": "lille", "bruges": "club brugge", "bodo glimt": "bodo glimt", "monaco": "monaco", "magonza": "mainz", "friburgo": "freiburg", "colonia": "cologne" };
   const E_STOP = new Set(["fc", "ac", "cf", "sc", "afc", "ssc", "as", "us", "ss", "calcio", "club", "de", "sk", "fk", "if", "bk", "ik", "cd", "rc", "ud", "sd", "ca", "and", "the", "bc", "sv", "vfb", "vfl", "tsg", "fsv", "rcd", "aj", "ogc", "losc", "stade", "real", "hove", "albion"]);
@@ -2245,6 +2245,16 @@ if (typeof module !== "undefined") module.exports = Model;
     return best;
   }
   let espnBusy = false;
+  const liveClock = {};
+  // minuto di gioco dal cronometro ESPN (secondi dall'inizio) più il tempo passato dalla lettura
+  function clockTxt(c) {
+    if (!c) return "intervallo";
+    const m = Math.floor((c.sec + (Date.now() - c.at) / 1000) / 60) + 1;
+    if (c.period === 1 && m > 45) return "45'+" + (m - 45);
+    if (c.period === 2 && m > 90) return "90'+" + (m - 90);
+    if (c.period >= 3) return m > 120 ? "120'+" : m + "' suppl.";
+    return Math.max(1, m) + "'";
+  }
   async function espnSync() {
     if (!SITE || !state.ready || espnBusy) return;
     espnBusy = true;
@@ -2265,7 +2275,11 @@ if (typeof module !== "undefined") module.exports = Model;
         const s = hit.e.status?.type || {}, hg = +hit.H.score || 0, ag = +hit.A.score || 0;
         if (/postpon|cancel|abandon|suspend|delay/i.test(s.name || "")) return;
         if (s.completed) rows.push([m.id, m.d, m.h, m.a, hg, ag].join("|"));
-        else if (s.state === "in") live.push([m.id, m.h, m.a, hg, ag, /HALF/i.test(s.name || "") ? "intervallo" : (hit.e.status.displayClock || "in corso"), "", ""].join("|"));
+        else if (s.state === "in") {
+          const half = /HALFTIME|HALF_TIME|INTERMISSION/i.test(s.name || "");
+          liveClock[m.id + "|" + m.h + "|" + m.a] = half ? null : { sec: +hit.e.status.clock || 0, period: +hit.e.status.period || 1, at: Date.now() };
+          live.push([m.id, m.h, m.a, hg, ag, half ? "intervallo" : clockTxt(liveClock[m.id + "|" + m.h + "|" + m.a]), "", ""].join("|"));
+        }
       }));
       state.manual = { rows: rows.sort(), live, liveDate: t, liveRead: now, updated: new Date().toISOString() };
       mergeManual();
@@ -2275,7 +2289,19 @@ if (typeof module !== "undefined") module.exports = Model;
   }
   if (SITE) {
     const kick = setInterval(() => { if (state.ready) { clearInterval(kick); espnSync(); } }, 300);
-    setInterval(() => { if (!document.hidden) espnSync(); }, 60000);
+    setInterval(() => { if (!document.hidden) espnSync(); }, 30000);
+    // il minuto avanza da solo tra una lettura e l'altra
+    setInterval(() => {
+      if (document.hidden || !state.manual?.live?.length) return;
+      let changed = false;
+      state.manual.live = state.manual.live.map(x => {
+        const p = x.split("|"), c = liveClock[p[0] + "|" + p[1] + "|" + p[2]];
+        if (!c) return x;
+        const t = clockTxt(c); if (t !== p[5]) { p[5] = t; changed = true; }
+        return p.join("|");
+      });
+      if (changed) { state.manual.liveRead = hhmm(); render(); }
+    }, 15000);
     document.addEventListener("visibilitychange", () => { if (!document.hidden) espnSync(); });
   }
 })();
