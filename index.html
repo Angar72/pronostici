@@ -2224,7 +2224,12 @@ if (typeof module !== "undefined") module.exports = Model;
   const eToks = s => { const n = eNorm(s); return (E_ALIAS[n] || n).split(" ").filter(w => w.length >= 3 && !E_STOP.has(w)); };
   const eSim = (mine, theirs) => {
     const a = eToks(mine), b = eToks(theirs);
-    if (!a.length || !b.length) return eNorm(mine) === eNorm(theirs) ? 1 : 0;
+    if (!a.length || !b.length) {
+      // nomi corti come "AZ" o "PSV": confronto parola per parola
+      const raw = x => eNorm(x).split(" ").filter(w => w && !E_STOP.has(w));
+      const ra = raw(mine), rb = raw(theirs);
+      return ra.length && ra.every(w => rb.includes(w)) ? 1 : 0;
+    }
     return a.filter(w => b.some(x => x === w || (w.length >= 4 && x.length >= 4 && (x.includes(w) || w.includes(x))))).length / a.length;
   };
   async function espnBoard(cache, lg, d) {
