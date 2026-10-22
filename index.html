@@ -286,6 +286,7 @@ body[data-sec="lotto"] .ball{background:var(--chip);color:var(--ink)}
         <button data-v="classifica" aria-pressed="false">Classifica</button>
         <button data-v="scommesse" aria-pressed="false">3 Schedine</button>
         <button data-v="verifica" aria-pressed="false">Affidabilità</button>
+        <button data-v="conto" aria-pressed="false">Conto</button>
       </div>
     </div>
   </header>
@@ -2000,6 +2001,12 @@ if (typeof module !== "undefined") module.exports = Model;
         <h2>${done.length ? `${r} indovinati` : "Bilancio in arrivo"}</h2>
         <div class="kpis">${kpi(done.length, "partite concluse")}${kpi(done.length ? pct(rate(done, "k1x2")) + "%" : "–", "esito 1X2")}${kpi(waiting.length, "in attesa")}</div>`;
     }
+    if (state.view === "conto") {
+      const C = conto();
+      return `<div class="eyebrow">Conto delle schedine · dal ${C.days.length ? esc(fmtShort(C.days[C.days.length - 1].day)) : "–"}</div>
+        <h2>${C.done ? (C.net >= 0 ? "In attivo " : "In passivo ") + euro(Math.abs(C.net)) : "Conto delle giocate"}</h2>
+        <div class="kpis">${kpi(euro(C.played), "giocato")}${kpi(euro(C.won), "vinto")}${kpi(C.pending ? euro(C.pending) : "–", "in gioco")}</div>`;
+    }
     if (state.view === "scommesse") {
       const t = today(), ft = frozenFor(t);
       const tks = ft ? ft.tickets : [], st = ft?.stake || state.stake;
@@ -2022,10 +2029,53 @@ if (typeof module !== "undefined") module.exports = Model;
   }
   function applyTheme() {
     document.body.dataset.sec = state.sec;
-    document.body.dataset.comp = state.sec === "calcio" ? (state.view === "scommesse" ? "schedine" : state.league) : state.sec;
+    document.body.dataset.comp = state.sec === "calcio" ? (state.view === "scommesse" || state.view === "conto" ? "schedine" : state.league) : state.sec;
     const h = $("#hero");
     if (!state.ready) { h.hidden = true; return; }
     try { h.innerHTML = heroHtml(); h.hidden = !h.innerHTML.trim(); } catch (e) { h.hidden = true; }
+  }
+
+  // ---- conto economico: quanto giocato e quanto vinto con le schedine fissate di ogni giorno ----
+  function conto() {
+    const byDay = state.saved?.byDay || {}, days = [];
+    let played = 0, won = 0, pending = 0, done = 0, nWon = 0, nLost = 0;
+    Object.keys(byDay).sort().reverse().forEach(day => {
+      const ft = frozenFor(day); if (!ft) return;
+      const list = ft.tickets.map((tk, i) => ({ tk, stake: ft.stake || state.stake, name: `Schedina ${i + 1}` }));
+      if (ft.recovery?.legs?.length) list.push({ tk: ft.recovery.legs, stake: ft.recovery.stake, name: "Recupero" });
+      const rows = list.map(x => {
+        const q = x.tk.reduce((a, r) => a * r.s.odd, 1);
+        const lost = x.tk.some(r => r.res && !hit(r.s.k, r.res)), win = !lost && x.tk.every(r => r.res && hit(r.s.k, r.res));
+        return { ...x, q, st: lost ? "lost" : win ? "won" : "pending", pay: win ? x.stake * q : 0 };
+      });
+      const d = { day, rows, played: 0, won: 0, pending: 0 };
+      rows.forEach(r => { if (r.st === "pending") d.pending += r.stake; else { d.played += r.stake; d.won += r.pay; } });
+      played += d.played; won += d.won; pending += d.pending;
+      done += rows.filter(r => r.st !== "pending").length; nWon += rows.filter(r => r.st === "won").length; nLost += rows.filter(r => r.st === "lost").length;
+      days.push(d);
+    });
+    return { days, played, won, pending, net: won - played, done, nWon, nLost };
+  }
+  function viewConto() {
+    const C = conto();
+    if (!C.days.length) return `<div class="empty">Qui compare il conto delle schedine giocate: quanto hai puntato, quanto hai vinto e il saldo, giorno per giorno.</div>`;
+    const sign = v => (v > 0 ? "+" : v < 0 ? "−" : "") + euro(Math.abs(v));
+    const cls = v => v > 0 ? "ok" : v < 0 ? "ko" : "";
+    let html = `<div class="summary">
+        <div class="stat"><b class="num ${cls(C.net)}">${sign(C.net)}</b><span>saldo delle schedine concluse</span></div>
+        <div class="stat"><b class="num">${C.played ? Math.round(C.won / C.played * 100) : 0}%</b><span>rientro su quanto giocato · ${C.nWon} vinte, ${C.nLost} perse${C.pending ? ` · ${euro(C.pending)} ancora in gioco` : ""}</span></div>
+      </div>`;
+    html += `<div class="tbl-wrap"><table><thead><tr><th class="t">Giorno</th><th>Schedine</th><th>Giocato</th><th>Vinto</th><th>Saldo</th></tr></thead><tbody>
+      ${C.days.map(d => `<tr><td class="t">${esc(fmtShort(d.day))}</td><td>${d.rows.length}</td><td>${euro(d.played + d.pending)}</td><td>${euro(d.won)}</td>
+        <td class="${d.pending && !d.played ? "" : cls(d.won - d.played)}">${d.played ? sign(d.won - d.played) : "in gioco"}</td></tr>`).join("")}
+      <tr><td class="t"><b>Totale</b></td><td>${C.days.reduce((a, d) => a + d.rows.length, 0)}</td><td><b>${euro(C.played + C.pending)}</b></td><td><b>${euro(C.won)}</b></td><td class="${cls(C.net)}"><b>${sign(C.net)}</b></td></tr>
+      </tbody></table></div>`;
+    html += C.days.map(d => `<div class="day">${esc(fmtDay(d.day))}</div><div class="card">${d.rows.map(r => `<div class="res">
+        <div class="m">${esc(r.name)} · ${r.tk.length} partite · quota ${r.q.toFixed(2).replace(".", ",")}</div>
+        <div class="sc ${r.st === "won" ? "ok" : r.st === "lost" ? "ko" : ""}" style="font-size:18px">${r.st === "won" ? "+" + euro(r.pay - r.stake) : r.st === "lost" ? "−" + euro(r.stake) : "in gioco"}</div>
+        <div class="meta">Giocata ${euro(r.stake)} · ${r.st === "won" ? `✓ vinta, incassati ${euro(r.pay)}` : r.st === "lost" ? "✗ persa" : `possibile vincita ${euro(r.stake * r.q)}`}</div></div>`).join("")}</div>`).join("");
+    html += `<p class="note">Contano le schedine fissate di ogni giorno con l'importo di quel giorno (5 € fino al 21 ottobre, poi 20 €). Una schedina resta «in gioco» finché manca anche un solo risultato.</p>`;
+    return html;
   }
 
   function render() {
@@ -2050,11 +2100,11 @@ if (typeof module !== "undefined") module.exports = Model;
       return;
     }
     renderChips();
-    $("#chips").hidden = state.view === "scommesse";
+    $("#chips").hidden = state.view === "scommesse" || state.view === "conto";
     const L = league(state.league);
     if (!L) { main.innerHTML = `<div class="empty">I campionati compaiono qui dopo il primo aggiornamento.</div>`; return; }
     $("#stamp").textContent = "Aggiornato " + fmtStamp(L.d.updated);
-    main.innerHTML = state.view === "scommesse" ? viewScommesse() : state.view === "classifica" ? viewClassifica(L) : state.view === "verifica" ? viewVerifica(L) : viewPartite(L);
+    main.innerHTML = state.view === "scommesse" ? viewScommesse() : state.view === "conto" ? viewConto() : state.view === "classifica" ? viewClassifica(L) : state.view === "verifica" ? viewVerifica(L) : viewPartite(L);
   }
 
   document.addEventListener("click", e => {
@@ -2236,6 +2286,7 @@ if (typeof module !== "undefined") module.exports = Model;
     const k = lg + d;
     if (!(k in cache)) cache[k] = fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${lg}/scoreboard?dates=${d.replace(/-/g, "")}`, { cache: "no-store" })
       .then(r => r.ok ? r.json() : { events: [] }).then(j => j.events || []).catch(() => null);
+    if (d < addDays(today(), -1) && !(k in pastBoards)) { pastBoards[k] = cache[k]; cache[k].then(v => { if (v === null) delete pastBoards[k]; }); }
     return cache[k];
   }
   function espnPick(events, h, a) {
@@ -2250,6 +2301,7 @@ if (typeof module !== "undefined") module.exports = Model;
     return best;
   }
   let espnBusy = false;
+  const pastBoards = {};
   const liveClock = {};
   // minuto di gioco dal cronometro ESPN (secondi dall'inizio) più il tempo passato dalla lettura
   function clockTxt(c) {
@@ -2264,7 +2316,9 @@ if (typeof module !== "undefined") module.exports = Model;
     if (!SITE || !state.ready || espnBusy) return;
     espnBusy = true;
     try {
-      const t = today(), from = addDays(t, -3), now = hhmm(), need = [], cache = {};
+      const t = today(), from = addDays(t, -14), now = hhmm(), need = [], cache = {};
+      // i giorni passati si leggono una volta sola per apertura della pagina, oggi a ogni giro
+      for (const k in pastBoards) cache[k] = pastBoards[k];
       Object.entries(state.raw).forEach(([id, d]) => {
         if (!ESPN_LG[id]) return;
         (d.fixtures || []).forEach(f => {
