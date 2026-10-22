@@ -271,7 +271,7 @@ body[data-sec="lotto"] .ball{background:var(--chip);color:var(--ink)}
       <div style="display:grid;justify-items:end;gap:4px">
         <div class="stamp" id="stamp">In caricamento…</div>
         <a id="refresh" class="refresh" target="_blank" rel="noopener" href="https://angar72.github.io/pronostici/" style="text-decoration:none">Apri con risultati in diretta ↗</a>
-        <div class="stamp">Versione 22 ott · Conto</div>
+        <div class="stamp">Versione 22 ott · stemmi</div>
       </div>
     </div>
     <div class="seg" role="group" aria-label="Sezione">
@@ -2354,6 +2354,19 @@ if (typeof module !== "undefined") module.exports = Model;
           live.push([m.id, m.h, m.a, hg, ag, half ? "intervallo" : clockTxt(liveClock[m.id + "|" + m.h + "|" + m.a]), m.goals || "", (REDS[m.id + "|" + m.h + "|" + m.a] || []).join(";")].join("|"));
         }
       }));
+      // stemmi presi anche dai risultati ESPN già letti (ogni squadra gioca almeno una volta in 14 giorni)
+      try {
+        for (const [k, pr] of Object.entries(cache)) {
+          const ev = await pr; if (!ev) continue;
+          const id = Object.keys(ESPN_LG).find(i => k.startsWith(ESPN_LG[i]) && /^\d{4}-/.test(k.slice(ESPN_LG[i].length)));
+          const L = state.raw[id]; if (!L) continue;
+          ev.forEach(e => (e.competitions?.[0]?.competitors || []).forEach(c => {
+            const logo = c.team?.logo || c.team?.logos?.[0]?.href; if (!logo) return;
+            const names = [c.team.displayName, c.team.shortDisplayName, c.team.name].filter(Boolean);
+            (L.teams || []).forEach(n => { if (!LOGOS[n] && Math.max(...names.map(x => eSim(n, x))) >= 0.99) LOGOS[n] = logo; });
+          }));
+        }
+      } catch (e) {}
       state.manual = { rows: rows.sort(), live, liveDate: t, liveRead: now, updated: new Date().toISOString() };
       mergeManual();
       const st = $("#stamp"); if (st) st.textContent = "Risultati letti alle " + now;
