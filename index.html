@@ -1,0 +1,2285 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Pronostici Calcio e Lotto</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,500;0,600;0,700;1,700&family=Archivo:wght@400;500;600&display=swap">
+<style>
+/* Layout: app a una colonna per il telefono, intestazione fissa con selettori, schede partita espandibili */
+:root{
+  --bg:#EEF2EE; --surface:#FFFFFF; --ink:#13201A; --muted:#5B6A62; --line:#D7DFD9;
+  --accent:#1D7447; --accent-ink:#FFFFFF; --home:#1D7447; --draw:#AAB5AE; --away:#2B5AA6;
+  --chip:#E1E8E2; --good:#1D7447; --bad:#B23A2E; --warn:#A86A12;
+  --font-display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --font-body:"Archivo",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0D1411; --surface:#151F1A; --ink:#E5EEE8; --muted:#92A399; --line:#25332B;
+  --accent:#4CC38A; --accent-ink:#06130C; --home:#4CC38A; --draw:#5D6D64; --away:#7EA6EA;
+  --chip:#1D2A23; --good:#4CC38A; --bad:#F07A6C; --warn:#E3A84A; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0D1411; --surface:#151F1A; --ink:#E5EEE8; --muted:#92A399; --line:#25332B;
+  --accent:#4CC38A; --accent-ink:#06130C; --home:#4CC38A; --draw:#5D6D64; --away:#7EA6EA;
+  --chip:#1D2A23; --good:#4CC38A; --bad:#F07A6C; --warn:#E3A84A; color-scheme:dark}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+html,body{overflow-x:clip;max-width:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.45;-webkit-tap-highlight-color:transparent;overscroll-behavior-y:none}
+.wrap{max-width:640px;margin:0 auto;padding-inline:16px;padding-block:0 40px;overflow-x:clip}
+button{touch-action:manipulation}
+/* sul telefono: niente zoom automatico sui campi (iOS ingrandisce sotto i 16px) */
+input,select{font-size:16px!important}
+.num{font-family:var(--font-display);font-variant-numeric:tabular-nums}
+button{font:inherit;color:inherit}
+button:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);
+  padding-block:14px 10px;display:grid;gap:10px;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+h1{font-family:var(--font-display);font-weight:700;font-size:28px;letter-spacing:.01em;margin:0;line-height:1;text-transform:uppercase}
+h1 span{color:var(--accent)}
+.stamp{font-size:12px;color:var(--muted);text-align:right}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);background:var(--chip);border-radius:10px;padding:3px}
+.seg button{border:0;background:transparent;padding:8px;border-radius:8px;font-family:var(--font-display);
+  font-weight:600;font-size:17px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgb(0 0 0/.12)}
+.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;max-width:100%;padding-block:2px}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;
+  font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap}
+.livelink{display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:var(--ink)}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.tabs{display:flex;gap:16px;border-bottom:1px solid var(--line);margin-top:4px;overflow-x:auto;scrollbar-width:none;overscroll-behavior-x:contain}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{flex:none;white-space:nowrap}
+.tabs button{border:0;background:none;padding:8px 0;cursor:pointer;color:var(--muted);font-weight:600;font-size:14px;
+  border-bottom:2px solid transparent;margin-bottom:-1px}
+.tabs button[aria-pressed="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+
+main{display:grid;gap:14px;padding-top:14px}
+.note{font-size:13px;color:var(--muted);margin:0}
+.day{font-family:var(--font-display);font-weight:600;font-size:15px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--muted);margin:6px 0 -4px}
+.list{display:grid;gap:8px}
+
+.match{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.match summary{list-style:none;cursor:pointer;padding:12px 14px;display:grid;gap:10px}
+.match summary::-webkit-details-marker{display:none}
+.row1{display:grid;grid-template-columns:44px 1fr auto;gap:10px;align-items:center}
+.time{font-family:var(--font-display);font-size:17px;color:var(--muted);font-variant-numeric:tabular-nums}
+.teams{min-width:0;display:grid;gap:2px;font-weight:600}
+.teams div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tip{display:grid;justify-items:center;gap:1px;min-width:54px}
+.tip b{font-family:var(--font-display);font-size:24px;line-height:1;padding:4px 10px;border-radius:8px;
+  background:var(--chip);min-width:46px;text-align:center}
+.tip small{font-size:11px;color:var(--muted)}
+.tip.alta b{background:var(--accent);color:var(--accent-ink)}
+.tip.media b{border:2px solid var(--accent);background:transparent;padding:2px 8px}
+.bar{display:flex;height:22px;border-radius:6px;overflow:hidden;font-family:var(--font-display);font-size:14px;font-weight:600}
+.bar span{display:flex;align-items:center;justify-content:center;min-width:0;color:#fff;white-space:nowrap}
+.bar .b1{background:var(--home);color:var(--accent-ink)} .bar .bx{background:var(--draw);color:var(--ink)} .bar .b2{background:var(--away);color:#fff}
+.legend{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:-6px}
+.more{padding:2px 14px 14px;display:grid;gap:12px;border-top:1px dashed var(--line)}
+.kv{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding-top:12px}
+.kv div{display:grid;gap:0}
+.kv span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.kv b{font-family:var(--font-display);font-size:20px;font-weight:600;font-variant-numeric:tabular-nums}
+.scores{display:flex;gap:6px;flex-wrap:wrap}
+.score{border:1px solid var(--line);border-radius:8px;padding:4px 10px;font-family:var(--font-display);font-size:18px}
+.score small{font-family:var(--font-body);font-size:11px;color:var(--muted);margin-left:4px}
+.sub{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.pending{opacity:.7}
+
+.tbl-wrap{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{padding:8px 6px;text-align:right;white-space:nowrap}
+th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:600;border-bottom:1px solid var(--line)}
+td{border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+tr:last-child td{border-bottom:0}
+td.t,th.t{text-align:left}
+td.pos{color:var(--muted);width:24px}
+td.pt{font-family:var(--font-display);font-size:17px;font-weight:700}
+.form{display:inline-flex;gap:2px}
+.form i{width:8px;height:8px;border-radius:2px;display:inline-block;background:var(--draw)}
+.form i.V{background:var(--good)} .form i.P{background:var(--bad)}
+.strength{height:6px;background:var(--chip);border-radius:3px;overflow:hidden;min-width:60px}
+.strength i{display:block;height:100%;background:var(--accent)}
+
+.summary{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.stat b{font-family:var(--font-display);font-size:32px;font-weight:700;display:block;line-height:1.1}
+.stat span{font-size:12px;color:var(--muted)}
+.ok{color:var(--good);font-weight:700} .ko{color:var(--bad);font-weight:700}
+
+.empty{background:var(--surface);border:1px dashed var(--line);border-radius:12px;padding:24px 18px;text-align:center;color:var(--muted)}
+
+/* Lotto */
+.draw{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:6px 14px}
+.wheel{display:grid;grid-template-columns:86px 1fr;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.wheel:last-child{border-bottom:0}
+.wheel[aria-pressed="true"] .wn{color:var(--accent)}
+.wn{font-weight:600;font-size:14px}
+.balls{display:flex;gap:6px;flex-wrap:wrap}
+.ball{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-family:var(--font-display);font-weight:600;
+  font-size:17px;background:var(--chip);font-variant-numeric:tabular-nums}
+.board{display:grid;grid-template-columns:repeat(10,1fr);gap:3px}
+.cell{aspect-ratio:1;max-width:100%;border-radius:6px;display:grid;place-items:center;font-family:var(--font-display);
+  font-size:15px;position:relative;background:var(--chip);color:var(--ink)}
+.cell small{position:absolute;bottom:1px;right:3px;font-size:9px;color:var(--muted);font-family:var(--font-body)}
+.cell.h1{background:color-mix(in srgb,var(--accent) 30%,var(--chip))}
+.cell.h2{background:color-mix(in srgb,var(--accent) 60%,var(--chip))}
+.cell.h3{background:var(--accent);color:var(--accent-ink)}
+.cell.h3 small{color:var(--accent-ink)}
+.callout{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--warn);border-radius:8px;padding:10px 12px;font-size:13px}
+select{font:inherit;padding:6px 10px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+/* Quote e scommesse */
+.odds-line{font-size:13px;color:var(--muted);display:flex;gap:6px;align-items:baseline;flex-wrap:wrap;font-variant-numeric:tabular-nums;margin-top:-4px}
+.odds-line span{text-transform:uppercase;letter-spacing:.06em;font-size:11px}
+.odds-line b{color:var(--ink);font-family:var(--font-display);font-size:15px}
+.value{font-style:normal;font-size:11px;font-weight:600;color:var(--accent-ink);background:var(--accent);border-radius:999px;padding:1px 8px}
+.bet{display:grid;grid-template-columns:1fr auto;gap:2px 12px;padding:10px 14px;border-bottom:1px solid var(--line)}
+.bet:last-child{border-bottom:0}
+.bet .m{font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bet .meta{font-size:12px;color:var(--muted)}
+.bet .sel{grid-row:1/3;grid-column:2;text-align:right;align-self:center}
+.bet .sel b{font-family:var(--font-display);font-size:22px;display:block;line-height:1}
+.bet .sel small{font-size:12px;color:var(--muted)}
+.ticket{background:var(--surface);border:2px solid var(--accent);border-radius:12px;padding:12px 14px;display:grid;gap:6px}
+.ticket .tot{display:flex;justify-content:space-between;gap:10px;font-family:var(--font-display);font-size:20px;font-weight:700;border-top:1px dashed var(--line);padding-top:6px}
+/* Bilancio */
+.summary.four{grid-template-columns:repeat(2,1fr)}
+.stat .bar-mini{height:5px;border-radius:3px;background:var(--chip);overflow:hidden;margin-top:6px}
+.stat .bar-mini i{display:block;height:100%;background:var(--accent)}
+.rank td.best{color:var(--accent);font-weight:700}
+.filters{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.res{display:grid;grid-template-columns:1fr auto;gap:4px 10px;padding:10px 14px;border-bottom:1px solid var(--line)}
+.res:last-child{border-bottom:0}
+.res .m{min-width:0;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.res .meta{font-size:12px;color:var(--muted);grid-column:1}
+.res .sc{font-family:var(--font-display);font-size:22px;font-weight:700;text-align:right;grid-row:1/3;grid-column:2;align-self:center}
+.marks{display:flex;gap:5px;flex-wrap:wrap;grid-column:1/3}
+.mk{font-size:11px;border-radius:999px;padding:2px 8px;border:1px solid var(--line);white-space:nowrap}
+.mk.y{background:color-mix(in srgb,var(--good) 16%,var(--surface));border-color:color-mix(in srgb,var(--good) 45%,var(--line));color:var(--ink)}
+.mk.n{background:color-mix(in srgb,var(--bad) 12%,var(--surface));border-color:color-mix(in srgb,var(--bad) 40%,var(--line));color:var(--ink)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.refresh{border:1px solid var(--accent);background:transparent;color:var(--accent);border-radius:999px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer}
+.refresh:disabled{opacity:.6;cursor:default}
+.toast{position:fixed;left:16px;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));max-width:560px;margin:0 auto;background:var(--ink);color:var(--bg);padding:10px 14px;border-radius:10px;font-size:13px;z-index:20}
+@media (max-width:420px){h1{font-size:23px}.seg button{font-size:15px;padding:7px}header{gap:8px;padding-block:10px 8px}}
+.league-pick{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center}
+.league-pick label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.league-pick select{width:100%;min-width:0;padding:9px 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-weight:600;appearance:auto}
+/* adattamento al telefono: ogni riga dell'intestazione resta dentro lo schermo */
+header{grid-template-columns:minmax(0,1fr)}
+header>*,#calcio-nav,#calcio-nav>*{min-width:0;max-width:100%}
+#calcio-nav{display:grid;gap:8px;grid-template-columns:minmax(0,1fr)}
+main{grid-template-columns:minmax(0,1fr)}
+main>*{min-width:0}
+.brand{align-items:center}
+.brand h1{flex:1 1 auto;min-width:0}
+.brand>div:last-child{flex:none}
+.seg{grid-template-columns:repeat(3,minmax(0,1fr))}
+.seg button{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.league-pick{grid-template-columns:auto minmax(0,1fr)}
+.league-pick select{text-overflow:ellipsis}
+.tabs{margin-top:0;border-bottom:0}
+.refresh{white-space:nowrap}
+.an{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:8px;margin-top:6px}
+.an-team{border:1px solid var(--line);border-radius:10px;padding:8px 10px;display:grid;gap:4px;min-width:0}
+.an-row{display:grid;grid-template-columns:84px minmax(0,1fr);gap:8px;font-size:13px}
+.an-row>span:first-child{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.05em;padding-top:2px}
+.live{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:13px;color:var(--ink)}
+.live b{font-family:var(--font-display);font-size:18px}
+.live b.min{font-size:15px;color:var(--bad)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--bad);display:inline-block;flex:none}
+@media (prefers-reduced-motion:no-preference){.dot{animation:pulse 1.6s ease-in-out infinite}@keyframes pulse{50%{opacity:.35}}}
+.live-inline{white-space:nowrap}
+.events{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:var(--muted);margin-top:2px}
+.ev{display:inline-flex;align-items:center;gap:5px}
+.ball-ic{width:9px;height:9px;border-radius:50%;border:2px solid var(--ink);display:inline-block;flex:none}
+.red-ic{width:8px;height:11px;border-radius:2px;background:var(--bad);display:inline-block;flex:none}
+.money-box{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:8px;border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.money-box>div{display:grid;gap:1px;min-width:0}
+.money-box span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.money-box b{font-family:var(--font-display);font-size:22px;font-weight:700;line-height:1.1}
+.money-box small{font-size:11px;color:var(--muted)}
+.stake-line{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 10px;font-size:13px;border-top:1px dashed var(--line);padding-top:6px}
+.stake-line b{font-variant-numeric:tabular-nums}
+.stake-line.win,.money-box.win{background:color-mix(in srgb,var(--good) 16%,transparent);border:1px solid color-mix(in srgb,var(--good) 55%,transparent);border-radius:8px;padding:6px 8px}
+.stake-line.lose,.money-box.lose{background:color-mix(in srgb,var(--bad) 14%,transparent);border:1px solid color-mix(in srgb,var(--bad) 55%,transparent);border-radius:8px;padding:6px 8px}
+.money-box.win b:last-child,.stake-line.win span:last-child b{color:var(--good)}
+.money-box.lose b:last-child,.stake-line.lose span:last-child b{color:var(--bad)}
+footer{font-size:12px;color:var(--muted);display:grid;gap:4px;padding-top:6px}
+footer a{color:inherit}
+@media (prefers-reduced-motion:no-preference){.match{transition:border-color .15s}}
+
+/* ---- Identità visiva: ogni sezione e ogni competizione ha il suo colore e il suo "campo" ---- */
+body{--comp:#12C25E;--hero-ink:#FFFFFF;
+  /* fondo nero fisso, più contrasto; i colori di sezione e competizione restano quelli scelti */
+  --bg:#07080A;--surface:#141519;--chip:#1F2126;--line:#2C2F35;--ink:#F2F4F3;--muted:#A0A7A4;
+  --accent:color-mix(in srgb,var(--comp) 62%,#FFFFFF);--accent-ink:#07080A;--home:color-mix(in srgb,var(--comp) 62%,#FFFFFF);
+  --draw:#4C5157;--away:#7EA6EA;--good:#3DDC84;--bad:#FF6B5E;--warn:#F2B544;
+  background:var(--bg);color:var(--ink);color-scheme:dark}
+:root{color-scheme:dark}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+body[data-comp="it_1"]{--comp:#1846C2} body[data-comp="it_2"]{--comp:#1E8A4C} body[data-comp="cl"]{--comp:#0B2161}
+body[data-comp="el"]{--comp:#E0610E} body[data-comp="ecl"]{--comp:#11895A} body[data-comp="en_1"]{--comp:#4A1C6E}
+body[data-comp="es_1"]{--comp:#D6362B} body[data-comp="de_1"]{--comp:#C4101C} body[data-comp="fr_1"]{--comp:#16306B}
+body[data-comp="nl_1"]{--comp:#D9541C} body[data-comp="pt_1"]{--comp:#0B7A45} body[data-comp="be_1"]{--comp:#9E1B32}
+body[data-comp="no_1"]{--comp:#A3132F} body[data-comp="se_1"]{--comp:#0B5E99}
+body[data-comp="schedine"]{--comp:#12C25E;--hero-ink:#03170B}
+body[data-comp="schedine"] .seg button[aria-pressed="true"]{color:#03170B}
+body[data-comp="schedine"] .hero .kpi{border-top-color:rgb(0 0 0/.3)}
+body[data-sec="lotto"]{--comp:#B5121B} body[data-sec="bilancio"]{--comp:#0D6D69}
+@media (prefers-reduced-motion:no-preference){body{transition:background-color .3s}}
+header{border-bottom:0;box-shadow:0 1px 0 var(--line)}
+header::before{content:"";position:absolute;inset:0 -100vmax auto;height:3px;background:var(--comp)}
+h1{font-style:italic;font-weight:700;letter-spacing:.02em}
+h1 span{color:var(--accent)}
+.seg button[aria-pressed="true"]{background:var(--comp);color:#FFFFFF;box-shadow:none}
+.tabs button[aria-pressed="true"]{border-bottom-width:3px}
+.hero{position:relative;overflow:hidden;border-radius:16px;color:var(--hero-ink);padding:16px 16px 14px;margin-top:14px;isolation:isolate;
+  background:linear-gradient(135deg,var(--comp) 0%,color-mix(in srgb,var(--comp) 62%,#000) 100%);display:grid;gap:10px}
+.hero::before{content:"";position:absolute;inset:0;z-index:-1;opacity:.16;background-repeat:no-repeat;background-position:right -40px center;background-size:auto 150%}
+body[data-sec="calcio"] .hero::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 200' fill='none' stroke='white' stroke-width='3'%3E%3Crect x='4' y='4' width='292' height='192'/%3E%3Cline x1='150' y1='4' x2='150' y2='196'/%3E%3Ccircle cx='150' cy='100' r='34'/%3E%3Crect x='4' y='52' width='44' height='96'/%3E%3Crect x='252' y='52' width='44' height='96'/%3E%3Ccircle cx='150' cy='100' r='3' fill='white'/%3E%3C/svg%3E")}
+body[data-sec="lotto"] .hero::before{opacity:.18;background-size:auto 130%;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 140' fill='none' stroke='white' stroke-width='3' font-family='Arial' font-weight='700' font-size='20' text-anchor='middle'%3E%3Ccircle cx='40' cy='40' r='26'/%3E%3Ccircle cx='110' cy='34' r='26'/%3E%3Ccircle cx='170' cy='60' r='26'/%3E%3Ccircle cx='70' cy='100' r='26'/%3E%3Ccircle cx='140' cy='110' r='26'/%3E%3Cg fill='white' stroke='none'%3E%3Ctext x='40' y='47'%3E90%3C/text%3E%3Ctext x='110' y='41'%3E7%3C/text%3E%3Ctext x='170' y='67'%3E44%3C/text%3E%3Ctext x='70' y='107'%3E13%3C/text%3E%3Ctext x='140' y='117'%3E61%3C/text%3E%3C/g%3E%3C/svg%3E")}
+body[data-sec="bilancio"] .hero::before{opacity:.2;background-size:auto 120%;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 120' fill='none' stroke='white' stroke-width='3'%3E%3Cpolyline points='0,100 30,84 60,90 90,60 120,66 150,36 180,42 200,20'/%3E%3Cg stroke-width='1' opacity='.6'%3E%3Cline x1='0' y1='30' x2='200' y2='30'/%3E%3Cline x1='0' y1='60' x2='200' y2='60'/%3E%3Cline x1='0' y1='90' x2='200' y2='90'/%3E%3C/g%3E%3C/svg%3E")}
+.hero .eyebrow{font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;opacity:.85;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.hero h2{font-family:var(--font-display);font-style:italic;font-weight:700;font-size:40px;line-height:.92;margin:0;text-transform:uppercase;letter-spacing:.01em;text-wrap:balance}
+.hero .kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.hero .kpi{display:grid;gap:1px;min-width:0;border-top:1px solid rgb(255 255 255/.35);padding-top:6px}
+.hero .kpi b{font-family:var(--font-display);font-size:22px;font-weight:700;line-height:1.05;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;text-wrap:balance}
+.hero .kpi span{font-size:11px;letter-spacing:.06em;text-transform:uppercase;opacity:.8}
+.hero .hballs{display:flex;gap:5px;flex-wrap:wrap}
+.hero .hballs i{font-style:normal;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:#FFFFFF;color:var(--comp);font-family:var(--font-display);font-weight:700;font-size:16px;box-shadow:inset 0 -3px 0 rgb(0 0 0/.15)}
+.hero .hballs i.gold{background:#F2C230;color:#3A2600}
+.ticket{border-color:var(--accent);box-shadow:0 2px 0 color-mix(in srgb,var(--accent) 25%,transparent)}
+.match{transition:border-color .15s,transform .15s}
+.match[open]{border-color:color-mix(in srgb,var(--accent) 55%,var(--line))}
+body[data-sec="lotto"] .ball{background:#FFFFFF;color:var(--ink);border:2px solid color-mix(in srgb,var(--comp) 70%,transparent)}
+body[data-sec="lotto"] .ball{background:var(--chip);color:var(--ink)}
+@media (max-width:420px){.hero h2{font-size:32px}.hero .kpi b{font-size:19px}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <h1>Pronostici <span>&amp;</span> Lotto</h1>
+      <div style="display:grid;justify-items:end;gap:4px">
+        <div class="stamp" id="stamp">In caricamento…</div>
+        <a id="refresh" class="refresh" target="_blank" rel="noopener" href="https://angar72.github.io/pronostici/" style="text-decoration:none">Apri con risultati in diretta ↗</a>
+        <div class="stamp">Versione 21 ott</div>
+      </div>
+    </div>
+    <div class="seg" role="group" aria-label="Sezione">
+      <button id="sec-calcio" aria-pressed="true">Calcio</button>
+      <button id="sec-bilancio" aria-pressed="false">Bilancio</button>
+      <button id="sec-lotto" aria-pressed="false">Lotto · SE</button>
+    </div>
+    <div id="calcio-nav">
+      <div class="league-pick" id="chips">
+        <label for="league-sel">Competizione</label>
+        <select id="league-sel"></select>
+      </div>
+      <div class="tabs" role="group" aria-label="Vista">
+        <button data-v="partite" aria-pressed="true">Partite</button>
+        <button data-v="classifica" aria-pressed="false">Classifica</button>
+        <button data-v="scommesse" aria-pressed="false">3 Schedine</button>
+        <button data-v="verifica" aria-pressed="false">Affidabilità</button>
+      </div>
+    </div>
+  </header>
+  <section id="hero" class="hero" aria-live="polite" hidden></section>
+  <main id="main">
+    <div class="empty">I dati delle partite compaiono qui quando la pagina è aperta dall'app Claude o da claude.ai.</div>
+  </main>
+  <footer>
+    <div>Ogni pronostico incrocia: forza delle squadre (risultati pesati nel tempo, stagione scorsa inclusa), posizione in campionato, forma delle ultime 5 partite, rendimento in casa o in trasferta, impegni di Champions a ridosso (possibile turnover) e giocatori importanti assenti per infortunio o squalifica. Over/Under e Goal/No Goal tengono conto anche di quante partite delle due squadre sono finite con più di 2 gol o con gol di entrambe. Non sono disponibili gli expected goals (xG), il meteo, i cambi di allenatore e le motivazioni: valutali tu prima di giocare. Le percentuali sono stime, non certezze.</div>
+    <div>Champions, Europa e Conference League: le forze di partenza vengono dai campionati nazionali, corrette per il livello del campionato, e si aggiornano con i risultati europei.</div>
+    <div>Fonti: openfootball, Sky Sport, BetExplorer (Belgio, Norvegia, Svezia), Oddsportal, Sisal. Quando tocchi «Aggiorna quote e risultati» in alto a destra si aggiornano solo le partite delle schedine in corso: risultati di quelle iniziate e quote di quelle ancora da giocare (arrivano da soli in pochi minuti, niente da copiare): la data dell'ultimo aggiornamento è lì accanto. I risultati in diretta si aprono su Diretta.it.</div>
+  </footer>
+</div>
+
+<script>
+// Modello di Poisson con decadimento temporale, priori per neopromosse/retrocesse
+// e correzione Dixon-Coles per i punteggi bassi. Nessuna dipendenza esterna.
+const Model = (() => {
+  const HALF_LIFE = 180;          // giorni: un risultato di 6 mesi fa pesa la metà
+  const K = 4;                    // partite "virtuali" di partenza per ogni squadra
+  const RHO = -0.06;              // correzione Dixon-Coles
+  const PRIOR = { up: [0.82, 1.18], down: [1.15, 0.87], B: [0.9, 1.12], C: [0.75, 1.3] }; // [attacco, difesa] di partenza
+  const S = 20;                   // partite "medie" virtuali che stabilizzano media gol e fattore campo
+
+  const dayMs = 86400000;
+  const toDate = s => new Date(s + "T12:00:00Z");
+
+  function parseRows(rows, withRound) {
+    return (rows || []).map(r => {
+      const p = r.split("|");
+      return { d: p[0], h: p[1], a: p[2], hg: +p[3], ag: +p[4], r: withRound ? p[5] : "" };
+    });
+  }
+  function parseFixtures(rows) {
+    return (rows || []).map(r => {
+      const p = r.split("|");
+      return { d: p[0], t: p[1], h: p[2], a: p[3], r: p[4] };
+    });
+  }
+
+  // matches: [{d,h,a,hg,ag}], asOf: "YYYY-MM-DD", teams: squadre attuali, prior: {team:"up"|"down"}
+  function fit(matches, asOf, teams, prior, k) {
+    const KK = k || K;
+    const now = toDate(asOf).getTime();
+    const ms = matches.filter(m => m.d < asOf).map(m => ({
+      ...m, w: Math.pow(0.5, (now - toDate(m.d).getTime()) / dayMs / HALF_LIFE)
+    }));
+    const all = new Set(teams);
+    ms.forEach(m => { all.add(m.h); all.add(m.a); });
+    const att = {}, def = {}, pa = {}, pd = {};
+    all.forEach(t => {
+      const pr = (prior || {})[t];
+      const p = Array.isArray(pr) ? pr : PRIOR[pr] || [1, 1];
+      pa[t] = p[0]; pd[t] = p[1]; att[t] = p[0]; def[t] = p[1];
+    });
+    let W = 0, HG = 0, AG = 0;
+    ms.forEach(m => { W += m.w; HG += m.w * m.hg; AG += m.w * m.ag; });
+    let base = W ? AG / W : 1.15, hf = W && AG ? HG / AG : 1.25;
+    const mu = W ? (HG + AG) / (2 * W) : 1.35;
+    for (let it = 0; it < 40; it++) {
+      const na = {}, da = {}, nd = {}, dd = {};
+      all.forEach(t => { na[t] = KK * pa[t] * mu; da[t] = KK * mu; nd[t] = KK * pd[t] * mu; dd[t] = KK * mu; });
+      ms.forEach(m => {
+        na[m.h] += m.w * m.hg; da[m.h] += m.w * base * hf * def[m.a];
+        na[m.a] += m.w * m.ag; da[m.a] += m.w * base * def[m.h];
+        nd[m.h] += m.w * m.ag; dd[m.h] += m.w * base * att[m.a];
+        nd[m.a] += m.w * m.hg; dd[m.a] += m.w * base * hf * att[m.h];
+      });
+      all.forEach(t => { att[t] = na[t] / da[t]; def[t] = nd[t] / dd[t]; });
+      // normalizza sulle squadre attuali: media 1
+      let sa = 0, sd = 0;
+      teams.forEach(t => { sa += att[t]; sd += def[t]; });
+      sa /= teams.length; sd /= teams.length;
+      all.forEach(t => { att[t] /= sa; def[t] /= sd; });
+      let ha = S * 1.45, hb = S, aa = S * 1.2, ab = S;
+      ms.forEach(m => {
+        ha += m.w * m.hg; hb += m.w * att[m.h] * def[m.a];
+        aa += m.w * m.ag; ab += m.w * att[m.a] * def[m.h];
+      });
+      if (ab > 0) base = aa / ab;
+      if (hb > 0 && base > 0) hf = ha / (hb * base);
+    }
+    hf = Math.min(Math.max(hf, 1.0), 1.6);
+    return { att, def, base, hf, n: ms.length };
+  }
+
+  function pois(l, k) { let p = Math.exp(-l); for (let i = 1; i <= k; i++) p *= l / i; return p; }
+
+  // adj (facoltativo): { h: {att, def}, a: {att, def} } — correzioni per forma e assenze
+  function predict(fitted, h, a, adj) {
+    const att = t => fitted.att[t] ?? 1, def = t => fitted.def[t] ?? 1;
+    const H = (adj && adj.h) || {}, A = (adj && adj.a) || {};
+    const lh = fitted.base * fitted.hf * att(h) * def(a) * (H.att || 1) * (A.def || 1);
+    const la = fitted.base * att(a) * def(h) * (A.att || 1) * (H.def || 1);
+    const N = 10, grid = [];
+    let tot = 0;
+    for (let i = 0; i <= N; i++) {
+      grid[i] = [];
+      for (let j = 0; j <= N; j++) {
+        let p = pois(lh, i) * pois(la, j);
+        if (i === 0 && j === 0) p *= 1 - lh * la * RHO;
+        else if (i === 0 && j === 1) p *= 1 + lh * RHO;
+        else if (i === 1 && j === 0) p *= 1 + la * RHO;
+        else if (i === 1 && j === 1) p *= 1 - RHO;
+        grid[i][j] = p; tot += p;
+      }
+    }
+    let p1 = 0, px = 0, p2 = 0, over = 0, gg = 0;
+    const scores = [];
+    for (let i = 0; i <= N; i++) for (let j = 0; j <= N; j++) {
+      const p = grid[i][j] / tot;
+      if (i > j) p1 += p; else if (i === j) px += p; else p2 += p;
+      if (i + j > 2.5) over += p;
+      if (i > 0 && j > 0) gg += p;
+      scores.push([i, j, p]);
+    }
+    scores.sort((x, y) => y[2] - x[2]);
+    const opts = [["1", p1], ["X", px], ["2", p2]].sort((x, y) => y[1] - x[1]);
+    let tip = opts[0][0], tipP = opts[0][1];
+    if (tipP < 0.45) {
+      // partita incerta: doppia chance sulla favorita (1X o X2)
+      if (p1 >= p2) { tip = "1X"; tipP = p1 + px; } else { tip = "X2"; tipP = px + p2; }
+    }
+    const conf = opts[0][1] >= 0.6 ? "alta" : opts[0][1] >= 0.45 ? "media" : "bassa";
+    return { lh, la, p1, px, p2, over, under: 1 - over, gg, ng: 1 - gg, top: scores.slice(0, 3),
+             pick: opts[0][0], tip, tipP, conf };
+  }
+
+  function standings(played, teams) {
+    const t = {};
+    teams.forEach(n => t[n] = { n, g: 0, v: 0, x: 0, p: 0, gf: 0, gs: 0, pt: 0, form: [] });
+    played.slice().sort((a, b) => a.d < b.d ? -1 : 1).forEach(m => {
+      const H = t[m.h], A = t[m.a];
+      if (!H || !A) return;
+      H.g++; A.g++; H.gf += m.hg; H.gs += m.ag; A.gf += m.ag; A.gs += m.hg;
+      if (m.hg > m.ag) { H.v++; A.p++; H.pt += 3; H.form.push("V"); A.form.push("P"); }
+      else if (m.hg < m.ag) { A.v++; H.p++; A.pt += 3; H.form.push("P"); A.form.push("V"); }
+      else { H.x++; A.x++; H.pt++; A.pt++; H.form.push("N"); A.form.push("N"); }
+    });
+    return Object.values(t).sort((a, b) => b.pt - a.pt || (b.gf - b.gs) - (a.gf - a.gs) || b.gf - a.gf || a.n.localeCompare(b.n))
+      .map(r => ({ ...r, form: r.form.slice(-5) }));
+  }
+
+  // Verifica: per le ultime giornate giocate, previsione fatta con i soli dati precedenti
+  function backtest(league, rounds = 3) {
+    const played = league.playedM;
+    const byRound = {};
+    played.forEach(m => { const k = m.r || m.d; (byRound[k] = byRound[k] || []).push(m); });
+    const keys = Object.keys(byRound).sort((a, b) => {
+      const da = byRound[a].map(m => m.d).sort()[0], db = byRound[b].map(m => m.d).sort()[0];
+      return da < db ? -1 : 1;
+    }).slice(-rounds);
+    const out = [];
+    keys.forEach(k => {
+      const ms = byRound[k];
+      const first = ms.map(m => m.d).sort()[0];
+      const f = fit(league.prevM.concat(played), first, league.teams, league.prior, league.k);
+      ms.forEach(m => {
+        const p = predict(f, m.h, m.a);
+        const res = m.hg > m.ag ? "1" : m.hg < m.ag ? "2" : "X";
+        out.push({ ...m, round: k, pred: p, res, hit: p.pick === res, tipHit: p.tip.includes(res) });
+      });
+    });
+    return out;
+  }
+
+  // Stato di forma: ultime n partite giocate prima di asOf, confrontate con quello che il modello si aspettava.
+  // Ritorna risultati (V/N/P), punti, gol e due correzioni moderate per attacco e difesa.
+  function form(fitted, matches, team, asOf, n = 5) {
+    const ms = matches.filter(m => m.d < asOf && (m.h === team || m.a === team)).sort((x, y) => x.d < y.d ? -1 : 1).slice(-n);
+    let gf = 0, ga = 0, egf = 0, ega = 0, pts = 0; const res = [];
+    ms.forEach(m => {
+      const home = m.h === team, p = predict(fitted, m.h, m.a);
+      const f = home ? m.hg : m.ag, g = home ? m.ag : m.hg;
+      gf += f; ga += g; egf += home ? p.lh : p.la; ega += home ? p.la : p.lh;
+      res.push(f > g ? "V" : f < g ? "P" : "N"); pts += f > g ? 3 : f === g ? 1 : 0;
+    });
+    // servono almeno 3 partite; effetto massimo ±10%
+    const S = 4, clamp = v => Math.min(1.1, Math.max(0.9, v)), ok = ms.length >= 3;
+    return { res, pts, gf, ga, n: ms.length,
+      att: ok ? clamp((gf + S) / (egf + S)) : 1, def: ok ? clamp((ga + S) / (ega + S)) : 1 };
+  }
+
+  // Rendimento nel contesto della partita: solo le ultime n partite in casa (o solo in trasferta) della squadra,
+  // confrontate con quello che il modello si aspettava. Effetto massimo ±8%.
+  function venue(fitted, matches, team, home, asOf, n = 6) {
+    const ms = matches.filter(m => m.d < asOf && (home ? m.h === team : m.a === team)).sort((x, y) => x.d < y.d ? -1 : 1).slice(-n);
+    let gf = 0, ga = 0, egf = 0, ega = 0, pts = 0;
+    ms.forEach(m => {
+      const p = predict(fitted, m.h, m.a);
+      const f = home ? m.hg : m.ag, g = home ? m.ag : m.hg;
+      gf += f; ga += g; egf += home ? p.lh : p.la; ega += home ? p.la : p.lh; pts += f > g ? 3 : f === g ? 1 : 0;
+    });
+    const S = 5, clamp = v => Math.min(1.08, Math.max(0.92, v)), ok = ms.length >= 3;
+    return { home, n: ms.length, gf, ga, pts, att: ok ? clamp((gf + S) / (egf + S)) : 1, def: ok ? clamp((ga + S) / (ega + S)) : 1 };
+  }
+
+  // Frequenza di Over 2,5 e Goal (segnano entrambe) nelle ultime n partite della squadra
+  function goalFreq(matches, team, asOf, n = 10) {
+    const ms = matches.filter(m => m.d < asOf && (m.h === team || m.a === team)).sort((x, y) => x.d < y.d ? -1 : 1).slice(-n);
+    return { n: ms.length, over: ms.filter(m => m.hg + m.ag > 2).length, gg: ms.filter(m => m.hg > 0 && m.ag > 0).length };
+  }
+
+  // Over/Under e Goal/No Goal: probabilità del modello unita alla frequenza storica delle due squadre (peso massimo 30%)
+  function blendGoals(p, goals) {
+    const fh = goals && goals.h, fa = goals && goals.a;
+    if (!fh || !fa) return p;
+    const n = fh.n + fa.n;
+    if (n < 6) return p;
+    const w = Math.min(0.3, n / 60);
+    const fo = (fh.over + fa.over + 1) / (n + 2), fg = (fh.gg + fa.gg + 1) / (n + 2);
+    const over = (1 - w) * p.over + w * fo, gg = (1 - w) * p.gg + w * fg;
+    return { ...p, over, under: 1 - over, gg, ng: 1 - gg, freqOver: fo, freqGg: fg };
+  }
+
+  // Unisce forma, rendimento casa/trasferta, assenze e impegni di coppa in un'unica correzione per squadra, con limiti prudenti.
+  function combine(fm, news, vn, cup) {
+    const f = k => (fm ? fm[k] : 1) * (news && news[k] || 1) * (vn ? vn[k] : 1) * (cup ? cup[k] : 1);
+    const att = Math.min(1.15, Math.max(0.8, f("att")));
+    const def = Math.min(1.2, Math.max(0.85, f("def")));
+    return { att, def };
+  }
+
+  // Correzioni complete per una partita: forma (per la Champions quella nel proprio campionato) + assenze.
+  // ctx: { fit, played, dom, domestic(code) -> {fit, played} }, news: { "data|squadra": {att, def, out} }
+  // ctx.cup (facoltativo): (squadra, data) -> giorni dalla/alla partita di coppa più vicina entro 3 giorni, altrimenti null
+  function matchAdj(ctx, news, h, a, date) {
+    const side = (team, home) => {
+      let fm = null, vn = null, gf = null, where = "";
+      const dm = ctx.dom && ctx.dom[team];
+      if (dm && ctx.domestic) {
+        const D = ctx.domestic(dm[0]);
+        if (D) { fm = form(D.fit, D.played, dm[1], date); vn = venue(D.fit, D.played, dm[1], home, date); gf = goalFreq(D.played, dm[1], date); where = dm[0]; }
+      }
+      if (!fm) { fm = form(ctx.fit, ctx.played, team, date); vn = venue(ctx.fit, ctx.played, team, home, date); gf = goalFreq(ctx.played, team, date); }
+      const nw = news ? news[date + "|" + team] || null : null;
+      const cd = ctx.cup ? ctx.cup(team, date) : null;
+      // impegno di coppa a ridosso della partita: possibile turnover, effetto prudente del 3%
+      const cup = cd != null ? { att: 0.97, def: 1.03, days: cd } : null;
+      return { form: fm, venue: vn, goals: gf, cup, formWhere: where, news: nw, adj: combine(fm, nw, vn, cup) };
+    };
+    const H = side(h, true), A = side(a, false);
+    return { h: H, a: A, adj: { h: H.adj, a: A.adj }, goals: { h: H.goals, a: A.goals } };
+  }
+
+  return { parseRows, parseFixtures, fit, predict, standings, backtest, form, venue, goalFreq, blendGoals, combine, matchAdj };
+})();
+if (typeof module !== "undefined") module.exports = Model;
+
+</script>
+<script>
+// Sul sito (github.io) non c'è il database di Claude: i dati arrivano dai file data/*.json del sito,
+// e ciò che la pagina salva (schedine fissate) resta sul telefono.
+(() => {
+  if (window.claude || !/github\.io$/.test(location.hostname)) return;
+  // i dati sul sito sono cifrati: senza il codice di Toni non si leggono
+  const ls = { get(k) { try { return JSON.parse(localStorage.getItem(k) || "null"); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
+  const S = crypto.subtle, ub = t => Uint8Array.from(atob(t), c => c.charCodeAt(0)), E = new TextEncoder(), D = new TextDecoder();
+  let keyP = null, saltP = null;
+  const salt = () => saltP || (saltP = fetch("data/salt.txt?v=" + Date.now(), { cache: "no-store" }).then(r => r.text()).then(t => ub(t.trim())));
+  async function derive(code) {
+    const base = await S.importKey("raw", E.encode(code.trim().toUpperCase()), "PBKDF2", false, ["deriveKey"]);
+    return S.deriveKey({ name: "PBKDF2", hash: "SHA-256", salt: await salt(), iterations: 200000 }, base, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
+  }
+  async function open(c, key) {
+    const r = await fetch("data/" + c + ".enc?v=" + Math.floor(Date.now() / 60000), { cache: "no-store" });
+    if (!r.ok) return {};
+    const j = await r.json();
+    return JSON.parse(D.decode(await S.decrypt({ name: "AES-GCM", iv: ub(j.iv) }, key, ub(j.ct))));
+  }
+  function lockScreen(msg) {
+    return new Promise(res => {
+      const go = () => {
+        let box = document.getElementById("lock");
+        if (!box) {
+          box = document.createElement("div"); box.id = "lock";
+          box.innerHTML = `<form style="position:fixed;inset:0;z-index:50;display:grid;place-items:center;background:var(--bg,#07080A);padding:24px max(16px,env(safe-area-inset-left,0px))">
+            <div style="display:grid;gap:12px;max-width:320px;width:100%;color:var(--ink,#F2F4F3)">
+              <div style="font-family:var(--font-display);font-style:italic;font-weight:700;font-size:30px;text-transform:uppercase">Pronostici &amp; Lotto</div>
+              <label for="lock-code" style="font-size:14px">Pagina privata. Inserisci il tuo codice.</label>
+              <input id="lock-code" autocomplete="off" autocapitalize="characters" style="font:inherit;font-size:18px;padding:10px 12px;border-radius:10px;border:1px solid #2C2F35;background:#141519;color:#F2F4F3;letter-spacing:.08em">
+              <button style="font:inherit;font-weight:600;padding:10px;border-radius:10px;border:0;background:#12C25E;color:#03170B;cursor:pointer">Apri</button>
+              <div id="lock-msg" style="font-size:13px;color:#FF6B5E"></div></div></form>`;
+          document.body.appendChild(box);
+        }
+        document.getElementById("lock-msg").textContent = msg || "";
+        const f = box.querySelector("form");
+        f.onsubmit = e => { e.preventDefault(); const v = document.getElementById("lock-code").value; if (v.trim()) res(v); };
+        setTimeout(() => document.getElementById("lock-code")?.focus(), 50);
+      };
+      document.body ? go() : document.addEventListener("DOMContentLoaded", go);
+    });
+  }
+  async function getKey() {
+    let code = ls.get("pr.code"), msg = "";
+    for (;;) {
+      if (!code) code = await lockScreen(msg);
+      try { const k = await derive(code); await open("leagues", k); ls.set("pr.code", code); document.getElementById("lock")?.remove(); return k; }
+      catch (e) { code = null; ls.set("pr.code", null); msg = "Codice non valido. Riprova."; }
+    }
+  }
+  const key = () => keyP || (keyP = getKey());
+  const files = {};
+  const coll = c => files[c] || (files[c] = key().then(k => open(c, k)).catch(() => ({})));
+  const db = {
+    collection(c) { return { onSnapshot(ok) { coll(c).then(m => ok({ docs: Object.entries(m).map(([id, d]) => ({ id, exists: true, data: () => d })), docChanges: () => [] })); return () => {}; } }; },
+    doc(path) {
+      const [c, id] = path.split("/");
+      return {
+        onSnapshot(ok) {
+          coll(c).then(m => {
+            let d = m[id] ?? null;
+            const loc = ls.get("site." + path);
+            if (path === "live/schedine") { if (loc && loc.byDay) d = { ...loc, byDay: { ...loc.byDay, ...((d && d.byDay) || {}) } }; }
+            else if (path === "manual/results") d = loc;
+            ok({ exists: d != null, data: () => d });
+          });
+          return () => {};
+        },
+        async set(v) { ls.set("site." + path, v); }
+      };
+    }
+  };
+  window.claude = { use: async n => n === "db" ? db : null, site: true };
+})();
+</script>
+<script>
+(() => {
+  const SITE = /github\.io$/.test(location.hostname);
+  const ARTIFACT_URL = "https://claude.ai/artifact/4bnLvuuqP2WndYFicmkNyV";
+  const $ = s => document.querySelector(s);
+  const pct = v => Math.round(v * 100);
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const store = {
+    get(k, d) { try { return localStorage.getItem(k) ?? d; } catch { return d; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch {} }
+  };
+  const ORDER = ["it_1", "it_2", "cl", "el", "ecl", "en_1", "es_1", "de_1", "fr_1", "nl_1", "pt_1", "be_1", "no_1", "se_1"];
+  const WHEELS = ["Bari", "Cagliari", "Firenze", "Genova", "Milano", "Napoli", "Palermo", "Roma", "Torino", "Venezia", "Nazionale"];
+  const state = {
+    sec: store.get("pr.sec", "calcio"), league: store.get("pr.league", "it_1"), view: store.get("pr.view", "partite"),
+    wheel: store.get("pr.wheel", "Roma"), leagues: {}, raw: {}, manual: null, lotto: null, se: null, tracking: {}, odds: {}, news: {}, live: null, ready: false, day: null, stake: +store.get("pr.stake20", "20") || 20,
+    mstake: +store.get("pr.mstake20", "20") || 20, mtarget: +store.get("pr.mtarget20", "100") || 100,
+    bf: "tutte", bl: "tutti"
+  };
+  const cache = {};
+
+  const today = () => {
+    const d = new Date(); const z = n => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())}`;
+  };
+  const fmtDay = s => new Date(s + "T12:00:00").toLocaleDateString("it-IT", { weekday: "long", day: "numeric", month: "long" });
+  const fmtShort = s => new Date(s + "T12:00:00").toLocaleDateString("it-IT", { day: "numeric", month: "short" });
+  const fmtStamp = s => { const d = new Date(s.replace("Z", ":00Z")); return isNaN(d) ? s : d.toLocaleString("it-IT", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }); };
+
+  function league(id) {
+    const d = state.leagues[id]; if (!d) return null;
+    const key = id + d.updated + (d._m || "") + today();
+    if (cache[id]?.key === key) return cache[id];
+    const L = { id, key, d, teams: d.teams, prior: d.prior || {}, k: d.k, prevM: Model.parseRows(d.prev), playedM: Model.parseRows(d.played, true),
+      fixtures: Model.parseFixtures(d.fixtures) };
+    L.fit = Model.fit(L.prevM.concat(L.playedM), addDay(today()), L.teams, L.prior, L.k);
+    return cache[id] = L;
+  }
+  function addDay(s) { const d = new Date(s + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() + 1); return d.toISOString().slice(0, 10); }
+
+  function renderChips() {
+    const ids = ORDER.filter(id => state.leagues[id]).concat(Object.keys(state.leagues).filter(id => !ORDER.includes(id)));
+    if (ids.length && !state.leagues[state.league]) state.league = ids[0];
+    const sel = $("#league-sel");
+    if (sel.dataset.ids !== ids.join(",")) {
+      sel.innerHTML = ids.map(id => `<option value="${id}">${esc(state.leagues[id].flag || "")} ${esc(state.leagues[id].name)}</option>`).join("");
+      sel.dataset.ids = ids.join(",");
+    }
+    sel.value = state.league;
+  }
+
+  // ---- analisi: forma, posizione in campionato, assenze ----
+  function domCtx(code) { const D = league(code.replace(".", "_")); return D ? { fit: D.fit, played: D.playedM, D } : null; }
+  // impegni di Champions delle squadre di un campionato nazionale: giorni dalla/alla partita di coppa più vicina (entro 3)
+  const cupCache = {};
+  const CUPS = ["cl", "el", "ecl"];
+  function cupFn(id) {
+    const Cs = CUPS.map(c => state.leagues[c]).filter(C => C && C.dom);
+    if (CUPS.includes(id) || !Cs.length) return null;
+    const key = Cs.map(C => (C.updated || "") + (C._m || "")).join("/");
+    if (cupCache[id]?.key === key) return cupCache[id].fn;
+    const code = id.replace("_", "."), dates = {};
+    Cs.forEach(C => {
+      const add = (d, t) => { const dm = C.dom[t]; if (dm && dm[0] === code) (dates[dm[1]] = dates[dm[1]] || []).push(d); };
+      (C.played || []).forEach(r => { const q = r.split("|"); add(q[0], q[1]); add(q[0], q[2]); });
+      (C.fixtures || []).forEach(r => { const q = r.split("|"); add(q[0], q[2]); add(q[0], q[3]); });
+    });
+    const fn = (team, date) => {
+      let best = null;
+      (dates[team] || []).forEach(d => {
+        const n = Math.round((new Date(d + "T12:00:00Z") - new Date(date + "T12:00:00Z")) / 86400000);
+        if (n !== 0 && Math.abs(n) <= 3 && (best === null || Math.abs(n) < Math.abs(best))) best = n;
+      });
+      return best;
+    };
+    cupCache[id] = { key, fn };
+    return fn;
+  }
+  // pronostico completo: forza + correzioni, poi Over/Under e Goal uniti alla frequenza storica delle due squadre
+  const fullPredict = (L, m, A) => Model.blendGoals(Model.predict(L.fit, m.h, m.a, A.adj), A.goals);
+  function analysis(L, m) {
+    const ctx = { fit: L.fit, played: L.playedM, dom: L.d.dom, domestic: domCtx, cup: cupFn(L.id) };
+    const A = Model.matchAdj(ctx, state.news[L.id] || null, m.h, m.a, m.d);
+    const rankOf = team => {
+      const dm = L.d.dom && L.d.dom[team];
+      const LL = dm ? domCtx(dm[0])?.D : L, name = dm ? dm[1] : team;
+      if (!LL) return null;
+      const tab = Model.standings(LL.playedM, LL.teams), i = tab.findIndex(r => r.n === name);
+      return i < 0 ? null : { pos: i + 1, of: tab.length, pt: tab[i].pt, comp: LL.d.name };
+    };
+    A.h.rank = rankOf(m.h); A.a.rank = rankOf(m.a);
+    return A;
+  }
+  const signPct = v => { const x = Math.round((v - 1) * 100); return (x > 0 ? "+" : x < 0 ? "−" : "±") + Math.abs(x) + "%"; };
+  function analysisHtml(L, m, A, base, p) {
+    const side = (team, S) => {
+      const f = S.form, nw = S.news;
+      const abs = !nw ? `<span class="note">assenze non ancora verificate</span>`
+        : nw.out.length ? nw.out.map(esc).join(", ") : "nessun assente importante";
+      return `<div class="an-team">
+        <b>${esc(team)}</b>
+        <div class="an-row"><span>Campionato</span><span>${S.rank ? `${S.rank.pos}° su ${S.rank.of} in ${esc(S.rank.comp)} · ${S.rank.pt} pt` : "non disponibile"}</span></div>
+        <div class="an-row"><span>Forma</span><span>${f.n ? `<span class="form">${f.res.map(x => `<i class="${x}" title="${x}"></i>`).join("")}</span> ${f.res.join(" ")} · gol ${f.gf}:${f.ga}${S.formWhere ? ` (in campionato)` : ""}` : "poche partite"}</span></div>
+        <div class="an-row"><span>${S.venue && S.venue.home ? "In casa" : "Fuori casa"}</span><span>${S.venue && S.venue.n ? `ultime ${S.venue.n}: ${S.venue.pts} pt · gol ${S.venue.gf}:${S.venue.ga}` : "poche partite"}</span></div>
+        <div class="an-row"><span>Gol</span><span>${S.goals && S.goals.n ? `Over 2,5 in ${S.goals.over} su ${S.goals.n} · Goal in ${S.goals.gg} su ${S.goals.n}` : "poche partite"}</span></div>
+        ${S.cup ? `<div class="an-row"><span>Coppe</span><span>Coppa europea ${S.cup.days > 0 ? `tra ${S.cup.days}` : `${-S.cup.days}`} giorn${Math.abs(S.cup.days) === 1 ? "o" : "i"}${S.cup.days < 0 ? " prima" : ""}: possibile turnover</span></div>` : ""}
+        <div class="an-row"><span>Assenti</span><span>${abs}</span></div>
+        <div class="an-row"><span>Effetto</span><span>gol fatti ${signPct(S.adj.att)} · gol subiti ${signPct(S.adj.def)}</span></div>
+      </div>`;
+    };
+    return `<div><div class="sub">Analisi prima del pronostico</div>
+      <div class="an">${side(m.h, A.h)}${side(m.a, A.a)}</div>
+      <p class="note">Solo forza delle squadre: 1 ${pct(base.p1)}% · X ${pct(base.px)}% · 2 ${pct(base.p2)}%. Con forma, casa/trasferta, coppe e assenze: 1 ${pct(p.p1)}% · X ${pct(p.px)}% · 2 ${pct(p.p2)}%.${p.freqOver != null ? ` Over 2,5 e Goal tengono conto anche della frequenza storica delle due squadre (Over ${pct(p.freqOver)}%, Goal ${pct(p.freqGg)}%).` : ""}</p></div>`;
+  }
+  function trackedRow(id, h, a) {
+    const r = (state.tracking[id]?.preds || []).find(x => { const p = x.split("|"); return p[1] === h && p[2] === a; });
+    if (!r) return null;
+    const p = r.split("|");
+    return { p1: +p[3], px: +p[4], p2: +p[5], pick: p[6], tip: p[7], conf: p[8], over: +p[9], gg: +p[10], exact: p[11] };
+  }
+
+  // parziale letto all'ultimo aggiornamento (solo partite di oggi ancora in corso)
+  // minuto di gioco: quello della fonte se c'è, altrimenti stimato da calcio d'inizio e ora della lettura
+  function playMinute(st, kickoff, read) {
+    if (/^\d+\+?\d*'?$/.test(st.trim())) return { txt: st.replace(/'?$/, "'"), est: false };
+    if (/intervallo/i.test(st)) return { txt: "intervallo", est: false };
+    if (!kickoff || !read) return { txt: st, est: false };
+    const mins = s => { const [h, m] = s.split(":").map(Number); return h * 60 + m; };
+    let e = mins(read) - mins(kickoff);
+    if (e < 0) e += 1440;
+    if (e <= 47) return { txt: Math.max(1, e) + "'", est: true };
+    if (e <= 62) return { txt: /2°/.test(st) ? "46'" : "intervallo", est: !/2°/.test(st) };
+    const m = e - 15;
+    return { txt: m > 90 ? "90'+" : m + "'", est: true };
+  }
+  function liveFor(id, h, a, kickoff) {
+    const ml = state.manual; let lv = state.live;
+    if (ml && ml.liveDate === today() && (ml.live || []).some(x => { const p = x.split("|"); return p[0] === id && p[1] === h && p[2] === a; }))
+      lv = { date: ml.liveDate, read: ml.liveRead, games: ml.live };
+    if (!lv || lv.date !== today()) return null;
+    const r = (lv.games || []).find(x => { const p = x.split("|"); return p[0] === id && p[1] === h && p[2] === a; });
+    if (!r) return null;
+    const p = r.split("|");
+    if (!kickoff) kickoff = state.leagues[id] ? (league(id)?.fixtures.find(f => f.h === h && f.a === a)?.t || "") : "";
+    const min = playMinute(p[5] || "", kickoff, lv.read);
+    const list = s => (s || "").split(";").map(x => x.trim()).filter(x => x && x !== "-");
+    return { hg: +p[3], ag: +p[4], st: p[5], goals: list(p[6]), reds: list(p[7]), read: lv.read, min };
+  }
+  const minTxt = lv => `${esc(lv.min.txt)}${lv.min.est ? " circa" : ""}`;
+  const eventsHtml = lv => (lv.goals.length || lv.reds.length) ? `<div class="events">
+      ${lv.goals.map(g => `<span class="ev"><span class="ball-ic" aria-hidden="true"></span>${esc(g.replace(/^\?\s*/, "gol "))}</span>`).join("")}
+      ${lv.reds.map(r => `<span class="ev"><span class="red-ic" title="espulsione"></span>espulso ${esc(r)}</span>`).join("")}
+    </div>` : "";
+  const liveBadge = lv => `<div class="live"><span class="dot"></span>In corso <b class="num">${lv.hg}-${lv.ag}</b> · <b class="min">${minTxt(lv)}</b> <span class="note">letto alle ${esc(lv.read)}</span></div>${eventsHtml(lv)}`;
+
+  // quota del consiglio (1, X, 2, 1X, X2) dalle quote medie
+  function tipOdd(tip, q) {
+    if (!q) return null;
+    const [H, D, A] = q;
+    return { "1": H, "X": D, "2": A, "1X": 1 / (1 / H + 1 / D), "X2": 1 / (1 / D + 1 / A), "12": 1 / (1 / H + 1 / A) }[tip] || null;
+  }
+  // riga importo/vincita di una partita: verde se vincente, rosso se perdente (finita o in corso)
+  function stakeLine(tip, odd, res, lv) {
+    const st = state.stake;
+    if (!odd) return `<div class="stake-line"><span>Consiglio <b>${esc(tip)}</b></span><span class="note">quota non ancora disponibile</span></div>`;
+    const q = odd.toFixed(2).replace(".", ",");
+    const base = `<span>Consiglio <b>${esc(tip)}</b> · quota <b>${q}</b> · importo <b>${euro(st)}</b></span>`;
+    if (res) {
+      const ok = hit(tip, res);
+      return `<div class="stake-line ${ok ? "win" : "lose"}">${base}<span>${ok ? `vinto <b>${euro(st * odd)}</b>` : `perso <b>${euro(st)}</b> · vincita possibile era ${euro(st * odd)}`}</span></div>`;
+    }
+    if (lv) {
+      const ok = hit(tip, lv);
+      return `<div class="stake-line ${ok ? "win" : "lose"}">${base}<span>${ok ? "per ora vincente" : "per ora perdente"} · vincita possibile <b>${euro(st * odd)}</b></span></div>`;
+    }
+    return `<div class="stake-line">${base}<span>vincita possibile <b>${euro(st * odd)}</b></span></div>`;
+  }
+
+  // ---- giocate speciali: "vince almeno un tempo" e "vince o va in vantaggio di 2 gol" ----
+  // partita divisa in 90 minuti (45% dei gol nel primo tempo, 55% nel secondo); si segue la differenza reti minuto per minuto
+  function specials(lh, la) {
+    const pois = (l, k) => { let p = Math.exp(-l); for (let i = 1; i <= k; i++) p *= l / i; return p; };
+    const half = f => { let w = 0, d = 0, l = 0; for (let i = 0; i <= 8; i++) for (let j = 0; j <= 8; j++) { const p = pois(lh * f, i) * pois(la * f, j); if (i > j) w += p; else if (i < j) l += p; else d += p; } return { w, d, l }; };
+    const h1 = half(0.45), h2 = half(0.55);
+    // differenza reti da -7 a +7; segno se una squadra è già stata avanti di 2
+    const N = 7, idx = d => d + N;
+    let st = new Map([["0|0|0", 1]]);
+    for (let t = 0; t < 90; t++) {
+      const f = t < 45 ? 0.45 / 45 : 0.55 / 45, ph = lh * f, pa = la * f, p0 = 1 - ph - pa, nx = new Map();
+      st.forEach((p, k) => {
+        const [d, a2, b2] = k.split("|").map(Number);
+        [[d, p0], [Math.min(N, d + 1), ph], [Math.max(-N, d - 1), pa]].forEach(([nd, q]) => {
+          const key = nd + "|" + (a2 || nd >= 2 ? 1 : 0) + "|" + (b2 || nd <= -2 ? 1 : 0);
+          nx.set(key, (nx.get(key) || 0) + p * q);
+        });
+      });
+      st = nx;
+    }
+    let hp2 = 0, ap2 = 0;
+    st.forEach((p, k) => { const [d, a2, b2] = k.split("|").map(Number); if (d > 0 || a2) hp2 += p; if (d < 0 || b2) ap2 += p; });
+    return { homeHalf: 1 - (1 - h1.w) * (1 - h2.w), awayHalf: 1 - (1 - h1.l) * (1 - h2.l), homePlus2: hp2, awayPlus2: ap2 };
+  }
+  // stessi gol attesi corretti finché 1 e 2 coincidono con quelli delle quote: la stima "secondo il bookmaker"
+  function marketLambdas(lh, la, q) {
+    const m1 = marketProb("1", q), m2 = marketProb("2", q);
+    const pr = (a, b) => { let p1 = 0, p2 = 0; const P = (l, k) => { let x = Math.exp(-l); for (let i = 1; i <= k; i++) x *= l / i; return x; };
+      for (let i = 0; i <= 9; i++) for (let j = 0; j <= 9; j++) { const p = P(a, i) * P(b, j); if (i > j) p1 += p; else if (i < j) p2 += p; } return [p1, p2]; };
+    let a = lh, b = la;
+    for (let it = 0; it < 30; it++) { const [p1, p2] = pr(a, b); a *= Math.pow(m1 / Math.max(p1, 0.01), 0.5); b *= Math.pow(m2 / Math.max(p2, 0.01), 0.5); }
+    return [a, b];
+  }
+  function specialsHtml(m, p, q) {
+    const S = specials(p.lh, p.la), M = q ? (([a, b]) => specials(a, b))(marketLambdas(p.lh, p.la, q)) : null;
+    const rows = [[`${m.h} vince almeno un tempo`, "homeHalf"], [`${m.a} vince almeno un tempo`, "awayHalf"],
+      [`${m.h} vince o va in vantaggio di 2 gol`, "homePlus2"], [`${m.a} vince o va in vantaggio di 2 gol`, "awayPlus2"]];
+    return `<div><div class="sub">Altre giocate</div><div class="tbl-wrap"><table>
+      <thead><tr><th class="t">Giocata</th><th>Modello</th><th>Quote</th><th>Quota giusta</th></tr></thead>
+      <tbody>${rows.map(([t, k]) => { const lo = Math.min(S[k], M ? M[k] : S[k]);
+        return `<tr><td class="t" style="white-space:normal">${esc(t)}</td><td>${pct(S[k])}%</td><td>${M ? pct(M[k]) + "%" : "–"}</td><td>${(1 / lo).toFixed(2).replace(".", ",")}</td></tr>`; }).join("")}</tbody></table></div>
+      <p class="note">Il bookmaker non pubblica queste quote sui siti che leggo: la «quota giusta» è quella sotto cui la giocata non conviene (calcolata sulla stima più prudente tra modello e quote 1X2). Se la quota del tuo bookmaker è più alta, la giocata ha valore. Non entrano nelle schedine automatiche perché manca la quota vera.</p></div>`;
+  }
+  function matchCard(L, m, pending) {
+    const A = analysis(L, m);
+    const base = Model.predict(L.fit, m.h, m.a);
+    const p = fullPredict(L, m, A);
+    const w = v => Math.max(v * 100, 9).toFixed(1);
+    const fair = v => (1 / v).toFixed(2);
+    const q = oddsFor(L.id, m.h, m.a);
+    const sels = q ? selections(p, q) : [];
+    const best = sels.filter(x => isValue(x)).sort((a, b) => b.ev - a.ev)[0];
+    return `<details class="match${pending ? " pending" : ""}">
+      <summary>
+        <div class="row1">
+          <div class="time">${pending ? "—" : esc(m.t || "")}</div>
+          <div class="teams"><div>${esc(m.h)}</div><div>${esc(m.a)}</div></div>
+          <div class="tip ${p.conf}"><b>${p.tip}</b><small>${pending ? "in attesa" : "fiducia " + p.conf}</small></div>
+        </div>
+        <div class="bar" role="img" aria-label="Probabilità: 1 ${pct(p.p1)}%, X ${pct(p.px)}%, 2 ${pct(p.p2)}%">
+          <span class="b1" style="flex-basis:${w(p.p1)}%">1 · ${pct(p.p1)}%</span>
+          <span class="bx" style="flex-basis:${w(p.px)}%">X · ${pct(p.px)}%</span>
+          <span class="b2" style="flex-basis:${w(p.p2)}%">2 · ${pct(p.p2)}%</span>
+        </div>
+        ${q ? `<div class="odds-line"><span>Quote medie</span><b>1</b> ${q[0].toFixed(2)} <b>X</b> ${q[1].toFixed(2)} <b>2</b> ${q[2].toFixed(2)}${best ? ` <em class="value">valore su ${best.k}</em>` : ""}</div>` : ""}
+        ${(() => { const tr = trackedRow(L.id, m.h, m.a), tip = tr ? tr.tip : p.tip; return stakeLine(tip, tipOdd(tip, q), null, liveFor(L.id, m.h, m.a)); })()}
+        ${(() => { const lv = liveFor(L.id, m.h, m.a); return lv ? liveBadge(lv) : ""; })()}
+      </summary>
+      <div class="more">
+        ${analysisHtml(L, m, A, base, p)}
+        <div class="kv">
+          <div><span>Gol attesi</span><b>${p.lh.toFixed(1)} – ${p.la.toFixed(1)}</b></div>
+          <div><span>Over 2,5</span><b>${pct(p.over)}%</b></div>
+          <div><span>Goal</span><b>${pct(p.gg)}%</b></div>
+          <div><span>1X</span><b>${pct(p.p1 + p.px)}%</b></div>
+          <div><span>X2</span><b>${pct(p.px + p.p2)}%</b></div>
+          <div><span>Under 2,5</span><b>${pct(p.under)}%</b></div>
+        </div>
+        ${specialsHtml(m, p, q)}
+        <div><div class="sub">Risultati esatti più probabili</div>
+          <div class="scores">${p.top.map(s => `<div class="score">${s[0]}-${s[1]}<small>${pct(s[2])}%</small></div>`).join("")}</div></div>
+        ${q ? `<div class="tbl-wrap"><table>
+          <thead><tr><th class="t">Scommessa</th><th>Modello</th><th>Quota</th><th>Valore</th></tr></thead>
+          <tbody>${sels.map(x => `<tr><td class="t">${x.k}</td><td>${pct(x.prob)}%</td><td>${x.odd.toFixed(2)}</td>
+            <td class="${isValue(x) ? "ok" : ""}">${x.ev >= 0 ? "+" : ""}${pct(x.ev)}%</td></tr>`).join("")}</tbody></table></div>`
+        : `<div class="note">Quote "giuste" secondo il modello: 1 a ${fair(p.p1)}, X a ${fair(p.px)}, 2 a ${fair(p.p2)}. Le quote dei bookmaker non sono ancora disponibili.</div>`}
+      </div>
+    </details>`;
+  }
+
+  // partita finita: risultato e pronostico fatto prima della partita
+  function resultCard(L, m) {
+    const t = trackedRow(L.id, m.h, m.a);
+    const res = m.hg > m.ag ? "1" : m.hg < m.ag ? "2" : "X";
+    const ok = t ? t.tip.includes(res) : null;
+    return `<div class="match"><div style="padding:12px 14px;display:grid;gap:8px">
+      <div class="row1">
+        <div class="time num" style="font-size:22px;color:var(--ink)">${m.hg}-${m.ag}</div>
+        <div class="teams"><div>${esc(m.h)}</div><div>${esc(m.a)}</div></div>
+        <div class="tip">${t ? `<b>${t.tip}</b><small class="${ok ? "ok" : "ko"}">${ok ? "✓ indovinato" : "✗ sbagliato"}</small>` : `<small>nessun pronostico salvato</small>`}</div>
+      </div>
+      ${t ? `<div class="note">Pronostico prima della partita: 1 ${pct(t.p1)}% · X ${pct(t.px)}% · 2 ${pct(t.p2)}%</div>` : ""}
+      ${t ? stakeLine(t.tip, tipOdd(t.tip, oddsFor(L.id, m.h, m.a)), m, null) : ""}
+    </div></div>`;
+  }
+
+  function viewPartite(L) {
+    const t = today(), y = addDays(t, -1);
+    const todayFx = L.fixtures.filter(f => f.d === t);
+    const pend = L.fixtures.filter(f => f.d < t && f.d >= y);
+    const playedT = L.playedM.filter(m => m.d === t), playedY = L.playedM.filter(m => m.d === y);
+    let html = `<div class="filters"><button class="chip" data-v="scommesse">Vedi le schedine del giorno</button>${liveLink(L.id, "Risultati in diretta " + L.d.name)}</div>`;
+    if (todayFx.length || playedT.length) {
+      html += `<div class="filters"><label for="stake" class="note"><b>Importo per scommessa</b> (modificabile)</label>
+        <input id="stake" type="number" min="1" step="1" inputmode="decimal" value="${state.stake}" style="width:80px;padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink)"> <span class="note">€</span></div>
+        <div class="day">Oggi · ${fmtDay(t)}</div><p class="note">Tocca una partita per l'analisi (forma, classifica, assenti) e tutte le probabilità.</p>
+        <div class="list">${playedT.map(m => resultCard(L, m)).join("")}${todayFx.map(m => matchCard(L, m, false)).join("")}</div>`;
+    } else {
+      const nx = L.fixtures.find(f => f.d > t);
+      html += `<div class="empty">Oggi nessuna partita di ${esc(L.d.name)}.${nx ? `<br>Prossima giornata: ${fmtDay(nx.d)}. I pronostici compaiono il giorno della partita.` : ""}</div>`;
+    }
+    if (playedY.length || pend.length) {
+      html += `<div class="day">Ieri · ${fmtDay(y)}</div>
+        <div class="list">${playedY.map(m => resultCard(L, m)).join("")}${pend.map(m => matchCard(L, m, true)).join("")}</div>`;
+    }
+    return html;
+  }
+  function addDays(s, n) { const d = new Date(s + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); }
+
+  function viewClassifica(L) {
+    const rows = Model.standings(L.playedM, L.teams);
+    const f = L.fit;
+    const power = Object.fromEntries(L.teams.map(t => [t, (f.att[t] ?? 1) / (f.def[t] ?? 1)]));
+    const maxP = Math.max(...Object.values(power));
+    return `<div class="tbl-wrap"><table>
+      <thead><tr><th class="t" colspan="2">Squadra</th><th>Pt</th><th>G</th><th>V</th><th>N</th><th>P</th><th>Gol</th><th class="t">Forma</th><th class="t">Forza modello</th></tr></thead>
+      <tbody>${rows.map((r, i) => `<tr><td class="pos">${i + 1}</td><td class="t">${esc(r.n)}</td><td class="pt">${r.pt}</td><td>${r.g}</td><td>${r.v}</td><td>${r.x}</td><td>${r.p}</td><td>${r.gf}:${r.gs}</td>
+        <td class="t"><span class="form">${r.form.map(x => `<i class="${x}" title="${x}"></i>`).join("")}</span></td>
+        <td class="t"><div class="strength" title="${power[r.n].toFixed(2)}"><i style="width:${(power[r.n] / maxP * 100).toFixed(0)}%"></i></div></td></tr>`).join("")}</tbody>
+    </table></div>
+    <p class="note">La forza del modello combina gol fatti e subiti pesando di più le partite recenti. Una squadra può essere in alto in classifica con una forza più bassa: spesso è un segnale che sta raccogliendo più di quanto produce.</p>`;
+  }
+
+  function viewVerifica(L) {
+    if (!L.bt) L.bt = Model.backtest(L, 3);
+    const bt = L.bt;
+    if (!bt.length) return `<div class="empty">Servono almeno alcune giornate giocate per la verifica.</div>`;
+    const hit = bt.filter(x => x.hit).length, tipHit = bt.filter(x => x.tipHit).length;
+    return `<div class="summary">
+        <div class="stat"><b class="num">${pct(hit / bt.length)}%</b><span>esito 1X2 indovinato (${hit} su ${bt.length})</span></div>
+        <div class="stat"><b class="num">${pct(tipHit / bt.length)}%</b><span>consiglio indovinato, doppia chance inclusa</span></div>
+      </div>
+      <p class="note">Ultime ${new Set(bt.map(x => x.round)).size} giornate, previste usando solo i dati disponibili prima di ciascuna. Un buon modello nel calcio sta intorno al 50%: il pareggio è difficile da prevedere per chiunque.</p>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th class="t">Data</th><th class="t">Partita</th><th>Ris.</th><th>Prev.</th><th>1·X·2 %</th><th></th></tr></thead>
+        <tbody>${bt.slice().reverse().map(x => `<tr><td class="t">${fmtShort(x.d)}</td><td class="t">${esc(x.h)} – ${esc(x.a)}</td>
+          <td>${x.hg}-${x.ag}</td><td>${x.pred.tip}</td><td>${pct(x.pred.p1)}·${pct(x.pred.px)}·${pct(x.pred.p2)}</td>
+          <td class="${x.tipHit ? "ok" : "ko"}">${x.tipHit ? "✓" : "✗"}</td></tr>`).join("")}</tbody>
+      </table></div>`;
+  }
+
+  // ---- giocate "sulla casistica": ritardi e frequenze nello storico raccolto ----
+  // spareggio stabile: a parità di ritardo/frequenza decide un numero pseudo-casuale fissato dalla data dell'ultima estrazione
+  const tie = (seed, n) => { let h = 2166136261; for (const c of seed + "#" + n) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return (h >>> 0) / 4294967296; };
+  const numsOf = s => String(s || "").trim().split(/\s+/).map(Number).filter(Boolean);
+  // ritardo di ogni numero 1-90 (estrazioni dall'ultima uscita; null = mai uscito nello storico) e frequenza nelle ultime `recent` estrazioni
+  function stats(lists, recent) {
+    const delay = Array(91).fill(null), freq = Array(91).fill(0), all = Array(91).fill(0);
+    lists.forEach((ns, i) => ns.forEach(n => { if (delay[n] === null) delay[n] = i; all[n]++; if (i < recent) freq[n]++; }));
+    return { delay, freq, all, N: lists.length };
+  }
+  const dl = (st, n) => st.delay[n] === null ? st.N : st.delay[n];
+  function lottoPlay(draws) {
+    if (draws.length < 3) return null;
+    const seed = draws[0].date;
+    let best = null;
+    WHEELS.filter(w => w !== "Nazionale").forEach(w => {
+      const st = stats(draws.map(d => numsOf(d.ruote?.[w])), 8);
+      const late = Array.from({ length: 90 }, (_, i) => i + 1)
+        .sort((a, b) => dl(st, b) - dl(st, a) || st.all[a] - st.all[b] || tie(seed + w, a) - tie(seed + w, b));
+      const score = dl(st, late[0]) + dl(st, late[1]) + tie(seed, w) * 0.01;
+      if (!best || score > best.score) best = { w, st, late, score };
+    });
+    const { w, st, late } = best;
+    const pair = late.slice(0, 2);
+    // numero "caldo": il più uscito di recente su quella ruota (escluso l'ultimo estratto appena uscito)
+    const hot = Array.from({ length: 90 }, (_, i) => i + 1).filter(n => !pair.includes(n))
+      .sort((a, b) => st.freq[b] - st.freq[a] || st.all[b] - st.all[a] || tie(seed + "h" + w, a) - tie(seed + "h" + w, b))[0];
+    return { w, nums: [...pair, hot], st, pair, hot };
+  }
+  function sePlay(se) {
+    const draws = (se?.draws || []).slice().sort((a, b) => a.date < b.date ? 1 : -1);
+    if (draws.length < 3) return null;
+    const seed = draws[0].date;
+    const st = stats(draws.map(d => numsOf(d.numeri)), 10);
+    const all = Array.from({ length: 90 }, (_, i) => i + 1);
+    const late = all.slice().sort((a, b) => dl(st, b) - dl(st, a) || tie(seed, a) - tie(seed, b)).slice(0, 4);
+    const hot = all.filter(n => !late.includes(n))
+      .sort((a, b) => st.freq[b] - st.freq[a] || tie(seed + "h", a) - tie(seed + "h", b)).slice(0, 2);
+    return { draws, st, late, hot, nums: [...late, ...hot].sort((a, b) => a - b) };
+  }
+  const ballRow = (ns, mark) => `<div class="balls">${ns.map(n => `<span class="ball"${mark && mark.includes(n) ? ' style="background:var(--accent);color:var(--accent-ink)"' : ""}>${n}</span>`).join("")}</div>`;
+  function lottoPlayHtml(draws) {
+    const g = lottoPlay(draws);
+    if (!g) return "";
+    const d = n => dl(g.st, n) >= g.st.N ? `mai uscito nelle ${g.st.N} estrazioni raccolte` : `assente da ${dl(g.st, n)} estrazioni`;
+    return `<div class="ticket">
+      <div class="sub">La giocata del Lotto · terno su ${esc(g.w)}</div>
+      ${ballRow(g.nums, [g.hot])}
+      <div class="note"><b>${g.pair[0]}</b> e <b>${g.pair[1]}</b>: i ritardatari di ${esc(g.w)} (${d(g.pair[0])}; ${d(g.pair[1])}). <b>${g.hot}</b> (evidenziato): il numero più uscito di recente su ${esc(g.w)} (${g.st.freq[g.hot]} volte nelle ultime 8 estrazioni), la scelta "che potrebbe uscire".</div>
+      <div class="note">Gioca ambo e terno su ${esc(g.w)}. Probabilità per estrazione: almeno un ambo circa 1 su 134, il terno 1 su 11.748.</div>
+    </div>`;
+  }
+  function viewSE() {
+    const g = sePlay(state.se);
+    if (!g) return `<div class="day">SuperEnalotto</div><div class="empty">Le estrazioni del SuperEnalotto compaiono qui dopo il prossimo aggiornamento.</div>`;
+    const last = g.draws[0];
+    const d = n => dl(g.st, n) >= g.st.N ? `mai uscito nelle ultime ${g.st.N}` : `assente da ${dl(g.st, n)} estrazioni`;
+    return `<div class="day">SuperEnalotto · ${fmtDay(last.date)}</div>
+      <div class="draw" style="padding:10px 14px;display:grid;gap:8px">
+        ${ballRow(numsOf(last.numeri).sort((p, q) => p - q))}
+        <div class="note">Jolly <b>${last.jolly}</b> · SuperStar <b>${last.superstar}</b></div>
+      </div>
+      <div class="ticket">
+        <div class="sub">La giocata del SuperEnalotto · 6 numeri</div>
+        ${ballRow(g.nums, g.hot)}
+        <div class="note"><b>Ritardatari</b>: ${g.late.map(n => `<b>${n}</b> (${d(n)})`).join(", ")}. <b>Più frequenti</b> nelle ultime 10 estrazioni (evidenziati): ${g.hot.map(n => `<b>${n}</b> (${g.st.freq[n]} volte)`).join(", ")}.</div>
+        <div class="note">Probabilità di fare 6: 1 su 622.614.630 per ogni combinazione, qualunque numeri si scelgano.</div>
+      </div>
+      <div class="day">Estrazioni precedenti</div>
+      <div class="tbl-wrap"><table><thead><tr><th class="t">Data</th><th class="t">Sestina</th><th>Jolly</th><th>SS</th></tr></thead>
+        <tbody>${g.draws.slice(1, 16).map(x => `<tr><td class="t">${fmtShort(x.date)}</td><td class="t num" style="font-size:16px;letter-spacing:.04em">${numsOf(x.numeri).sort((p, q) => p - q).join(" · ")}</td><td>${x.jolly}</td><td>${x.superstar}</td></tr>`).join("")}</tbody></table></div>
+      <p class="note">Ritardi e frequenze sono calcolati sulle ${g.st.N} estrazioni raccolte finora: lo storico si allunga a ogni aggiornamento.</p>`;
+  }
+
+  function viewLotto() {
+    const L = state.lotto;
+    const draws = (L?.draws || []).slice().sort((a, b) => a.date < b.date ? 1 : -1);
+    if (!draws.length) return `<div class="empty">Le estrazioni compaiono qui dopo il primo aggiornamento.</div>`;
+    const last = draws[0];
+    const nums = s => String(s || "").trim().split(/\s+/).map(Number).filter(Boolean);
+    const w = state.wheel;
+    // frequenza e ritardo sulla ruota scelta, nelle estrazioni raccolte
+    const freq = Array(91).fill(0), delay = Array(91).fill(null);
+    draws.forEach((d, i) => nums(d.ruote?.[w]).forEach(n => { freq[n]++; if (delay[n] === null) delay[n] = i; }));
+    const N = draws.length;
+    let cells = "";
+    for (let n = 1; n <= 90; n++) {
+      const f = freq[n], cls = f >= 3 ? "h3" : f === 2 ? "h2" : f === 1 ? "h1" : "";
+      const dl = delay[n] === null ? `>${N}` : delay[n];
+      cells += `<div class="cell ${cls}" title="${n}: uscito ${f} volte, ritardo ${dl}">${n}<small>${dl}</small></div>`;
+    }
+    return `<div class="callout">Il Lotto è casuale: a ogni estrazione ogni numero ha la stessa probabilità, circa 1 su 18 di uscire su una ruota, qualunque cosa sia uscita prima. Frequenze e ritardi qui sotto sono solo statistiche, non pronostici: le giocate "sulla casistica" seguono i ritardi come chiesto, ma non aumentano le probabilità di vincere.</div>
+      ${lottoPlayHtml(draws)}
+      <div class="day">Estrazione di ${fmtDay(last.date)}</div>
+      <div class="draw" role="group" aria-label="Ruote">${WHEELS.map(r => `<div class="wheel" role="button" tabindex="0" data-w="${r}" aria-pressed="${r === w}">
+        <div class="wn">${r}</div><div class="balls">${nums(last.ruote?.[r]).map(n => `<span class="ball">${n}</span>`).join("")}</div></div>`).join("")}</div>
+      <div class="day" style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+        <span>Statistiche ${esc(w)}</span>
+        <label class="note" for="wheel-sel" hidden>Ruota</label>
+        <select id="wheel-sel">${WHEELS.map(r => `<option ${r === w ? "selected" : ""}>${r}</option>`).join("")}</select>
+      </div>
+      <div class="board">${cells}</div>
+      <p class="note">Su ${N} estrazioni raccolte finora. Colore più intenso = uscito più volte; il numero piccolo è il ritardo (estrazioni dall'ultima uscita). Lo storico cresce a ogni aggiornamento.</p>
+      <div class="day">Estrazioni precedenti</div>
+      <div class="tbl-wrap"><table><thead><tr><th class="t">Data</th><th class="t">${esc(w)}</th></tr></thead>
+        <tbody>${draws.slice(1, 16).map(d => `<tr><td class="t">${fmtShort(d.date)}</td><td class="t num" style="font-size:16px;letter-spacing:.04em">${nums(d.ruote?.[w]).join(" · ")}</td></tr>`).join("")}</tbody></table></div>
+      ${viewSE()}`;
+  }
+
+  // Bilancio: pronostici congelati prima della partita confrontati con i risultati
+  function evaluate() {
+    const done = [], waiting = [];
+    Object.entries(state.tracking).forEach(([id, t]) => {
+      const lg = state.leagues[id]; if (!lg) return;
+      const played = Model.parseRows(lg.played, true);
+      const idx = new Map(played.map(m => [m.h + "|" + m.a, m]));
+      (t.preds || []).forEach(r => {
+        const p = r.split("|");
+        const e = { id, league: lg.name, d: p[0], h: p[1], a: p[2], p1: +p[3], px: +p[4], p2: +p[5], pick: p[6], tip: p[7],
+          conf: p[8], over: +p[9], gg: +p[10], exact: p[11], frozen: p[12], rebuilt: p[13] === "R" };
+        const m = idx.get(e.h + "|" + e.a);
+        if (!m || m.d < e.frozen) { waiting.push(e); return; }
+        const res = m.hg > m.ag ? "1" : m.hg < m.ag ? "2" : "X";
+        Object.assign(e, { hg: m.hg, ag: m.ag, pd: m.d, res,
+          k1x2: e.pick === res, ktip: e.tip.includes(res),
+          kou: (e.over >= 0.5) === (m.hg + m.ag > 2.5), kgg: (e.gg >= 0.5) === (m.hg > 0 && m.ag > 0),
+          kex: e.exact === `${m.hg}-${m.ag}` });
+        done.push(e);
+      });
+    });
+    done.sort((a, b) => a.pd < b.pd ? 1 : a.pd > b.pd ? -1 : a.league.localeCompare(b.league));
+    waiting.sort((a, b) => a.d < b.d ? -1 : 1);
+    return { done, waiting };
+  }
+  const rate = (arr, k) => arr.length ? arr.filter(x => x[k]).length / arr.length : 0;
+
+
+  // ---- quote dei bookmaker ----
+  const oddsCache = {};
+  function oddsFor(id, h, a) {
+    const o = state.odds[id]; if (!o) return null;
+    if (oddsCache[id]?.src !== o) {
+      oddsCache[id] = { src: o, map: new Map((o.rows || []).map(r => { const p = r.split("|"); return [p[1] + "|" + p[2], p.slice(3).map(Number)]; })) };
+    }
+    return oddsCache[id].map.get(h + "|" + a) || null;
+  }
+  // scommesse possibili su una partita: probabilità del modello, quota media, valore atteso
+  function selections(p, q) {
+    const [H, D, A, O, U, G, N] = q;
+    return [["1", p.p1, H], ["X", p.px, D], ["2", p.p2, A], ["1X", p.p1 + p.px, 1 / (1 / H + 1 / D)],
+      ["X2", p.px + p.p2, 1 / (1 / D + 1 / A)], ["Over 2,5", p.over, O], ["Under 2,5", p.under, U],
+      ["Goal", p.gg, G], ["No Goal", p.ng, N]]
+      .filter(x => x[2] > 1).map(([k, prob, odd]) => ({ k, prob, odd, ev: prob * odd - 1 }));
+  }
+
+  // valore credibile: il modello vede più probabilità della quota, ma non troppa (oltre 20 punti è più facile che sbagli il modello)
+  const isValue = x => x.prob >= 0.35 && x.ev >= 0.07 && x.prob - 1 / x.odd <= 0.2;
+  // la scommessa più affidabile su una partita (una sola per partita)
+  function safest(p, sels, needOdds) {
+    let c = sels ? sels.filter(x => x.odd >= 1.2 && 1 / x.odd >= 0.5)
+      : [["1", p.p1], ["X", p.px], ["2", p.p2], ["1X", p.p1 + p.px], ["X2", p.px + p.p2], ["Over 2,5", p.over], ["Under 2,5", p.under]]
+          .map(([k, prob]) => ({ k, prob, odd: null, ev: null }));
+    // Over/Under: se il bookmaker non ha ancora la quota, lo valuto lo stesso (quota n.d.)
+    if (sels && !needOdds && !sels.some(x => x.k === "Over 2,5")) {
+      c.push({ k: "Over 2,5", prob: p.over, odd: null, ev: null }, { k: "Under 2,5", prob: p.under, odd: null, ev: null });
+    }
+    // doppia chance solo sulla favorita, e solo se l'esito secco non è già abbastanza sicuro
+    c = c.filter(x => !(x.k === "1X" && p.p1 < p.p2) && !(x.k === "X2" && p.p2 < p.p1) && x.k !== "X");
+    const single = c.find(x => (x.k === "1" || x.k === "2") && x.prob >= 0.65);
+    if (single) c = c.filter(x => x.k !== "1X" && x.k !== "X2");
+    // la scommessa con più garanzie; a parità (entro 2 punti) preferisco quella con la quota disponibile
+    c.sort((a, b) => (b.prob - a.prob) || 0);
+    const best = c[0];
+    if (best && !best.odd) {
+      const alt = c.find(x => x.odd && best.prob - x.prob <= 0.02);
+      if (alt) return alt;
+    }
+    return best || null;
+  }
+
+
+  function dayLabel(d) {
+    const t = today();
+    if (d === t) return "Oggi";
+    if (d === addDays(t, -1)) return "Ieri";
+    if (d === addDays(t, 1)) return "Domani";
+    return new Date(d + "T12:00:00").toLocaleDateString("it-IT", { weekday: "short", day: "numeric", month: "short" });
+  }
+  // risultati in diretta su un sito esterno (si apre in una nuova scheda, non consuma l'utilizzo di Claude)
+  const LIVE_URL = { it_1: "italia/serie-a", it_2: "italia/serie-b", cl: "europa/champions-league", el: "europa/europa-league", ecl: "europa/conference-league", en_1: "inghilterra/premier-league",
+    en_2: "inghilterra/championship", es_1: "spagna/laliga", de_1: "germania/bundesliga", fr_1: "francia/ligue-1",
+    nl_1: "olanda/eredivisie", pt_1: "portogallo/liga-portugal", be_1: "belgio/jupiler-pro-league",
+    no_1: "norvegia/eliteserien", se_1: "svezia/allsvenskan" };
+  const liveLink = (id, txt) => `<a class="chip livelink" href="https://www.diretta.it/calcio/${LIVE_URL[id] || ""}${LIVE_URL[id] ? "/" : ""}" target="_blank" rel="noopener noreferrer"><span class="dot"></span>${esc(txt)}</a>`;
+  const euro = v => v.toLocaleString("it-IT", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
+
+  // scommesse di un giorno passato: dai pronostici salvati prima della partita, con l'esito
+  function trackedRows(day) {
+    const out = [];
+    Object.entries(state.tracking).forEach(([id, tr]) => {
+      const lg = state.leagues[id]; if (!lg) return;
+      const played = new Map(Model.parseRows(lg.played, true).map(m => [m.h + "|" + m.a, m]));
+      (tr.preds || []).forEach(r => {
+        const p = r.split("|"); if (p[0] !== day) return;
+        const pr = { p1: +p[3], px: +p[4], p2: +p[5], over: +p[9], under: 1 - +p[9], gg: +p[10], ng: 1 - +p[10] };
+        const m = { d: p[0], t: "", h: p[1], a: p[2] };
+        const q = oddsFor(id, m.h, m.a), sels = q ? selections(pr, q) : null;
+        const res = played.get(m.h + "|" + m.a);
+        out.push({ id, L: { d: lg }, m, p: pr, q, sels, s: safest(pr, sels), past: true, res: res && res.d >= p[12] ? res : null });
+      });
+    });
+    return out;
+  }
+  function hit(k, res) {
+    const h = res.hg, a = res.ag;
+    return { "1": h > a, "X": h === a, "2": h < a, "1X": h >= a, "X2": h <= a, "Over 2,5": h + a > 2, "Under 2,5": h + a < 3,
+      "Goal": h > 0 && a > 0, "No Goal": h === 0 || a === 0 }[k];
+  }
+
+  // esito della multipla: persa appena sbaglia una partita, vinta quando le indovina tutte
+  function multiOutcome(top, odd) {
+    const ko = top.filter(r => r.res && !hit(r.s.k, r.res)).length;
+    if (ko) return `<b class="ko">✗ persa</b> (${ko} pronostic${ko === 1 ? "o sbagliato" : "i sbagliati"}): avresti perso ${euro(state.mstake)} invece di vincere ${euro(state.mstake * odd)}`;
+    if (top.every(r => r.res)) return `<b class="ok">✓ vinta: incassi ${euro(state.mstake * odd)}</b> (guadagno ${euro(state.mstake * (odd - 1))})`;
+    const done = top.filter(r => r.res).length;
+    return done ? `in corso · ${done} su ${top.length} già indovinat${done === 1 ? "o" : "i"}` : "da giocare";
+  }
+
+  // riepilogo di un gruppo di scommesse: tutte in singola e tutte in multipla
+  function totals(list, pick) {
+    const xs = list.map(r => ({ r, s: pick(r) })).filter(x => x.s && x.s.odd);
+    if (xs.length < 2) return "";
+    const st = state.stake, tot = st * xs.length;
+    const sumWin = xs.reduce((a, x) => a + st * x.s.odd, 0);
+    const q = xs.reduce((a, x) => a * x.s.odd, 1), p = xs.reduce((a, x) => a * x.s.prob, 1);
+    const done = xs.filter(x => x.r.res);
+    let real = "";
+    if (done.length) {
+      const back = done.reduce((a, x) => a + (hit(x.s.k, x.r.res) ? st * x.s.odd : 0), 0);
+      const net = back - st * done.length;
+      real = ` Finora (${done.length} finite): incassi ${euro(back)}, ${net >= 0 ? "guadagno" : "perdita"} ${euro(Math.abs(net))}.`;
+    }
+    return `<div class="note" style="background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 12px">
+      <b>In singola</b>: ${xs.length} giocate da ${euro(st)} = ${euro(tot)}; se vincono tutte incassi ${euro(sumWin)}.${real}<br>
+      <b>In multipla</b>: le quote si moltiplicano, quota ${q.toFixed(2)} → con ${euro(st)} vinci ${euro(st * q)}, solo se le indovini tutte (${pct(p)}% secondo il modello).</div>`;
+  }
+
+  // ---- risultati inseriti a mano o incollati da Diretta (salvati in "manual/results") ----
+  let dbRef = null;
+  function toast(msg) {
+    let el = document.getElementById("toast");
+    if (!el) { el = document.createElement("div"); el.id = "toast"; el.className = "toast"; el.setAttribute("role", "status"); document.body.appendChild(el); }
+    el.textContent = msg; el.hidden = false;
+    clearTimeout(toast.t); toast.t = setTimeout(() => { el.hidden = true; }, 8000);
+  }
+  // i risultati inseriti spostano la partita da "da giocare" a "giocata" finché l'aggiornamento ufficiale non la registra
+  function mergeManual() {
+    const rows = (state.manual?.rows || []).map(r => r.split("|"));
+    const out = {};
+    Object.entries(state.raw).forEach(([id, d]) => {
+      const mine = rows.filter(p => p[0] === id);
+      if (!mine.length) { out[id] = d; return; }
+      const fx = [], played = d.played.slice();
+      d.fixtures.forEach(f => {
+        const q = f.split("|"), m = mine.find(p => p[2] === q[2] && p[3] === q[3]);
+        if (m && q[0] <= today()) played.push([q[0], q[2], q[3], m[4], m[5], q[4] || ""].join("|")); else fx.push(f);
+      });
+      out[id] = { ...d, fixtures: fx, played: played.sort(), _m: state.manual?.updated || "1" };
+    });
+    state.leagues = out;
+  }
+  const normName = s => String(s).normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ø/gi, "o").replace(/æ/gi, "ae").replace(/ß/g, "ss").toLowerCase();
+  const STOP = new Set(["fc", "cf", "ac", "as", "sc", "ss", "us", "if", "fk", "sk", "kv", "afc", "cd", "rc", "sv", "bk", "club", "de", "la"]);
+  const toks = s => normName(s).split(/[^a-z0-9]+/).filter(t => t && !STOP.has(t));
+  const ALIAS_D = { "man. city": ["manchester city"], "man. united": ["manchester utd", "manchester united"], "psg": ["paris sg", "paris saint germain"],
+    "bayern monaco": ["bayern"], "bayern münchen": ["bayern"], "stoccarda": ["stuttgart"], "lipsia": ["lipsia", "leipzig"], "bruges": ["club brugge", "brugge"],
+    "barcellona": ["barcellona", "barcelona"], "atletico madrid": ["atl. madrid", "atletico"], "hellas verona": ["verona"], "union saint-gilloise": ["union sg", "st. gilloise"],
+    "standard liège": ["st. liegi", "standard"], "fenerbahçe": ["fenerbahce"], "ifk göteborg": ["goteborg", "gothenburg"], "sporting cp": ["sporting"], "aek atene": ["aek", "aek athens"], "slovan": ["slovan bratislava"],
+    "b. dortmund": ["dortmund", "borussia dortmund"], "lask": ["lask linz"], "real betis": ["betis"], "inter": ["inter", "internazionale"] };
+  function nameMatch(team, line) {
+    const L = normName(line).trim(), T = normName(team).trim();
+    if (!L || /^\d/.test(L)) return false;
+    const k = x => x.replace(/[^a-z0-9]/g, "");
+    if (k(L) === k(T)) return true;
+    if ((ALIAS_D[team.toLowerCase()] || []).some(a => k(normName(a)) === k(L) || (k(L).includes(k(normName(a))) && k(normName(a)).length >= 5))) return true;
+    if (k(T).length >= 4 && k(L).length >= 4 && (k(L).includes(k(T)) || k(T).includes(k(L)))) return true;
+    const tt = toks(team).filter(t => t.length >= 3), lt = toks(line);
+    return tt.length > 0 && tt.every(t => lt.some(x => x.startsWith(t) || t.startsWith(x) && x.length >= 4));
+  }
+  // partite da cui accettare un risultato: non ancora registrate, dall'altro ieri a oggi
+  function openMatches() {
+    const out = [], t = today(), from = addDays(t, -2);
+    Object.entries(state.raw).forEach(([id, d]) => (d.fixtures || []).forEach(f => {
+      const q = f.split("|"); if (q[0] >= from && q[0] <= t) out.push({ id, d: q[0], t: q[1], h: q[2], a: q[3] });
+    }));
+    return out;
+  }
+  // legge il testo copiato da Diretta: cerca casa e trasferta vicine e i due numeri del punteggio
+  // testo normalizzato in parole: minuscole senza accenti; restano cifre, apostrofo del minuto e i due punti degli orari
+  const wordsOf = t => normName(t).replace(/[’`´]/g, "'").replace(/[^a-z0-9':+]+/g, " ").trim().split(" ").filter(Boolean);
+  function variants(team) {
+    const v = [team, ...(ALIAS_D[team.toLowerCase()] || [])].map(x => wordsOf(x).filter(w => !STOP.has(w) && !(w.length === 1 && /[a-z]/.test(w))));
+    const full = v.filter(x => x.length).sort((p, q) => q.length - p.length);
+    // anche una sola parola lunga del nome (es. "Betis" per Real Betis, "Shakhtar"): la partita è comunque cercata in coppia con l'avversario
+    const single = [...new Set(full.flat().filter(w => w.length >= 5 && /[a-z]/.test(w)))].map(w => [w]);
+    return full.concat(single);
+  }
+  function findSeq(W, seq, from) {
+    const out = [];
+    for (let i = from || 0; i <= W.length - seq.length; i++) {
+      let ok = true;
+      for (let k = 0; k < seq.length; k++) {
+        const w = W[i + k], s = seq[k];
+        if (!(w === s || (s.length >= 4 && w.startsWith(s)) || (w.length >= 4 && s.startsWith(w) && k === seq.length - 1 && seq.length > 1))) { ok = false; break; }
+      }
+      if (ok) out.push([i, i + seq.length]);
+    }
+    return out;
+  }
+  // legge il testo copiato da Diretta (una riga per voce oppure "Casa - Trasferta 2-1" sulla stessa riga)
+  function parsePaste(text) {
+    const W = wordsOf(text);
+    const isNum = w => /^\d{1,2}$/.test(w) && +w <= 30;
+    const hasLetter = w => /[a-z]/.test(w);
+    const found = [];
+    openMatches().forEach(m => {
+      const hv = variants(m.h), av = variants(m.a);
+      let done = false;
+      for (const h of hv) {
+        for (const [hs, he] of findSeq(W, h)) {
+          for (const a of av) {
+            const hit = findSeq(W, a, he).find(([as]) => as - he <= 6);
+            if (!hit) continue;
+            const [as, ae] = hit;
+            const between = W.slice(he, as).filter(isNum).map(Number);
+            const after = [];
+            // Diretta può ripetere il nome della squadra (es. "Como / Como / 3 / 2"): salto le parole del nome e mi fermo alla squadra successiva
+            const awayWords = new Set(wordsOf(m.a).concat(...av));
+            for (let k = ae; k < Math.min(ae + 10, W.length); k++) {
+              if (hasLetter(W[k])) { if (awayWords.has(W[k]) || STOP.has(W[k]) || av.some(x => x.some(y => W[k].startsWith(y) && y.length >= 4))) continue; break; }
+              if (isNum(W[k])) after.push(+W[k]);
+            }
+            let hg = null, ag = null;
+            if (between.length === 1 && after.length >= 1) { hg = between[0]; ag = after[0]; }
+            else if (!between.length && after.length >= 2) { hg = after[0]; ag = after[1]; }
+            else if (between.length >= 2) { hg = between[0]; ag = between[1]; }
+            if (hg === null) continue;
+            const pre = W.slice(Math.max(0, hs - 4), hs).join(" ");
+            const minute = pre.match(/(\d{1,3}(?:\+\d{1,2})?)'/);
+            let live;
+            if (/(finale|fine|terminata|rigori|dts|\bft\b)/.test(pre)) live = false;
+            else if (minute || /(primo tempo|secondo tempo|intervallo|in corso|live)/.test(pre)) live = true;
+            else {
+              const [hh, mm] = (m.t || "00:00").split(":").map(Number), now = new Date();
+              live = m.d >= today() && now.getHours() * 60 + now.getMinutes() - (hh * 60 + mm) < 115;
+            }
+            const st = minute ? minute[1] + "'" : /intervallo/.test(pre) ? "intervallo" : /secondo tempo/.test(pre) ? "2° tempo" : /primo tempo/.test(pre) ? "1° tempo" : "";
+            found.push({ ...m, hg, ag, live, st });
+            done = true; break;
+          }
+          if (done) break;
+        }
+        if (done) break;
+      }
+    });
+    return found;
+  }
+  const hhmm = () => { const d = new Date(), z = n => String(n).padStart(2, "0"); return z(d.getHours()) + ":" + z(d.getMinutes()); };
+  async function saveManual(finals, lives) {
+    if (!dbRef) { toast("Per salvare i risultati apri la pagina da claude.ai o dall'app Claude."); return false; }
+    const cur = state.manual || {}, keep = addDays(today(), -14);
+    const key = r => r.split("|").slice(0, 4).join("|");
+    const rows = new Map((cur.rows || []).filter(r => r.split("|")[1] >= keep).map(r => [key(r), r]));
+    finals.forEach(f => { const r = [f.id, f.d, f.h, f.a, f.hg, f.ag].join("|"); rows.set(key(r), r); });
+    const finalKeys = new Set(finals.map(f => f.id + "|" + f.h + "|" + f.a));
+    let live = cur.liveDate === today() ? (cur.live || []) : [];
+    live = live.filter(x => { const p = x.split("|"); return !finalKeys.has(p[0] + "|" + p[1] + "|" + p[2]) && !lives.some(l => l.id === p[0] && l.h === p[1] && l.a === p[2]); });
+    lives.forEach(l => live.push([l.id, l.h, l.a, l.hg, l.ag, l.st || "in corso", "", ""].join("|")));
+    const data = { rows: [...rows.values()].sort(), live, liveDate: today(), liveRead: lives.length ? hhmm() : (cur.liveRead || hhmm()),
+      updated: new Date().toISOString() };
+    try { await dbRef.doc("manual/results").set(data); state.manual = data; mergeManual(); return true; }
+    catch (e) { toast("Non sono riuscito a salvare: " + (e?.message || "errore")); return false; }
+  }
+  function importPanel(tickets) {
+    const legs = [...new Map(tickets.flat().filter(r => !r.res).map(r => [r.id + "|" + r.m.h + "|" + r.m.a, r])).values()];
+    const open = openMatches();
+    const opts = legs.filter(r => open.some(o => o.id === r.id && o.h === r.m.h && o.a === r.m.a));
+    return `<details class="card" id="imp"${state.impOpen ? " open" : ""}><summary style="padding:10px 14px;cursor:pointer;font-weight:600;color:var(--muted);font-size:13px">Solo se serve: inserire un risultato a mano</summary>
+      <div style="padding:0 14px 14px;display:grid;gap:8px">
+        <p class="note">1) Apri «Risultati in diretta», tieni premuto sulla pagina e scegli <b>Seleziona tutto</b>, poi <b>Copia</b>. 2) Torna qui, tieni premuto nel riquadro e scegli <b>Incolla</b>. 3) Premi <b>Importa</b>. I risultati finiti segnano ✓ o ✗; quelli ancora in corso compaiono come parziali.</p>
+        <textarea id="paste" rows="4" placeholder="Incolla qui il testo copiato da Diretta" style="width:100%;font:inherit;font-size:16px;padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink)"></textarea>
+        <button class="chip" id="do-import" style="justify-self:start;background:var(--accent);color:var(--accent-ink);border-color:var(--accent)">Importa</button>
+        <div id="imp-out" class="note"></div>
+        ${opts.length ? `<div class="sub" style="margin-top:4px">Oppure scrivi tu il risultato finale</div>
+        ${opts.map((r, k) => `<div style="display:grid;grid-template-columns:1fr 70px;gap:8px;align-items:center">
+          <span style="min-width:0;font-size:14px">${esc(r.m.h)} – ${esc(r.m.a)}</span>
+          <input class="man-in" data-k="${k}" data-id="${esc(r.id)}" data-d="${esc(r.m.d)}" data-h="${esc(r.m.h)}" data-a="${esc(r.m.a)}" placeholder="2-1" inputmode="text" style="font:inherit;font-size:16px;padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink)">
+        </div>`).join("")}
+        <button class="chip" id="do-manual" style="justify-self:start">Salva risultati scritti</button>` : ""}
+        ${(state.manual?.rows || []).length ? `<button class="chip" id="undo-manual" style="justify-self:start">Cancella i risultati inseriti a mano</button>` : ""}
+      </div></details>`;
+  }
+
+  function viewScommesse() {
+    const t = today(), last = addDays(t, 3), all = []; // oggi e i 3 giorni successivi (e ieri con l'esito)
+    const ids = ORDER.filter(id => state.leagues[id]).concat(Object.keys(state.leagues).filter(id => !ORDER.includes(id)));
+    ids.forEach(id => {
+      const L = league(id); if (!L) return;
+      L.fixtures.filter(f => f.d >= t && f.d <= last).forEach(m => {
+        const p = fullPredict(L, m, analysis(L, m)), q = oddsFor(id, m.h, m.a);
+        const sels = q ? selections(p, q) : null;
+        all.push({ id, L, m, p, q, sels, s: safest(p, sels) });
+      });
+    });
+    const yesterday = addDays(t, -1);
+    const past = trackedRows(yesterday).filter(r => r.s);
+    const upDays = all.some(r => r.m.d === t) || trackedRows(t).length || frozenFor(t) ? [t] : [];
+    const days = (past.length ? [yesterday] : []).concat(upDays);
+    if (!days.length) return `<div class="empty">Né ieri né oggi ci sono partite delle competizioni seguite.</div>`;
+    if (!days.includes(state.day)) state.day = upDays[0] || days[0];
+    const isPast = state.day === yesterday;
+    let rows;
+    if (isPast) rows = past;
+    else if (state.day === t) {
+      // oggi: i pronostici salvati stamattina (con l'esito se la partita è finita) + eventuali partite non salvate
+      const tracked = trackedRows(t).filter(r => r.s).map(r => ({ ...r, past: !!r.res }));
+      const keys = new Set(tracked.map(r => r.id + "|" + r.m.h + "|" + r.m.a));
+      const live = all.filter(r => r.m.d === t && !keys.has(r.id + "|" + r.m.h + "|" + r.m.a));
+      tracked.forEach(r => { const f = all.find(x => x.id === r.id && x.m.h === r.m.h && x.m.a === r.m.a); if (f) r.m.t = f.m.t; });
+      rows = tracked.concat(live);
+    } else if (state.day === "next3") {
+      // oggi (partite non ancora finite) e i 2 giorni successivi insieme
+      const tr = trackedRows(t).filter(r => r.s && !r.res);
+      tr.forEach(r => { const f = all.find(x => x.id === r.id && x.m.h === r.m.h && x.m.a === r.m.a); if (f) r.m.t = f.m.t; });
+      const keys = new Set(tr.map(r => r.id + "|" + r.m.h + "|" + r.m.a));
+      rows = tr.concat(all.filter(r => r.m.d <= addDays(t, 2) && !keys.has(r.id + "|" + r.m.h + "|" + r.m.a)));
+    } else rows = all.filter(r => r.m.d === state.day);
+    const stake = state.mstake;
+    const withOdds = rows.filter(r => r.q).length;
+    const win = odd => odd ? `vinci ${euro(stake * odd)}` : "quota in arrivo";
+    const outcome = (r, s) => {
+      if (!r.res) {
+        const lv = liveFor(r.id, r.m.h, r.m.a);
+        if (!lv) return `<b>risultato in arrivo</b>`;
+        const ok = hit(s.k, lv);
+        return `<span class="live-inline"><span class="dot"></span>in corso ${lv.hg}-${lv.ag} ${lv.min.txt === "intervallo" ? "all'intervallo" : "al " + minTxt(lv)}</span> (letto alle ${esc(lv.read)}) · per ora <b class="${ok ? "ok" : "ko"}">${ok ? "✓" : "✗"}</b>${eventsHtml(lv)}`;
+      }
+      const ok = hit(s.k, r.res);
+      return `finita ${r.res.hg}-${r.res.ag} · <b class="${ok ? "ok" : "ko"}">${ok ? "✓ indovinata" : "✗ sbagliata"}</b>`;
+    };
+    const line = (r, s = r.s) => `<div class="bet">
+        <div class="m">${esc(r.m.h)} – ${esc(r.m.a)}</div>
+        <div class="sel"><b>${esc(s.k)}</b><small>${s.odd ? "quota " + s.odd.toFixed(2) : "quota n.d."}</small></div>
+        <div class="meta">${r.m.t ? esc(r.m.t) + " · " : ""}modello ${pct(s.prob)}% · ${r.past ? outcome(r, s) : `<b>${win(s.odd)}</b>`}${s.ev != null && !r.past ? ` · valore ${s.ev >= 0 ? "+" : ""}${pct(s.ev)}%` : ""}</div>
+      </div>`;
+    let html = `<div class="callout">Nessuna scommessa è sicura: anche un esito al 75% fallisce una volta su quattro. Gioca solo cifre che puoi permetterti di perdere. Il gioco è vietato ai minori.</div>
+      <div class="chips" role="group" aria-label="Giorno">${days.map(d => `<button class="chip" data-day="${d}" aria-pressed="${d === state.day}">${d === "next3" ? "Prossimi 3 giorni" : dayLabel(d)}</button>`).join("")}</div>
+      <div class="filters" style="row-gap:8px">
+        <label for="mstake" class="note"><b>Giocata</b></label>
+        <input id="mstake" type="number" min="1" step="1" inputmode="decimal" value="${stake}" style="width:70px;font:inherit;padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink)"> <span class="note">€</span>
+        <label for="mtarget" class="note" style="margin-left:8px"><b>Vincita sopra</b></label>
+        <input id="mtarget" type="number" min="2" step="1" inputmode="decimal" value="${state.mtarget}" style="width:70px;font:inherit;padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink)"> <span class="note">€</span>
+      </div>`;
+    // multipla: più favorite insieme, scelte per indice di favore, finché la quota supera vincita/giocata
+    const need = state.mtarget / stake;
+    // schedine nuove di oggi: solo partite non ancora iniziate
+    if (state.day === t && !frozenFor(t)) rows = rows.filter(r => !r.res && !started(r) && !liveFor(r.id, r.m.h, r.m.a));
+    const built = buildTickets(rows), frozen = state.day !== "next3" ? frozenFor(state.day) : null;
+    const tickets = frozen ? frozen.tickets : built.tickets, picks = built.picks, short = built.short;
+    const lowered = !frozen && built.need < need - 0.001;
+    // le schedine di oggi si formulano solo dopo «Prepara le schedine di oggi» (risultati, quote e assenze controllati);
+    // poi si fissano e non cambiano più
+    if (!frozen && state.day === t && state.prep?.date !== t) return html + prepHtml();
+    if (!frozen && state.day === t && tickets.length) saveSched(n => { n.byDay[t] = { stake, tickets: tickets.map(tk => tk.map(dehyd)) }; });
+    const fmtQ = v => v.toFixed(2).replace(".", ",");
+    const dayTxt = state.day === "next3" ? "dei prossimi 3 giorni" : isPast ? "di ieri" : state.day === t ? "di oggi" : "· " + fmtDay(state.day);
+    if (!tickets.length) {
+      const why = !rows.length ? "Nessuna partita in questo giorno."
+        : !picks.length ? "Le quote dei bookmaker per questo giorno non sono ancora uscite, oppure non ci sono favorite abbastanza affidabili."
+        : `Con le favorite affidabili di questo giorno (${picks.length}) si arriva al massimo a quota ${fmtQ(short || 1)}: non basta per superare ${euro(state.mtarget)} con ${euro(stake)} (serve quota sopra ${fmtQ(need)}).${days.includes("next3") && state.day !== "next3" ? " Prova «Prossimi 3 giorni»." : ""}`;
+      return html + `<div class="empty">${why}</div>`;
+    }
+    const names = tickets.map((tk, i) => i === 0 ? "Schedina 1 · la più affidabile" : tk.every(r => /Over|Under|Goal/.test(r.s.k)) ? `Schedina ${i + 1} · gol` : `Schedina ${i + 1}`);
+    html += `<div class="day">Le schedine ${dayTxt}</div>`;
+    if (lowered) html += `<p class="note callout">Con le sole giocate sicure ${state.day === today() ? "oggi" : "in questo giorno"} non si arriva a ${euro(state.mtarget)}: le schedine puntano a quota ${fmtQ(built.need)}, cioè ${euro(stake)} che diventano circa ${euro(stake * built.need)} o poco più. Si vince meno, ma si perde molto meno spesso.</p>`;
+    if (state.day !== "next3") html += recoveryHtml(state.day, tickets, frozen, stake, fmtQ);
+    { const ids = [...new Set(tickets.flat().map(r => r.id))];
+      html += `<div class="filters"><span class="note">Risultati in diretta:</span>${ids.map(id => liveLink(id, state.leagues[id]?.name || id)).join("")}${liveLink("", "Tutte le partite")}</div>`;
+      html += importPanel(tickets); }
+    if (tickets.length < 3) html += `<p class="note">Con le favorite affidabili di questo giorno ${tickets.length === 1 ? "c'è una sola schedina sicura" : "ci sono solo " + tickets.length + " schedine sicure diverse"}: le altre partite non superano i controlli.${days.includes("next3") && state.day !== "next3" ? " Con «Prossimi 3 giorni» ci sono più partite tra cui scegliere." : ""}</p>`;
+    const keyOf = r => r.id + "|" + r.m.h;
+    let played = 0, won = 0, net = 0;
+    tickets.forEach((tk, i) => {
+      const q = tk.reduce((a, r) => a * r.s.odd, 1), pr = tk.reduce((a, r) => a * r.s.prob, 1);
+      const pm = tk.every(r => r.s.mkt != null) ? tk.reduce((a, r) => a * r.s.mkt, 1) : null, anyEst = tk.some(r => r.s.est);
+      const lost = tk.some(r => r.res && !hit(r.s.k, r.res)), allDone = tk.every(r => r.res);
+      if (lost || allDone) { played++; if (!lost) { won++; net += stake * (q - 1); } else net -= stake; }
+      html += `<div class="ticket"${i ? ' style="border-color:var(--line)"' : ""}>
+        <div class="sub">${names[i]} · ${tk.length} partite${(() => { const sh = tickets.slice(0, i).map((o, j) => o.some(x => tk.some(y => keyOf(x) === keyOf(y))) ? j + 1 : 0).filter(Boolean); return sh.length ? ` · ha partite in comune con la schedina ${sh.join(" e ")}` : ""; })()}</div>
+        ${tk.map(r => `<div style="display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:baseline">
+            <span style="min-width:0;font-weight:600">${esc(r.m.h)} – ${esc(r.m.a)}${r.res ? ` <span class="note">${r.res.hg}-${r.res.ag}</span>` : ""}</span>
+            <b style="white-space:nowrap">${esc(r.s.k)} · ${fmtQ(r.s.odd)}${r.s.est ? "*" : ""}${r.res ? (hit(r.s.k, r.res) ? ' <span class="ok">✓</span>' : ' <span class="ko">✗</span>') : ""}</b>
+            <span class="note">${r.m.d !== state.day ? esc(dayLabel(r.m.d)) + " " : ""}${r.m.t ? esc(r.m.t) + " · " : ""}${esc(r.L.d.name)} · indice di favore <b>${pct(r.s.prob)}</b> (${r.s.mkt == null ? `solo modello ${pct(r.s.model)}%, prudenzialmente ${pct(r.s.prob)}, quota stimata` : `modello ${pct(r.s.model)}%, bookmaker ${pct(r.s.mkt)}%${r.s.edge ? ", con valore" : ""}`})${(() => { if (r.res) return ""; const lv = liveFor(r.id, r.m.h, r.m.a); return lv ? ` · <span class="live-inline"><span class="dot"></span>in corso ${lv.hg}-${lv.ag} ${lv.min.txt === "intervallo" ? "all'intervallo" : "al " + minTxt(lv)}</span> per ora ${hit(r.s.k, lv) ? '<span class="ok">✓</span>' : '<span class="ko">✗</span>'}${eventsHtml(lv)}` : ""; })()}</span><span></span>
+          </div>`).join("")}
+        <div class="note">Quota: ${tk.map(r => fmtQ(r.s.odd) + (r.s.est ? "*" : "")).join(" × ")} = <b>${fmtQ(q)}</b>${anyEst ? `<br>* quota stimata dal modello: il bookmaker non l'ha ancora pubblicata, controlla la quota reale prima di giocare.` : ""}</div>
+        ${(() => {
+          const wonT = tk.every(r => r.res && hit(r.s.k, r.res));
+          const liveBad = !lost && tk.some(r => !r.res && (() => { const lv = liveFor(r.id, r.m.h, r.m.a); return lv && !hit(r.s.k, lv); })());
+          const cls = lost ? "lose" : wonT ? "win" : liveBad ? "lose" : tk.some(r => r.res || liveFor(r.id, r.m.h, r.m.a)) ? "win" : "";
+          return `<div class="money-box ${cls}">
+            <div><span>Giocata</span><b class="num">${euro(stake)}</b></div>
+            <div><span>Quota</span><b class="num">${fmtQ(q)}</b></div>
+            <div><span>${lost ? "Vincita persa" : wonT ? "Vinto" : "Vincita"}</span><b class="num">${euro(stake * q)}</b></div>
+          </div>`;
+        })()}
+        <div class="note" style="font-size:14px">Esito: ${multiOutcome(tk, q)}</div>
+        <div class="note">Si vince solo se sono giuste tutte e ${tk.length}: circa il <b>${pct(pr)}%</b> delle volte secondo l'indice${pm != null ? ` (${pct(pm)}% secondo le quote dei bookmaker)` : ""}.</div>
+      </div>`;
+    });
+    if (played) html += `<p class="note">Esito: ${won} schedine vinte su ${played} concluse, ${net >= 0 ? "guadagno" : "perdita"} ${euro(Math.abs(net))} con ${euro(stake)} su ognuna.</p>`;
+    html += `<p class="note"><b>Come è costruita.</b> Ogni mattina, con «Prepara le schedine di oggi», controllo i dati di tutte le partite: risultati delle ultime giornate, quote dei bookmaker e assenti. Poi per ogni partita il pronostico incrocia forza delle squadre, forma delle ultime 5, rendimento in casa di chi gioca in casa e fuori di chi gioca fuori, classifica, assenze e quote. Entrano in schedina solo le giocate con tutti i dati controllati, su cui modello e bookmaker sono d'accordo e coerenti con forma, rendimento, classifica e assenze (per i gol anche con la frequenza di Over e Goal delle due squadre). Le schedine hanno da 2 a 5 partite e quota sopra ${fmtQ(need)}, o più bassa se con le sole giocate sicure non ci si arriva. Ogni errore delle schedine passate alza in automatico le soglie per il tipo di giocata o il campionato che ha sbagliato.</p>
+      <p class="note">Una schedina a quota ${fmtQ(need)} si perde più spesso di quanto si vinca: anche con favorite forti si vince circa 1 volta su 3 o 4, e il margine del bookmaker si moltiplica a ogni partita aggiunta.</p>`;
+    html += winRateHtml(tickets, stake);
+    return html;
+  }
+
+  // riquadro della schedina di recupero: compare appena una schedina del giorno risulta persa
+  function recoveryHtml(day, tickets, frozen, stake, fmtQ) {
+    // il recupero parte solo quando i risultati hanno dato perdenti TUTTE le schedine del giorno; altrimenti si va avanti
+    const lostN = tickets.filter(ticketLost).length;
+    const R = frozen && frozen.recovery;
+    if (!R && (!tickets.length || lostN < tickets.length)) return "";
+    const head = `<div class="sub" style="color:var(--bad)">Schedina di recupero · ${lostN === 1 ? "1 schedina persa" : lostN + " schedine perse"} = ${euro(lostN * (frozen?.stake || stake))}</div>`;
+    if (!R) {
+      if (day < today()) return "";
+      if (state.prep?.date !== today()) return `<div class="ticket" style="border-color:var(--warn)">${head}<p class="note">La schedina di recupero si formula dopo aver controllato i dati delle partite di stasera e di domani (quote, assenze, risultati).</p>${mcpRef ? `<button class="chip" id="prep-btn" ${+store.get("pr.prep", "0") + PREP_WAIT > Date.now() ? "disabled" : ""} style="justify-self:start;background:var(--accent);color:var(--accent-ink);border-color:var(--accent)">${+store.get("pr.prep", "0") + PREP_WAIT > Date.now() ? "Controllo dei dati in corso… (10 minuti circa)" : "Controlla i dati e prepara il recupero"}</button>` : ""}</div>`;
+      const B = buildRecovery(lostN, stake);
+      if (B.legs) {
+        saveSched(n => {
+          const D = n.byDay[day] || (n.byDay[day] = { stake, tickets: tickets.map(tk => tk.map(dehyd)) });
+          if (!D.recovery) D.recovery = { lost: lostN * stake, stake, need: B.need, full: B.full, legs: B.legs.map(dehyd) };
+        });
+        return `<div class="ticket" style="border-color:var(--warn)">${head}<p class="note">Preparo la schedina di recupero…</p></div>`;
+      }
+      return `<div class="ticket" style="border-color:var(--warn)">${head}<p class="note">Per ora nessuna schedina di recupero: tra le partite di stasera e di domani non ancora iniziate non ci sono abbastanza giocate sicure (bookmaker e modello d'accordo, coerenti con forma, classifica e assenze) per arrivare a quota ${fmtQ(B.need)}${B.maxQ > 1 ? ` (si arriva a ${fmtQ(B.maxQ)})` : ""}. Riapri più tardi: con le quote nuove può comparire.</p></div>`;
+    }
+    const tk = R.legs, q = tk.reduce((a, r) => a * r.s.odd, 1), pr = tk.reduce((a, r) => a * r.s.prob, 1);
+    const lost = ticketLost(tk), won = tk.every(r => r.res && hit(r.s.k, r.res));
+    return `<div class="ticket" style="border-color:var(--warn)">${head}
+      <p class="note">Una sola schedina con le partite più sicure non ancora iniziate: ${q * R.stake - R.stake >= R.lost - 0.005 ? `se vince copre i ${euro(R.lost)} persi e la nuova giocata da ${euro(R.stake)}` : `con le sole giocate sicure non si recuperano tutti i ${euro(R.lost)}: se vince ne recupera ${euro(q * R.stake - R.stake)}`}.</p>
+      ${tk.map(r => `<div style="display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:baseline">
+          <span style="min-width:0;font-weight:600">${esc(r.m.h)} – ${esc(r.m.a)}${r.res ? ` <span class="note">${r.res.hg}-${r.res.ag}</span>` : ""}</span>
+          <b style="white-space:nowrap">${esc(r.s.k)} · ${fmtQ(r.s.odd)}${r.res ? (hit(r.s.k, r.res) ? ' <span class="ok">✓</span>' : ' <span class="ko">✗</span>') : ""}</b>
+          <span class="note">${esc(dayLabel(r.m.d))}${r.m.t ? " " + esc(r.m.t) : ""} · ${esc(r.L.d.name)} · indice <b>${pct(r.s.prob)}</b> (modello ${pct(r.s.model)}%, bookmaker ${pct(r.s.mkt)}%)${(() => { if (r.res) return ""; const lv = liveFor(r.id, r.m.h, r.m.a); return lv ? ` · <span class="live-inline"><span class="dot"></span>in corso ${lv.hg}-${lv.ag} ${lv.min.txt === "intervallo" ? "all'intervallo" : "al " + minTxt(lv)}</span> per ora ${hit(r.s.k, lv) ? '<span class="ok">✓</span>' : '<span class="ko">✗</span>'}` : ""; })()}</span><span></span>
+        </div>`).join("")}
+      <div class="note">Quota: ${tk.map(r => fmtQ(r.s.odd)).join(" × ")} = <b>${fmtQ(q)}</b></div>
+      <div class="money-box ${lost ? "lose" : won ? "win" : ""}">
+        <div><span>Giocata</span><b class="num">${euro(R.stake)}</b></div>
+        <div><span>Quota</span><b class="num">${fmtQ(q)}</b></div>
+        <div><span>${lost ? "Vincita persa" : won ? "Vinto" : "Vincita"}</span><b class="num">${euro(R.stake * q)}</b></div>
+      </div>
+      <div class="note" style="font-size:14px">Esito: ${lost ? `<b class="ko">✗ persa</b>. Non ne propongo un'altra: inseguire le perdite con nuove giocate le fa solo crescere.` : won ? `<b class="ok">✓ vinta: incassi ${euro(R.stake * q)}, recuperati i ${euro(R.lost)} persi</b>` : "da giocare / in corso"}</div>
+      <div class="note">Si vince se sono giuste tutte e ${tk.length}: circa il <b>${pct(pr)}%</b> delle volte. È una giocata virtuale: anche il recupero si può perdere.</div>
+    </div>`;
+  }
+
+  // ---- perché una giocata è andata male, e cosa ne impara la selezione ----
+  function whyLost(r) {
+    const s = r.s, out = [], k = s.k, res = r.res;
+    if (s.est || s.mkt == null) out.push({ c: "stima", t: "quota non confermata dal bookmaker: c'era solo la stima del modello" });
+    else {
+      if (s.model - s.mkt > 0.1) out.push({ c: "ottimista", t: `il modello era molto più ottimista del bookmaker (${pct(s.model)}% contro ${pct(s.mkt)}%): aveva ragione il bookmaker` });
+      if (!GOAL.has(k) && k.length === 1 && s.mkt < 0.62) out.push({ c: "debole", t: `favorita debole: per il bookmaker vinceva solo nel ${pct(s.mkt)}% dei casi` });
+      const q = oddsFor(r.id, r.m.h, r.m.a);
+      if (q && !GOAL.has(k)) {
+        const m1 = marketProb("1", q), m2 = marketProb("2", q);
+        if (((k === "1" || k === "1X") && m1 < m2) || ((k === "2" || k === "X2") && m2 < m1)) out.push({ c: "contro", t: "giocata contro la squadra favorita dalle quote" });
+      }
+    }
+    if (!GOAL.has(k) && league(r.id)) {
+      const A = analysis(league(r.id), r.m), me = k === "1" || k === "1X" ? A.h : A.a, op = k === "1" || k === "1X" ? A.a : A.h;
+      if (me.form && op.form && me.form.n >= 3 && op.form.n >= 3 && me.form.pts < op.form.pts - 3) out.push({ c: "forma", t: `la squadra scelta era in forma peggiore (${me.form.pts} punti nelle ultime ${me.form.n} contro ${op.form.pts})` });
+      if (me.rank && op.rank && me.rank.comp === op.rank.comp && me.rank.pos > op.rank.pos + 4) out.push({ c: "classifica", t: `la squadra scelta era molto più in basso in classifica (${me.rank.pos}° contro ${op.rank.pos}°)` });
+    }
+    if (res && GOAL.has(k)) {
+      const g = res.hg + res.ag;
+      if (k === "Over 2,5") out.push({ c: "gol", t: `partita chiusa: solo ${g} gol` });
+      if (k === "Under 2,5") out.push({ c: "gol", t: `partita aperta: ${g} gol` });
+    }
+    if (!out.length) out.push({ c: "sorpresa", t: `sorpresa: gli indicatori erano tutti a favore (${pct(s.prob)}%), ma capita circa 1 volta su ${Math.max(2, Math.round(1 / Math.max(0.01, 1 - s.prob)))}` });
+    return out;
+  }
+  // tutte le giocate concluse delle schedine salvate (comprese quelle di recupero)
+  function savedLegs() {
+    const out = [];
+    Object.keys(state.saved?.byDay || {}).forEach(day => {
+      const F = frozenFor(day); if (!F) return;
+      F.tickets.forEach(tk => tk.forEach(r => out.push(r)));
+      if (F.recovery) F.recovery.legs.forEach(r => out.push(r));
+    });
+    return out.filter(r => r.res);
+  }
+  // lezioni: per tipo di giocata e per campionato, se si è indovinato meno del previsto (almeno 4 casi),
+  // la soglia per entrare in schedina sale di 5 punti (fino a 10); un campionato che sbaglia più di metà delle volte resta fuori
+  let lessonsCache = null;
+  function lessons() {
+    const key = (state.saved?.updated || "") + Object.values(state.leagues).map(l => l.updated || "").join(",");
+    if (lessonsCache?.key === key) return lessonsCache;
+    const legs = savedLegs(), fams = {}, lgs = {};
+    legs.forEach(r => {
+      const ok = hit(r.s.k, r.res) ? 1 : 0;
+      [[fams, fam(r.s.k)], [lgs, r.id]].forEach(([o, k]) => { const x = o[k] || (o[k] = { n: 0, ok: 0, exp: 0 }); x.n++; x.ok += ok; x.exp += r.s.prob; });
+    });
+    const famPen = {}, leagueOut = {}, notes = [];
+    const FN = { secco: "esiti secchi (1 o 2)", dc: "doppie chance (1X o X2)", gol: "giocate sui gol" };
+    Object.entries(fams).forEach(([k, x]) => {
+      if (x.n >= 4 && x.ok / x.n < x.exp / x.n - 0.1) {
+        famPen[k] = Math.min(0.1, Math.round((x.exp / x.n - x.ok / x.n) * 20) / 20);
+        notes.push(`${FN[k]}: indovinate ${x.ok} su ${x.n} (atteso ${pct(x.exp / x.n)}%) → soglia alzata di ${pct(famPen[k])} punti`);
+      }
+    });
+    Object.entries(lgs).forEach(([id, x]) => {
+      if (x.n >= 4 && x.ok / x.n < 0.5) { leagueOut[id] = true; notes.push(`${state.leagues[id]?.name || id}: indovinate ${x.ok} su ${x.n} → per ora esclusa dalle schedine`); }
+    });
+    // errori ricorrenti visti nelle giocate perse
+    const why = {};
+    legs.filter(r => !hit(r.s.k, r.res)).forEach(r => whyLost(r).forEach(w => { why[w.c] = (why[w.c] || 0) + 1; }));
+    return lessonsCache = { key, famPen, leagueOut, notes, why, n: legs.length, lost: legs.filter(r => !hit(r.s.k, r.res)).length };
+  }
+  const RULE = {
+    stima: "ora entrano solo giocate con la quota vera del bookmaker",
+    ottimista: "ora si scartano le giocate in cui il modello supera il bookmaker di oltre 10 punti",
+    debole: "ora un esito secco entra solo se modello e bookmaker gli danno almeno il 62%",
+    contro: "ora non si gioca mai contro la favorita delle quote",
+    forma: "ora si scarta la squadra in forma peggiore dell'avversaria",
+    classifica: "ora si scarta la squadra molto più in basso in classifica",
+    gol: "le giocate sui gol entrano solo con quota del bookmaker e almeno il 60%",
+    sorpresa: "nessuna regola la evita: è il rischio che resta anche con le favorite"
+  };
+  function lessonsHtml() {
+    const L = lessons();
+    if (!L.lost) return "";
+    const W = { stima: "quota solo stimata", ottimista: "modello troppo ottimista", debole: "favorita debole", contro: "contro la favorita", forma: "squadra in forma peggiore", classifica: "squadra più in basso in classifica", gol: "previsione sui gol sbagliata", sorpresa: "sorpresa" };
+    return `<div class="day">Cosa ho imparato dalle schedine perse</div>
+      <div class="card" style="padding:10px 14px;display:grid;gap:6px">
+        <div class="note">Giocate concluse nelle schedine salvate: ${L.n}, sbagliate ${L.lost}. Cause degli errori:</div>
+        ${Object.entries(L.why).sort((a, b) => b[1] - a[1]).map(([c, n]) => `<div class="note">• <b>${W[c]}</b> (${n} volt${n === 1 ? "a" : "e"}): ${RULE[c]}.</div>`).join("")}
+        ${L.notes.length ? `<div class="sub" style="margin-top:4px">Correzioni automatiche in vigore</div>${L.notes.map(n => `<div class="note">• ${esc(n)}</div>`).join("")}` : `<div class="note">Per ora nessuna correzione automatica: servono almeno 4 giocate dello stesso tipo o campionato.</div>`}
+      </div>`;
+  }
+  // probabilità secondo le quote, tolto il margine del bookmaker
+  function marketProb(k, q) {
+    const [H, D, A, O, U, G, N] = q, s = 1 / H + 1 / D + 1 / A;
+    const m1 = 1 / H / s, mx = 1 / D / s, m2 = 1 / A / s;
+    const ou = O > 1 && U > 1 ? (1 / O) / (1 / O + 1 / U) : null;
+    const gn = G > 1 && N > 1 ? (1 / G) / (1 / G + 1 / N) : null;
+    return { "1": m1, "X": mx, "2": m2, "1X": m1 + mx, "X2": mx + m2, "Over 2,5": ou, "Under 2,5": ou == null ? null : 1 - ou,
+      "Goal": gn, "No Goal": gn == null ? null : 1 - gn }[k];
+  }
+  // mercati dei gol: Over/Under 2,5 e Goal/No Goal
+  const GOAL = new Set(["Over 2,5", "Under 2,5", "Goal", "No Goal"]);
+  // Giocate candidate per ogni partita (in una schedina ne entra al massimo una), solo con la quota vera del bookmaker.
+  // Indice di favore = il più basso tra modello e bookmaker: entra solo ciò su cui sono d'accordo entrambi.
+  // Esclusioni: modello molto più ottimista del bookmaker (oltre 10 punti: è più facile che sbagli il modello),
+  // giocate contro la favorita delle quote, squadra scelta in forma peggiore, molto più in basso in classifica
+  // o con assenze importanti in attacco o in difesa.
+  // prima della schedina: per entrambe le squadre servono assenze controllate per quel giorno, forma (almeno 3 partite),
+  // rendimento in casa per chi gioca in casa e fuori per chi gioca fuori (almeno 3 partite) e posizione in classifica
+  function dataReady(r) {
+    const L = league(r.id); if (!L) return false;
+    const nw = state.news[r.id] || {}, A = analysis(L, r.m);
+    if (!nw[r.m.d + "|" + r.m.h] || !nw[r.m.d + "|" + r.m.a]) return false;
+    return [A.h, A.a].every(S => S.form && S.form.n >= 3 && S.venue && S.venue.n >= 2 && S.rank);
+  }
+  function coherent(r, k) {
+    const L = league(r.id); if (!L) return false;
+    const A = analysis(L, r.m);
+    if (GOAL.has(k)) {
+      // gol: la frequenza recente delle due squadre deve andare nella stessa direzione della giocata
+      const g = [A.h.goals, A.a.goals].filter(x => x && x.n >= 4);
+      if (g.length < 2) return false;
+      const over = (g[0].over + g[1].over) / (g[0].n + g[1].n), gg = (g[0].gg + g[1].gg) / (g[0].n + g[1].n);
+      return { "Over 2,5": over >= 0.55, "Under 2,5": over <= 0.45, "Goal": gg >= 0.55, "No Goal": gg <= 0.45 }[k];
+    }
+    const me = k === "1" || k === "1X" ? A.h : A.a, op = k === "1" || k === "1X" ? A.a : A.h;
+    if (me.form && op.form && me.form.n >= 3 && op.form.n >= 3 && me.form.pts < op.form.pts - 3) return false;
+    if (me.rank && op.rank && me.rank.comp === op.rank.comp && me.rank.pos > op.rank.pos + 4) return false;
+    // assenze: la squadra scelta non deve essere più colpita dell'avversaria (attacco/difesa dopo gli assenti)
+    const nwf = n => (n ? (n.att || 1) / (n.def || 1) : 1);
+    if (nwf(me.news) < nwf(op.news) - 0.12) return false;
+    // rendimento: chi gioca in casa col suo rendimento in casa, chi gioca fuori con quello fuori
+    if (me.venue && op.venue && me.venue.n >= 3 && op.venue.n >= 3 && me.venue.pts / me.venue.n < op.venue.pts / op.venue.n - 0.5) return false;
+    return true;
+  }
+  function favourites(rows) {
+    const out = [];
+    rows.forEach(r => {
+      if (!r.q || !r.p || !r.sels || !dataReady(r)) return;
+      const m1 = marketProb("1", r.q), m2 = marketProb("2", r.q);
+      r.sels.forEach(x => {
+        if (x.k === "X") return;
+        const mkt = marketProb(x.k, r.q); if (mkt == null) return;
+        const goal = GOAL.has(x.k), dc = x.k === "1X" || x.k === "X2";
+        const s = { k: x.k, odd: x.odd, model: x.prob, mkt, prob: Math.min(x.prob, mkt), est: false, edge: 0 };
+        if (x.odd < (goal ? 1.3 : dc ? 1.15 : 1.15)) return;
+        if (s.model - s.mkt > 0.1 || s.mkt - s.model > 0.15) return;
+        // mai contro la favorita delle quote
+        if ((x.k === "1" || x.k === "1X") && m1 < m2) return;
+        if ((x.k === "2" || x.k === "X2") && m2 < m1) return;
+        const LS = lessons();
+        if (LS.leagueOut[r.id]) return;
+        if (s.prob < (goal ? 0.6 : dc ? 0.72 : 0.62) + (LS.famPen[goal ? "gol" : dc ? "dc" : "secco"] || 0)) return;
+        if (!coherent(r, x.k)) return;
+        s.score = s.prob;
+        out.push({ ...r, s });
+      });
+    });
+    return out.sort((a, b) => b.s.score - a.s.score);
+  }
+  // famiglia della giocata: esito secco (1, 2), doppia chance (1X, X2), gol (Over/Under, Goal/No Goal)
+  const fam = k => GOAL.has(k) ? "gol" : k.length === 2 ? "dc" : "secco";
+  // combinazione con il punteggio complessivo più alto e quota sopra l'obiettivo (al massimo 7 partite).
+  // Varietà: al massimo 2 esiti secchi e 2 doppie chance per schedina e, se ci sono candidate, almeno una giocata sui gol.
+  const MAXLEGS = 5; // più partite ci sono, più è facile perdere
+  function bestCombo(cands, need, banned, accept) {
+    const free = cands.filter(r => !banned.has(r.id + "|" + r.m.h));
+    const c = free.filter(r => !GOAL.has(r.s.k)).slice(0, 18).concat(free.filter(r => GOAL.has(r.s.k)).slice(0, 10))
+      .sort((a, b) => b.s.score - a.s.score);
+    const goalAvail = false; // nessun obbligo di giocare sui gol: entrano solo se sono tra le più sicure
+    let best = null, maxQ = 1;
+    const used = new Set(), legs = [], cnt = {};
+    (function dfs(i, sc, q) {
+      if (q > maxQ) maxQ = q;
+      if (q > need && legs.length >= 2 && (!goalAvail || legs.some(r => GOAL.has(r.s.k)))) {
+        if ((!best || sc > best.sc) && (!accept || accept(legs))) { best = { sc, legs: legs.slice() }; return; }
+      }
+      if (legs.length >= MAXLEGS || (best && sc <= best.sc)) return;
+      for (let j = i; j < c.length; j++) {
+        const r = c[j], key = r.id + "|" + r.m.h, k = fam(r.s.k);
+        if (used.has(key)) continue; // nessun limite per tipo: contano solo sicurezza e quota
+        used.add(key); legs.push(r); cnt[k] = (cnt[k] || 0) + 1;
+        dfs(j + 1, sc * r.s.score, q * r.s.odd);
+        legs.pop(); used.delete(key); cnt[k]--;
+      }
+    })(0, 1, 1);
+    return { legs: best ? best.legs : null, maxQ };
+  }
+  // 3 schedine: ognuna con almeno 2 partite e quota sopra vincita/giocata.
+  // Prima provo con partite tutte diverse; se non bastano, una schedina può riusare qualche partita,
+  // ma non può essere uguale, contenuta o contenente un'altra schedina.
+  // Se con le sole giocate sicure non si arriva alla vincita richiesta, l'obiettivo si abbassa
+  // (al 90% della quota massima raggiungibile, mai sotto quota 2): meglio vincere meno che perdere più spesso.
+  function safeNeed(picks, want) {
+    const probe = bestCombo(picks, want, new Set(), null);
+    if (probe.legs || probe.maxQ < 2) return want;
+    return Math.max(2, Math.floor(probe.maxQ * 0.9 * 100) / 100);
+  }
+  function buildTickets(rows) {
+    const picks = favourites(rows);
+    const need = safeNeed(picks, state.mtarget / state.mstake);
+    const tickets = [], used = new Set();
+    const key = r => r.id + "|" + r.m.h;
+    const sets = [];
+    // diversa da ogni schedina precedente: al massimo `share` partite in comune con ciascuna,
+    // e nessuna partita in tutte e tre (se va male quella, non si perdono tutte)
+    const distinct = share => legs => {
+      const n = new Set(legs.map(key));
+      return sets.every(p => [...n].filter(k => p.has(k)).length <= share && [...p].some(k => !n.has(k)))
+        && [...n].every(k => sets.filter(p => p.has(k)).length < 2);
+    };
+    let short = 1;
+    for (let i = 0; i < 3; i++) {
+      let res = bestCombo(picks, need, used, distinct(0));
+      if (i === 0) short = res.maxQ;
+      if (!res.legs && i > 0) res = bestCombo(picks, need, new Set(), distinct(1));
+      if (!res.legs && i > 0) res = bestCombo(picks, need, new Set(), distinct(2));
+      if (!res.legs) break;
+      tickets.push(res.legs);
+      sets.push(new Set(res.legs.map(key)));
+      res.legs.forEach(r => used.add(key(r)));
+    }
+    return { picks: [...new Set(picks.map(key))], tickets, short, need };
+  }
+
+
+  // ---- preparazione delle schedine: prima si controllano i dati, poi si formulano ----
+  let mcpRef = null;
+  const PREP_WAIT = 12 * 60000;
+  function prepHtml() {
+    const busy = +store.get("pr.prep", "0") + PREP_WAIT > Date.now();
+    return `<div class="ticket">
+      <div class="sub">Le schedine di oggi non sono ancora formulate</div>
+      <p class="note">Prima di formularle controllo i dati di tutte le partite di oggi e di domani: risultati delle ultime giornate (per forma e classifica), quote dei bookmaker e assenti per infortunio o squalifica. Solo dopo, per ogni partita, il pronostico incrocia forza, forma, rendimento in casa e fuori, classifica, assenze e quote, e da lì nascono le schedine.</p>
+      ${mcpRef ? `<button class="chip" id="prep-btn" ${busy ? "disabled" : ""} style="justify-self:start;background:var(--accent);color:var(--accent-ink);border-color:var(--accent)">${busy ? "Controllo dei dati in corso… (10 minuti circa)" : "Prepara le schedine di oggi"}</button>` : SITE ? `<a class="chip" href="${ARTIFACT_URL}" target="_blank" rel="noopener" style="justify-self:start;background:var(--accent);color:var(--accent-ink);border-color:var(--accent);text-decoration:none">Prepara le schedine di oggi (si apre in Claude)</a><p class="note">Quando il controllo è finito (10 minuti circa) ricarica questa pagina.</p>` : `<p class="note">Apri la pagina dall'app Claude per usare il pulsante.</p>`}
+      <p class="note">Si fa una volta al giorno, quando lo tocchi tu: consuma un po' più dell'aggiornamento normale.</p>
+    </div>`;
+  }
+  function prepList() {
+    const t = today(), tm = addDays(t, 1), now = hhmm(), out = [];
+    Object.keys(state.leagues).forEach(id => {
+      const L = league(id); if (!L) return;
+      L.fixtures.filter(f => (f.d === t && f.t && f.t > now) || f.d === tm)
+        .forEach(f => out.push([id.replace("_", "."), f.d, f.t || "", f.h, f.a].join("|")));
+    });
+    return out;
+  }
+  async function firePrep(btn) {
+    if (!mcpRef) return;
+    const list = prepList();
+    if (!list.length) { toast("Oggi e domani non ci sono partite da preparare."); return; }
+    btn.disabled = true; btn.textContent = "Avvio…";
+    try {
+      await mcpRef.callTool("Claude Code Remote", "fire_trigger", { trigger_id: TRIGGER, text: "MODALITÀ: PREPARA\nPARTITE (codice|data|ora|casa|trasferta):\n" + list.join("\n") });
+      store.set("pr.prep", String(Date.now()));
+      toast(`Controllo dei dati avviato su ${list.length} partite: in circa 10 minuti le schedine di oggi compaiono qui da sole.`);
+    } catch (e) {
+      toast(e?.code === "not_granted" || e?.code === "approval_required" ? "Consenti alla pagina l'accesso a Claude Code Remote, poi riprova." : "La preparazione non è partita. Riprova tra poco.");
+    }
+    render();
+  }
+  // ---- schedine "giocate": fissate il giorno stesso (non cambiano più se cambiano le quote) e schedina di recupero ----
+  // salvate nel documento live/schedine: { byDay: { "AAAA-MM-GG": { stake, tickets: [[giocata]], recovery: { lost, stake, need, legs: [giocata] } } } }
+  const dehyd = r => ({ id: r.id, d: r.m.d, t: r.m.t || "", h: r.m.h, a: r.m.a, k: r.s.k, odd: r.s.odd, prob: r.s.prob, model: r.s.model, mkt: r.s.mkt, est: !!r.s.est });
+  const playedCache = {};
+  function playedOf(id) {
+    const lg = state.leagues[id]; if (!lg) return [];
+    const key = (lg.updated || "") + (lg._m || "");
+    if (playedCache[id]?.key !== key) playedCache[id] = { key, rows: Model.parseRows(lg.played, true) };
+    return playedCache[id].rows;
+  }
+  function hydrate(x) {
+    const lg = state.leagues[x.id];
+    const res = playedOf(x.id).find(m => m.h === x.h && m.a === x.a && m.d >= x.d) || null;
+    let t = x.t;
+    if (!t && lg) { const f = (lg.fixtures || []).find(r => { const q = r.split("|"); return q[2] === x.h && q[3] === x.a; }); if (f) t = f.split("|")[1]; }
+    return { id: x.id, L: { d: lg || { name: x.id } }, m: { d: x.d, t: t || "", h: x.h, a: x.a },
+      s: { k: x.k, odd: x.odd, prob: x.prob, model: x.model, mkt: x.mkt, est: !!x.est, edge: 0, score: x.prob }, res };
+  }
+  function frozenFor(day) {
+    const D = state.saved?.byDay?.[day];
+    if (!D || !D.tickets) return null;
+    const R = D.recovery;
+    return { tickets: D.tickets.map(tk => tk.map(hydrate)), stake: D.stake,
+      recovery: R ? { lost: R.lost, stake: R.stake, need: R.need, legs: R.legs.map(hydrate) } : null };
+  }
+  let savingSched = false, schedFailed = false;
+  function saveSched(mut) {
+    // mai scrivere prima di aver letto le schedine già salvate: si rischierebbe di sovrascriverle
+    if (!dbRef || !state.savedLoaded || savingSched || schedFailed) return;
+    const next = JSON.parse(JSON.stringify(state.saved || { byDay: {} }));
+    next.byDay = next.byDay || {};
+    mut(next);
+    Object.keys(next.byDay).sort().slice(0, -14).forEach(k => delete next.byDay[k]); // ultimi 14 giorni
+    next.updated = new Date().toISOString();
+    savingSched = true;
+    dbRef.doc("live/schedine").set(next).then(() => { state.saved = next; }, () => { schedFailed = true; })
+      .finally(() => { savingSched = false; render(); });
+  }
+  const started = r => r.res || r.m.d < today() || (r.m.d === today() && r.m.t && r.m.t <= hhmm());
+  const ticketLost = tk => tk.some(r => r.res && !hit(r.s.k, r.res));
+  // schedina di recupero: solo partite non ancora iniziate (oggi più tardi e domani), quota che copre le schedine perse più la nuova giocata
+  function buildRecovery(lostN, stake) {
+    const t = today(), tm = addDays(t, 1), cands = [];
+    ORDER.filter(id => state.leagues[id]).concat(Object.keys(state.leagues).filter(id => !ORDER.includes(id))).forEach(id => {
+      const L = league(id); if (!L) return;
+      L.fixtures.filter(f => (f.d === t && f.t && f.t > hhmm()) || f.d === tm).forEach(m => {
+        const p = fullPredict(L, m, analysis(L, m)), q = oddsFor(id, m.h, m.a);
+        const sels = q ? selections(p, q) : null;
+        cands.push({ id, L, m, p, q, sels, s: safest(p, sels) });
+      });
+    });
+    const full = (lostN * stake + stake) / stake, picks = favourites(cands);
+    const need = safeNeed(picks, full);
+    const res = bestCombo(picks, need, new Set(), null);
+    return { need, full, legs: res.legs, maxQ: res.maxQ };
+  }
+
+  // percentuale di vincita: del giorno mostrato e complessiva su tutti i giorni salvati
+  function tally(tickets, stake) {
+    const legs = tickets.flat(), done = legs.filter(r => r.res), legOk = done.filter(r => hit(r.s.k, r.res)).length;
+    let tDone = 0, tWon = 0, net = 0;
+    tickets.forEach(tk => {
+      const q = tk.reduce((a, r) => a * r.s.odd, 1);
+      const lost = tk.some(r => r.res && !hit(r.s.k, r.res)), all = tk.every(r => r.res);
+      if (lost || all) { tDone++; if (!lost) { tWon++; net += stake * (q - 1); } else net -= stake; }
+    });
+    return { legs: done.length, legOk, tDone, tWon, net, pending: legs.length - done.length };
+  }
+  function winRateHtml(dayTickets, stake) {
+    const d = tally(dayTickets, stake);
+    // tutti i giorni salvati fino a oggi
+    const days = new Set();
+    Object.values(state.tracking).forEach(tr => (tr.preds || []).forEach(r => { const x = r.split("|")[0]; if (x <= today()) days.add(x); }));
+    const all = { legs: 0, legOk: 0, tDone: 0, tWon: 0, net: 0, days: 0 };
+    [...days].forEach(day => {
+      const { tickets } = frozenFor(day) || buildTickets(trackedRows(day).filter(r => r.s));
+      const x = tally(tickets, stake);
+      if (x.legs || x.tDone) all.days++;
+      all.legs += x.legs; all.legOk += x.legOk; all.tDone += x.tDone; all.tWon += x.tWon; all.net += x.net;
+    });
+    const P = (a, b) => b ? Math.round(a / b * 100) + "%" : "–";
+    const money = v => `<b class="num ${v >= 0 ? "ok" : "ko"}">${v >= 0 ? "+" : "−"}${euro(Math.abs(v))}</b>`;
+    return `<div class="day">Percentuale di vincita</div>
+      <div class="ticket" style="border-color:var(--line)">
+        <div class="sub">${state.day === today() ? "Oggi" : state.day === "next3" ? "Prossimi 3 giorni" : dayLabel(state.day)}</div>
+        <div class="summary">
+          <div class="stat"><b class="num">${P(d.legOk, d.legs)}</b><span>pronostici indovinati · ${d.legOk} su ${d.legs}${d.pending ? ` (${d.pending} in attesa)` : ""}</span></div>
+          <div class="stat"><b class="num">${P(d.tWon, d.tDone)}</b><span>schedine vinte · ${d.tWon} su ${d.tDone}</span></div>
+        </div>
+        ${d.tDone ? `<div class="note">Risultato con ${euro(stake)} su ogni schedina: ${money(d.net)}</div>` : ""}
+        <div class="sub" style="margin-top:6px">Dall'inizio${all.days ? ` · ${all.days} giorn${all.days === 1 ? "o" : "i"}` : ""}</div>
+        <div class="summary">
+          <div class="stat"><b class="num">${P(all.legOk, all.legs)}</b><span>pronostici indovinati · ${all.legOk} su ${all.legs}</span></div>
+          <div class="stat"><b class="num">${P(all.tWon, all.tDone)}</b><span>schedine vinte · ${all.tWon} su ${all.tDone}</span></div>
+        </div>
+        ${all.tDone ? `<div class="note">Risultato complessivo con ${euro(stake)} su ogni schedina: ${money(all.net)}</div>` : ""}
+        <div class="note">Contano solo le partite finite. I giorni senza quote dei bookmaker non hanno scommesse.</div>
+      </div>`;
+  }
+
+  function vsBookmaker(done) {
+    const rows = done.map(e => ({ e, q: oddsFor(e.id, e.h, e.a) })).filter(x => x.q);
+    if (!rows.length) return "";
+    let bk = 0, mod = 0, ret = 0, vn = 0, vret = 0;
+    rows.forEach(({ e, q }) => {
+      const [H, D, A] = q;
+      const fav = H <= Math.min(D, A) ? "1" : A <= D ? "2" : "X";
+      if (fav === e.res) bk++;
+      if (e.pick === e.res) mod++;
+      const odd = { "1": H, "X": D, "2": A, "1X": 1 / (1 / H + 1 / D), "X2": 1 / (1 / D + 1 / A) }[e.tip];
+      if (e.ktip) ret += odd;
+      [["1", e.p1, H], ["X", e.px, D], ["2", e.p2, A]].forEach(([k, pr, o]) => {
+        if (pr >= 0.35 && pr * o - 1 >= 0.07) { vn++; if (k === e.res) vret += o; }
+      });
+    });
+    const n = rows.length, eur = v => (v >= 0 ? "+" : "−") + Math.abs(v).toFixed(2).replace(".", ",") + " €";
+    return `<div class="day">Contro i bookmaker</div>
+      <div class="summary">
+        <div class="stat"><b class="num">${pct(mod / n)}%</b><span>modello: esito 1X2 indovinato</span></div>
+        <div class="stat"><b class="num">${pct(bk / n)}%</b><span>favorito delle quote indovinato</span></div>
+        <div class="stat"><b class="num ${ret - n >= 0 ? "ok" : "ko"}">${eur(ret - n)}</b><span>1 € su ogni consiglio (${n} giocate)</span></div>
+        <div class="stat"><b class="num ${vret - vn >= 0 ? "ok" : "ko"}">${vn ? eur(vret - vn) : "–"}</b><span>1 € su ogni quota con valore (${vn} giocate)</span></div>
+      </div>
+      <p class="note">Calcolato con le quote medie del mercato prima della partita, sulle ${n} partite che le hanno. Con pochi turni il risultato dipende molto dalla fortuna: conta l'andamento su mesi.</p>`;
+  }
+
+  function viewBilancio() {
+    const { done, waiting } = evaluate();
+    const nextDay = waiting[0]?.d;
+    if (!done.length) {
+      return `<div class="empty">Ancora nessuna partita conclusa tra quelle pronosticate da oggi.<br>
+        ${waiting.length ? `Ci sono <b>${waiting.length}</b> pronostici salvati in attesa del risultato; il primo bilancio arriva dopo le partite di ${fmtDay(nextDay)}.` : "I pronostici vengono salvati ogni mattina prima delle partite."}</div>
+        ${waitingList(waiting)}`;
+    }
+    const tile = (label, k, extra = "") => {
+      const v = rate(done, k), n = done.filter(x => x[k]).length;
+      return `<div class="stat"><b class="num">${pct(v)}%</b><span>${label} · ${n} su ${done.length}${extra}</span>
+        <div class="bar-mini"><i style="width:${pct(v)}%"></i></div></div>`;
+    };
+    // per campionato
+    const groups = {};
+    done.forEach(e => (groups[e.id] = groups[e.id] || []).push(e));
+    const rows = Object.entries(groups).map(([id, arr]) => ({ id, name: state.leagues[id].name, n: arr.length,
+      tip: rate(arr, "ktip"), x: rate(arr, "k1x2"), ou: rate(arr, "kou"), gg: rate(arr, "kgg") }))
+      .sort((a, b) => b.tip - a.tip || b.x - a.x || b.n - a.n);
+    const best = rows[0];
+    const conf = ["alta", "media", "bassa"].map(c => ({ c, arr: done.filter(e => e.conf === c) })).filter(x => x.arr.length);
+    // elenco filtrato
+    let list = done;
+    if (state.bl !== "tutti") list = list.filter(e => e.id === state.bl);
+    if (state.bf === "giusti") list = list.filter(e => e.ktip);
+    if (state.bf === "sbagliati") list = list.filter(e => !e.ktip);
+    const mk = (ok, txt) => `<span class="mk ${ok ? "y" : "n"}">${ok ? "✓" : "✗"} ${txt}</span>`;
+    return `
+      <p class="note">Pronostici salvati prima della partita, senza conoscere il risultato. ${done.filter(e => e.rebuilt).length ? `Le ${done.filter(e => e.rebuilt).length} partite del 9-12 ottobre sono <b>ricalcolate</b> con i soli dati precedenti alla giornata; dal 13 ottobre i pronostici sono salvati ogni mattina. ` : ""}${waiting.length} in attesa del risultato.</p>
+      <div class="summary four">
+        ${tile("consiglio indovinato", "ktip", " (doppia chance inclusa)")}
+        ${tile("esito 1X2 secco", "k1x2")}
+        ${tile("Over/Under 2,5", "kou")}
+        ${tile("Goal/No Goal", "kgg")}
+      </div>
+      <p class="note">Risultato esatto indovinato: <b>${done.filter(e => e.kex).length}</b> volte su ${done.length}.</p>
+
+      ${vsBookmaker(done)}
+      <div class="day">Per campionato</div>
+      ${best && rows.length > 1 ? `<p class="note">Finora il modello va meglio in <b>${esc(best.name)}</b>: ${pct(best.tip)}% di consigli giusti su ${best.n} partite.</p>` : ""}
+      <div class="tbl-wrap rank"><table>
+        <thead><tr><th class="t">Campionato</th><th>Partite</th><th>Consiglio</th><th>1X2</th><th>O/U</th><th>GG/NG</th></tr></thead>
+        <tbody>${rows.map((r, i) => `<tr><td class="t ${i === 0 && rows.length > 1 ? "best" : ""}">${esc(r.name)}</td><td>${r.n}</td>
+          <td class="${i === 0 && rows.length > 1 ? "best" : ""}">${pct(r.tip)}%</td><td>${pct(r.x)}%</td><td>${pct(r.ou)}%</td><td>${pct(r.gg)}%</td></tr>`).join("")}</tbody>
+      </table></div>
+
+      <div class="day">Per livello di fiducia</div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th class="t">Fiducia</th><th>Partite</th><th>Consiglio</th><th>1X2</th></tr></thead>
+        <tbody>${conf.map(x => `<tr><td class="t">${x.c}</td><td>${x.arr.length}</td><td>${pct(rate(x.arr, "ktip"))}%</td><td>${pct(rate(x.arr, "k1x2"))}%</td></tr>`).join("")}</tbody>
+      </table></div>
+      <p class="note">Se la fiducia "alta" non indovina più spesso della "bassa", il modello sta sopravvalutando le sue certezze.</p>
+
+      <div class="day">Partita per partita</div>
+      <div class="filters">
+        ${[["tutte", "Tutte"], ["giusti", "Indovinate"], ["sbagliati", "Sbagliate"]].map(([v, l]) => `<button class="chip" data-bf="${v}" aria-pressed="${state.bf === v}">${l}</button>`).join("")}
+        <label for="bl-sel" class="note" hidden>Campionato</label>
+        <select id="bl-sel"><option value="tutti">Tutti i campionati</option>${Object.keys(groups).map(id => `<option value="${id}" ${state.bl === id ? "selected" : ""}>${esc(state.leagues[id].name)}</option>`).join("")}</select>
+      </div>
+      <div class="card">${list.length ? list.slice(0, 200).map(e => `<div class="res">
+          <div class="m">${esc(e.h)} – ${esc(e.a)}</div>
+          <div class="sc num">${e.hg}-${e.ag}</div>
+          <div class="meta">${fmtShort(e.pd)} · ${esc(e.league)} · consiglio <b>${e.tip}</b> (${pct(e.p1)}·${pct(e.px)}·${pct(e.p2)}%) · fiducia ${e.conf}${e.rebuilt ? " · ricalcolato" : ""}</div>
+          <div class="marks">${mk(e.ktip, "consiglio " + e.tip)}${mk(e.kou, (e.over >= 0.5 ? "Over" : "Under") + " 2,5")}${mk(e.kgg, e.gg >= 0.5 ? "Goal" : "No Goal")}${e.kex ? mk(true, "esatto " + e.exact) : ""}</div>
+        </div>`).join("") : `<div class="res"><div class="meta">Nessuna partita con questo filtro.</div></div>`}</div>
+      ${waitingList(waiting)}`;
+  }
+  function waitingList(waiting) {
+    if (!waiting.length) return "";
+    return `<div class="day">In attesa del risultato</div>
+      <div class="card">${waiting.slice(0, 40).map(e => `<div class="res">
+        <div class="m">${esc(e.h)} – ${esc(e.a)}</div><div class="sc num" style="font-size:18px">${e.tip}</div>
+        <div class="meta">${fmtShort(e.d)} · ${esc(state.leagues[e.id]?.name || "")} · ${pct(e.p1)}·${pct(e.px)}·${pct(e.p2)}% · ${e.rebuilt ? "ricalcolato" : "salvato il " + fmtShort(e.frozen)}</div></div>`).join("")}</div>`;
+  }
+
+  // ---- intestazione colorata: ogni sezione e competizione ha la sua, con i dati che la pagina sta mostrando ----
+  const DRAW_DAYS = [2, 4, 5, 6];
+  function nextDraw() {
+    const d = new Date(), z = n => String(n).padStart(2, "0");
+    for (let i = 0; i < 8; i++) {
+      const x = new Date(d.getFullYear(), d.getMonth(), d.getDate() + i);
+      if (DRAW_DAYS.includes(x.getDay()) && (i > 0 || d.getHours() < 20)) return `${x.getFullYear()}-${z(x.getMonth() + 1)}-${z(x.getDate())}`;
+    }
+    return null;
+  }
+  const kpi = (v, l) => `<div class="kpi"><b>${v}</b><span>${l}</span></div>`;
+  function heroHtml() {
+    if (state.sec === "lotto") {
+      const draws = (state.lotto?.draws || []).slice().sort((a, b) => a.date < b.date ? 1 : -1);
+      const g = draws.length ? lottoPlay(draws) : null, sg = sePlay(state.se), nd = nextDraw();
+      return `<div class="eyebrow">Lotto · SuperEnalotto · prossima estrazione</div>
+        <h2>${nd ? esc(fmtDay(nd)) : "Estrazioni"}</h2>
+        ${g ? `<div class="eyebrow">Terno su ${esc(g.w)}</div><div class="hballs">${g.nums.map(n => `<i${n === g.hot ? ' class="gold"' : ""}>${n}</i>`).join("")}</div>` : ""}
+        ${sg ? `<div class="eyebrow">SuperEnalotto</div><div class="hballs">${sg.nums.map(n => `<i${sg.hot.includes(n) ? ' class="gold"' : ""}>${n}</i>`).join("")}</div>` : ""}
+        <div class="kpis">${kpi(draws[0] ? esc(fmtShort(draws[0].date)) : "–", "ultima estrazione")}${kpi(draws.length, "estrazioni Lotto")}${kpi((state.se?.draws || []).length, "SuperEnalotto")}</div>`;
+    }
+    if (state.sec === "bilancio") {
+      const { done, waiting } = evaluate();
+      const r = done.length ? pct(rate(done, "ktip")) + "%" : "–";
+      return `<div class="eyebrow">Bilancio dei pronostici</div>
+        <h2>${done.length ? `${r} indovinati` : "Bilancio in arrivo"}</h2>
+        <div class="kpis">${kpi(done.length, "partite concluse")}${kpi(done.length ? pct(rate(done, "k1x2")) + "%" : "–", "esito 1X2")}${kpi(waiting.length, "in attesa")}</div>`;
+    }
+    if (state.view === "scommesse") {
+      const t = today(), ft = frozenFor(t);
+      const tks = ft ? ft.tickets : [], st = ft?.stake || state.stake;
+      const qs = tks.map(tk => tk.reduce((a, r) => a * r.s.odd, 1));
+      const legs = new Set(tks.flat().map(r => r.id + r.m.h + r.m.a)).size;
+      const won = tks.filter(tk => tk.every(r => r.res && hit(r.s.k, r.res))).length, lost = tks.filter(ticketLost).length;
+      return `<div class="eyebrow">Schedine · ${esc(fmtDay(t))}</div>
+        <h2>${tks.length ? `${tks.length} schedin${tks.length === 1 ? "a" : "e"} di oggi` : "Schedine di oggi"}</h2>
+        <div class="kpis">${kpi(tks.length ? euro(st * Math.max(...qs)) : "–", "vincita più alta")}${kpi(legs || "–", "partite in schedina")}${kpi(tks.length ? `${won} ✓ · ${lost} ✗` : "–", "vinte · perse")}</div>`;
+    }
+    const L = league(state.league);
+    if (!L) return "";
+    const t = today(), fx = L.fixtures.filter(f => f.d >= t).sort((a, b) => (a.d + a.t) < (b.d + b.t) ? -1 : 1);
+    const todayN = fx.filter(f => f.d === t).length, next = fx[0];
+    const tab = Model.standings(L.playedM, L.teams), top = tab[0];
+    const rd = next?.r ? `Giornata ${esc(next.r)}` : "";
+    return `<div class="eyebrow">Stagione ${esc(L.d.season || "")}${rd ? " · " + rd : ""}</div>
+      <h2>${esc(L.d.name)}</h2>
+      <div class="kpis">${kpi(todayN ? todayN : (next ? esc(fmtShort(next.d)) : "–"), todayN ? "partite oggi" : "prossima partita")}${kpi(top && top.g ? esc(top.n) : "–", top && top.g ? `in testa · ${top.pt} pt` : "classifica")}${kpi(L.playedM.length, "partite giocate")}</div>`;
+  }
+  function applyTheme() {
+    document.body.dataset.sec = state.sec;
+    document.body.dataset.comp = state.sec === "calcio" ? (state.view === "scommesse" ? "schedine" : state.league) : state.sec;
+    const h = $("#hero");
+    if (!state.ready) { h.hidden = true; return; }
+    try { h.innerHTML = heroHtml(); h.hidden = !h.innerHTML.trim(); } catch (e) { h.hidden = true; }
+  }
+
+  function render() {
+    $("#sec-calcio").setAttribute("aria-pressed", state.sec === "calcio");
+    $("#sec-lotto").setAttribute("aria-pressed", state.sec === "lotto");
+    $("#sec-bilancio").setAttribute("aria-pressed", state.sec === "bilancio");
+    $("#calcio-nav").hidden = state.sec !== "calcio";
+    document.querySelectorAll(".tabs button").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === state.view));
+    const main = $("#main");
+    if (state.sec === "calcio") renderChips();
+    applyTheme();
+    if (!state.ready) return;
+    if (state.sec === "lotto") {
+      main.innerHTML = viewLotto();
+      $("#stamp").textContent = state.lotto?.updated ? "Aggiornato " + fmtStamp(state.lotto.updated) : "";
+      return;
+    }
+    if (state.sec === "bilancio") {
+      main.innerHTML = viewBilancio();
+      const u = Object.values(state.tracking).map(t => t.updated).filter(Boolean).sort().pop();
+      $("#stamp").textContent = u ? "Aggiornato " + fmtStamp(u) : "";
+      return;
+    }
+    renderChips();
+    $("#chips").hidden = state.view === "scommesse";
+    const L = league(state.league);
+    if (!L) { main.innerHTML = `<div class="empty">I campionati compaiono qui dopo il primo aggiornamento.</div>`; return; }
+    $("#stamp").textContent = "Aggiornato " + fmtStamp(L.d.updated);
+    main.innerHTML = state.view === "scommesse" ? viewScommesse() : state.view === "classifica" ? viewClassifica(L) : state.view === "verifica" ? viewVerifica(L) : viewPartite(L);
+  }
+
+  document.addEventListener("click", e => {
+    const t = e.target.closest("button,[data-w]"); if (!t) return;
+    if (t.id === "prep-btn") { if (!t.disabled) firePrep(t); return; }
+    if (t.id === "do-import") {
+      const txt = $("#paste")?.value || "";
+      const got = parsePaste(txt);
+      const fin = got.filter(g => !g.live), liv = got.filter(g => g.live);
+      if (!got.length) { $("#imp-out").textContent = txt.trim() ? `Non ho trovato punteggi delle partite in attesa (${openMatches().map(o => o.h + "–" + o.a).slice(0, 12).join(", ")}) in questo testo (${txt.length} caratteri). Se le partite non sono ancora iniziate Diretta mostra solo l'orario; altrimenti scrivi il risultato qui sotto.` : "Incolla prima il testo copiato da Diretta."; return; }
+      state.impOpen = true;
+      saveManual(fin, liv).then(ok => { if (ok) { render(); toast(`Importati ${fin.length} risultati finali${liv.length ? ` e ${liv.length} parziali` : ""}: ` + got.map(g => `${g.h}–${g.a} ${g.hg}-${g.ag}${g.live ? " (in corso)" : ""}`).join(", ")); } });
+      return;
+    }
+    if (t.id === "do-manual") {
+      const fin = [];
+      let bad = 0;
+      document.querySelectorAll(".man-in").forEach(inp => {
+        const v = inp.value.trim(); if (!v) return;
+        const m = v.match(/^(\d{1,2})\s*[-:–. ]\s*(\d{1,2})$/);
+        if (!m) { bad++; return; }
+        fin.push({ id: inp.dataset.id, d: inp.dataset.d, h: inp.dataset.h, a: inp.dataset.a, hg: +m[1], ag: +m[2] });
+      });
+      if (bad) { toast("Scrivi i risultati nel formato 2-1."); return; }
+      if (!fin.length) return;
+      state.impOpen = true;
+      saveManual(fin, []).then(ok => { if (ok) { render(); toast(`Salvati ${fin.length} risultati.`); } });
+      return;
+    }
+    if (t.id === "undo-manual") {
+      if (!dbRef) return;
+      dbRef.doc("manual/results").set({ rows: [], live: [], liveDate: today(), updated: new Date().toISOString() })
+        .then(() => { state.manual = null; mergeManual(); render(); toast("Risultati inseriti a mano cancellati."); });
+      return;
+    }
+    let keepTop = false;
+    if (t.id === "sec-calcio" || t.id === "sec-lotto" || t.id === "sec-bilancio") { state.sec = t.id.slice(4); store.set("pr.sec", state.sec); }
+    else if (t.dataset.bf) { state.bf = t.dataset.bf; }
+    else if (t.dataset.day) { state.day = t.dataset.day; }
+    else if (t.dataset.l) { state.league = t.dataset.l; store.set("pr.league", state.league); keepTop = true; }
+    else if (t.dataset.v) { state.view = t.dataset.v; store.set("pr.view", state.view); keepTop = true; }
+    else if (t.dataset.w) { state.wheel = t.dataset.w; store.set("pr.wheel", state.wheel); }
+    else return;
+    t.blur?.();
+    render();
+    if (keepTop) {
+      // mostro l'inizio dei contenuti appena sotto l'intestazione, senza scatti
+      const head = document.querySelector("header").getBoundingClientRect().height;
+      const top = $("#main").getBoundingClientRect().top + window.scrollY - head - 8;
+      if (window.scrollY > top) window.scrollTo({ top: Math.max(0, top), behavior: "auto" });
+    }
+  });
+  document.addEventListener("keydown", e => { if ((e.key === "Enter" || e.key === " ") && e.target.dataset?.w) { e.preventDefault(); e.target.click(); } });
+  document.addEventListener("change", e => {
+    if (e.target.id === "wheel-sel") { state.wheel = e.target.value; store.set("pr.wheel", state.wheel); render(); }
+    if (e.target.id === "bl-sel") { state.bl = e.target.value; render(); }
+    if (e.target.id === "league-sel") {
+      state.league = e.target.value; store.set("pr.league", state.league); e.target.blur();
+      render(); window.scrollTo({ top: 0, behavior: "auto" });
+    }
+    if (e.target.id === "mstake" || e.target.id === "mtarget") { const v = parseFloat(String(e.target.value).replace(",", ".")); if (v > 0) { state[e.target.id] = v; store.set("pr." + e.target.id + "20", String(v)); } render(); return; }
+    if (e.target.id === "stake") { const v = parseFloat(String(e.target.value).replace(",", ".")); if (v > 0) { state.stake = v; store.set("pr.stake20", String(v)); } render(); }
+  });
+  render();
+
+  // ---- pulsante "Aggiorna risultati": avvia l'aggiornamento rapido, che legge i siti e scrive i risultati da solo ----
+  // l'attività resta spenta (nessun aggiornamento automatico): parte solo quando si tocca il pulsante
+  const TRIGGER = "trig_01Nv5Xpx7VxPbHDbYi9aQoFN", COOLDOWN = 5 * 60000;
+  function landed() {}
+  // sul sito i risultati arrivano da soli (ESPN, gratis); dalla pagina in Claude il pulsante apre il sito
+  if (SITE) $("#refresh").remove();
+
+  // partite delle schedine (ieri, oggi, prossimi 3 giorni) già iniziate e ancora senza risultato finale:
+  // solo queste vengono cercate, così l'aggiornamento consuma il meno possibile
+  function ticketLegs() {
+    const t = today(), y = addDays(t, -1), now = hhmm(), out = new Map();
+    const ids = ORDER.filter(id => state.leagues[id]).concat(Object.keys(state.leagues).filter(id => !ORDER.includes(id)));
+    const all = [];
+    ids.forEach(id => {
+      const L = league(id); if (!L) return;
+      L.fixtures.filter(f => f.d >= y && f.d <= addDays(t, 3)).forEach(m => {
+        const p = fullPredict(L, m, analysis(L, m)), q = oddsFor(id, m.h, m.a);
+        const sels = q ? selections(p, q) : null;
+        all.push({ id, L, m, p, q, sels, s: safest(p, sels) });
+      });
+    });
+    const key = r => r.id + "|" + r.m.h + "|" + r.m.a;
+    const withTime = rs => rs.map(r => { const f = all.find(x => key(x) === key(r)); return f ? { ...r, m: { ...r.m, t: f.m.t } } : r; });
+    const trT = withTime(trackedRows(t).filter(r => r.s)), kT = new Set(trT.map(key));
+    const groups = [
+      trackedRows(y).filter(r => r.s),
+      trT.concat(all.filter(r => r.m.d === t && !kT.has(key(r)))),
+      trT.filter(r => !r.res).concat(all.filter(r => r.m.d >= t && r.m.d <= addDays(t, 2) && !kT.has(key(r))))
+    ];
+    // solo la giornata di oggi: i giorni passati non si aggiornano più
+    const ft = frozenFor(t);
+    const sets = [ft ? ft.tickets : [], ft?.recovery ? [ft.recovery.legs] : []];
+    sets.forEach(tks => tks.flat().forEach(r => {
+      if (r.res) return;
+      const started = r.m.d === t && r.m.t && r.m.t <= now;
+      if (started) out.set(key(r), [r.id.replace("_", "."), r.m.d, r.m.h, r.m.a].join("|"));
+    }));
+    return [...out.values()];
+  }
+  // partite delle schedine di oggi (e della schedina di recupero) non ancora iniziate: solo di queste si aggiornano le quote
+  function oddsLegs() {
+    const t = today(), y = addDays(t, -1), out = new Map();
+    const ft = frozenFor(t);
+    const sets = [ft ? ft.tickets.flat() : [], ft?.recovery ? ft.recovery.legs : []];
+    sets.flat().forEach(r => {
+      if (r.res || started(r) || liveFor(r.id, r.m.h, r.m.a)) return;
+      out.set(r.id + "|" + r.m.h + "|" + r.m.a, [r.id.replace("_", "."), r.m.d, r.m.h, r.m.a].join("|"));
+    });
+    return [...out.values()];
+  }
+  (async () => {
+    const mcp = window.claude?.use ? await window.claude.use("mcp") : null;
+    if (!mcp) return;
+    mcpRef = mcp; if (state.ready) render();
+  })();
+
+  (async () => {
+    const db = window.claude?.use ? await window.claude.use("db") : null;
+    if (!db) { $("#stamp").textContent = ""; return; }
+    let gotLeagues = false, gotLotto = false;
+    const done = () => { if (gotLeagues && gotLotto && !state.ready) { state.ready = true; } render(); };
+    db.collection("leagues").onSnapshot(snap => {
+      snap.docs.forEach(doc => { if (doc.exists) state.raw[doc.id] = doc.data(); });
+      snap.docChanges().forEach(c => { if (c.type === "removed") delete state.raw[c.doc.id]; });
+      mergeManual();
+      gotLeagues = true; done();
+    }, () => { gotLeagues = true; done(); });
+    db.doc("live/prep").onSnapshot(doc => { state.prep = doc.exists ? doc.data() : null; if (state.prep?.date === today()) store.set("pr.prep", "0"); if (state.ready) render(); }, () => {});
+    db.doc("live/schedine").onSnapshot(doc => { state.saved = doc.exists ? doc.data() : null; state.savedLoaded = true; if (state.ready) render(); }, () => {});
+    if (!SITE) db.doc("live/now").onSnapshot(doc => { state.live = doc.exists ? doc.data() : null; landed(state.live?.updated); if (state.ready) render(); }, () => {});
+    db.collection("news").onSnapshot(snap => {
+      snap.docs.forEach(doc => { if (doc.exists) state.news[doc.id] = doc.data().teams || {}; });
+      snap.docChanges().forEach(c => { if (c.type === "removed") delete state.news[c.doc.id]; });
+      if (state.ready) render();
+    }, () => {});
+    db.collection("odds").onSnapshot(snap => {
+      snap.docs.forEach(doc => { if (doc.exists) state.odds[doc.id] = doc.data(); });
+      snap.docChanges().forEach(c => { if (c.type === "removed") delete state.odds[c.doc.id]; });
+      if (state.ready) render();
+    }, () => {});
+    db.collection("tracking").onSnapshot(snap => {
+      snap.docs.forEach(doc => { if (doc.exists) state.tracking[doc.id] = doc.data(); });
+      snap.docChanges().forEach(c => { if (c.type === "removed") delete state.tracking[c.doc.id]; });
+      if (state.ready) render();
+    }, () => {});
+    dbRef = db;
+    db.doc("manual/results").onSnapshot(doc => { state.manual = doc.exists ? doc.data() : null; mergeManual(); if (state.ready) render(); }, () => {});
+    db.doc("lotto/superenalotto").onSnapshot(doc => { state.se = doc.exists ? doc.data() : null; if (state.ready) render(); }, () => {});
+    db.doc("lotto/draws").onSnapshot(doc => { state.lotto = doc.exists ? doc.data() : null; gotLotto = true; done(); },
+      () => { gotLotto = true; done(); });
+  })();
+
+  // ---- sul sito: risultati finali e in diretta letti da ESPN (gratis, senza Claude), ogni minuto ----
+  const ESPN_LG = { it_1: "ita.1", it_2: "ita.2", en_1: "eng.1", es_1: "esp.1", de_1: "ger.1", fr_1: "fra.1", nl_1: "ned.1", pt_1: "por.1", be_1: "bel.1", no_1: "nor.1", se_1: "swe.1", cl: "uefa.champions", el: "uefa.europa", ecl: "uefa.europa.conf" };
+  const E_ALIAS = { "psg": "paris saint germain", "inter": "internazionale", "man united": "manchester united", "man utd": "manchester united", "man city": "manchester city",
+    "wolves": "wolverhampton", "spurs": "tottenham", "atletico": "atletico madrid", "bayern": "bayern munich", "gladbach": "monchengladbach", "sporting": "sporting cp",
+    "athletic": "athletic club", "betis": "real betis", "leverkusen": "bayer leverkusen", "paris": "paris fc",
+    "stoccarda": "stuttgart", "barcellona": "barcelona", "siviglia": "sevilla", "lipsia": "leipzig", "bayern monaco": "bayern munich", "aek atene": "aek athens",
+    "slavia praga": "slavia prague", "dinamo zagabria": "dinamo zagreb", "salisburgo": "salzburg", "sparta praga": "sparta prague", "ofi creta": "ofi crete", "copenaghen": "kobenhavn", "hajduk spalato": "hajduk split", "stella rossa": "red star belgrade", "zalgiris kaunas": "kauno zalgiris", "craiova": "csu craiova", "agf aarhus": "agf", "hearts": "heart of midlothian", "inter escaldes": "inter d escaldes", "union saint gilloise": "union st gilloise", "nordsjaelland": "nordsjaelland", "lilla": "lille", "bruges": "club brugge", "bodo glimt": "bodo glimt", "monaco": "monaco", "magonza": "mainz", "friburgo": "freiburg", "colonia": "cologne" };
+  const E_STOP = new Set(["fc", "ac", "cf", "sc", "afc", "ssc", "as", "us", "ss", "calcio", "club", "de", "sk", "fk", "if", "bk", "ik", "cd", "rc", "ud", "sd", "ca", "and", "the", "bc", "sv", "vfb", "vfl", "tsg", "fsv", "rcd", "aj", "ogc", "losc", "stade", "real", "hove", "albion"]);
+  const eNorm = s => String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/ø/g, "o").replace(/æ/g, "ae").replace(/å/g, "a").replace(/ß/g, "ss").replace(/&/g, " and ").replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim();
+  const eToks = s => { const n = eNorm(s); return (E_ALIAS[n] || n).split(" ").filter(w => w.length >= 3 && !E_STOP.has(w)); };
+  const eSim = (mine, theirs) => {
+    const a = eToks(mine), b = eToks(theirs);
+    if (!a.length || !b.length) return eNorm(mine) === eNorm(theirs) ? 1 : 0;
+    return a.filter(w => b.some(x => x === w || (w.length >= 4 && x.length >= 4 && (x.includes(w) || w.includes(x))))).length / a.length;
+  };
+  async function espnBoard(cache, lg, d) {
+    const k = lg + d;
+    if (!(k in cache)) cache[k] = fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${lg}/scoreboard?dates=${d.replace(/-/g, "")}`, { cache: "no-store" })
+      .then(r => r.ok ? r.json() : { events: [] }).then(j => j.events || []).catch(() => null);
+    return cache[k];
+  }
+  function espnPick(events, h, a) {
+    let best = null, bs = 0;
+    (events || []).forEach(e => {
+      const c = e.competitions?.[0]?.competitors || [], H = c.find(x => x.homeAway === "home"), A = c.find(x => x.homeAway === "away");
+      if (!H || !A) return;
+      const names = t => [t.team?.displayName, t.team?.shortDisplayName, t.team?.name].filter(Boolean);
+      const sh = Math.max(...names(H).map(n => eSim(h, n))), sa = Math.max(...names(A).map(n => eSim(a, n)));
+      if (sh > 0 && sa > 0 && sh + sa > bs) { bs = sh + sa; best = { e, H, A }; }
+    });
+    return best;
+  }
+  let espnBusy = false;
+  async function espnSync() {
+    if (!SITE || !state.ready || espnBusy) return;
+    espnBusy = true;
+    try {
+      const t = today(), from = addDays(t, -3), now = hhmm(), need = [], cache = {};
+      Object.entries(state.raw).forEach(([id, d]) => {
+        if (!ESPN_LG[id]) return;
+        (d.fixtures || []).forEach(f => {
+          const q = f.split("|");
+          if (q[0] >= from && (q[0] < t || (q[0] === t && q[1] && q[1] <= now))) need.push({ id, d: q[0], h: q[2], a: q[3] });
+        });
+      });
+      const rows = [], live = [];
+      await Promise.all(need.map(async m => {
+        let hit = null;
+        for (const day of [m.d, addDays(m.d, -1), addDays(m.d, 1)]) { const ev = await espnBoard(cache, ESPN_LG[m.id], day); if (ev && (hit = espnPick(ev, m.h, m.a))) break; }
+        if (!hit) return;
+        const s = hit.e.status?.type || {}, hg = +hit.H.score || 0, ag = +hit.A.score || 0;
+        if (/postpon|cancel|abandon|suspend|delay/i.test(s.name || "")) return;
+        if (s.completed) rows.push([m.id, m.d, m.h, m.a, hg, ag].join("|"));
+        else if (s.state === "in") live.push([m.id, m.h, m.a, hg, ag, /HALF/i.test(s.name || "") ? "intervallo" : (hit.e.status.displayClock || "in corso"), "", ""].join("|"));
+      }));
+      state.manual = { rows: rows.sort(), live, liveDate: t, liveRead: now, updated: new Date().toISOString() };
+      mergeManual();
+      const st = $("#stamp"); if (st) st.textContent = "Risultati letti alle " + now;
+      render();
+    } finally { espnBusy = false; }
+  }
+  if (SITE) {
+    const kick = setInterval(() => { if (state.ready) { clearInterval(kick); espnSync(); } }, 300);
+    setInterval(() => { if (!document.hidden) espnSync(); }, 60000);
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) espnSync(); });
+  }
+})();
+</script>
+
+
+</body></html>
