@@ -626,7 +626,7 @@ if (typeof module !== "undefined") module.exports = Model;
   // stemmi delle squadre (solo sul sito: arrivano da ESPN) ed espulsioni lette dai risultati in diretta
   const LOGOS = {}, REDS = {};
   const TL = n => (LOGOS[n] ? `<img class="tlogo" src="${esc(LOGOS[n])}" alt="" loading="lazy" decoding="async">` : "") + esc(n);
-  const RC = (id, h, a) => { const r = REDS[id + "|" + h + "|" + a]; return r && r.length ? ` <span class="redbadge" title="${esc(r.join(", "))}">${r.map(() => '<span class="red-ic"></span>').join("")} ${r.length === 1 ? "espulso" : r.length + " espulsi"}</span>` : ""; };
+  const RC = (id, h, a) => { const r = REDS[id + "|" + h + "|" + a]; return r && r.length ? ` <span class="redbadge" title="${esc(r.join(", "))}">${r.map(() => '<span class="red-ic" aria-label="espulsione"></span>').join("")}</span>` : ""; };
   const store = {
     get(k, d) { try { return localStorage.getItem(k) ?? d; } catch { return d; } },
     set(k, v) { try { localStorage.setItem(k, v); } catch {} }
@@ -769,10 +769,15 @@ if (typeof module !== "undefined") module.exports = Model;
     return { hg: +p[3], ag: +p[4], st: p[5], goals: list(p[6]), reds: list(p[7]), read: lv.read, min };
   }
   const minTxt = lv => `${esc(lv.min.txt)}${lv.min.est ? " circa" : ""}`;
-  const eventsHtml = lv => (lv.goals.length || lv.reds.length) ? `<div class="events">
-      ${lv.goals.map(g => `<span class="ev"><span class="ball-ic" aria-hidden="true"></span>${esc(g.replace(/^\?\s*/, "gol "))}</span>`).join("")}
-      ${lv.reds.map(r => `<span class="ev"><span class="red-ic" title="espulsione"></span>espulso ${esc(r)}</span>`).join("")}
+  // marcatori solo delle squadre italiane; espulsioni con il solo cartellino rosso
+  const isIta = n => ["it_1", "it_2"].some(id => (state.raw[id]?.teams || []).includes(n));
+  const eventsHtml = lv => {
+    const goals = lv.goals.filter(g => { const m = /\(([^)]+)\)\s*$/.exec(g); return m && isIta(m[1]); });
+    return (goals.length || lv.reds.length) ? `<div class="events">
+      ${goals.map(g => `<span class="ev"><span class="ball-ic" aria-hidden="true"></span>${esc(g)}</span>`).join("")}
+      ${lv.reds.length ? `<span class="ev" title="${esc(lv.reds.join(", "))}">${lv.reds.map(() => '<span class="red-ic" aria-label="espulsione"></span>').join("")}</span>` : ""}
     </div>` : "";
+  };
   const liveBadge = lv => `<div class="live"><span class="dot"></span>In corso <b class="num">${lv.hg}-${lv.ag}</b> · <b class="min">${minTxt(lv)}</b> <span class="note">letto alle ${esc(lv.read)}</span></div>${eventsHtml(lv)}`;
 
   // quota del consiglio (1, X, 2, 1X, X2) dalle quote medie
