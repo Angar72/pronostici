@@ -238,6 +238,7 @@ h1{font-style:italic;font-weight:700;letter-spacing:.02em}
 h1 span{color:var(--accent)}
 .seg button[aria-pressed="true"]{background:var(--comp);color:#FFFFFF;box-shadow:none}
 .tabs button[aria-pressed="true"]{border-bottom-width:3px}
+.tabs{flex-wrap:wrap;gap:4px 14px;overflow:visible}
 .hero{position:relative;overflow:hidden;border-radius:16px;color:var(--hero-ink);padding:16px 16px 14px;margin-top:14px;isolation:isolate;
   background:linear-gradient(135deg,var(--comp) 0%,color-mix(in srgb,var(--comp) 62%,#000) 100%);display:grid;gap:10px}
 .hero::before{content:"";position:absolute;inset:0;z-index:-1;opacity:.16;background-repeat:no-repeat;background-position:right -40px center;background-size:auto 150%}
@@ -268,7 +269,7 @@ body[data-sec="lotto"] .ball{background:var(--chip);color:var(--ink)}
       <div style="display:grid;justify-items:end;gap:4px">
         <div class="stamp" id="stamp">In caricamento…</div>
         <a id="refresh" class="refresh" target="_blank" rel="noopener" href="https://angar72.github.io/pronostici/" style="text-decoration:none">Apri con risultati in diretta ↗</a>
-        <div class="stamp">Versione 21 ott</div>
+        <div class="stamp">Versione 22 ott · Conto</div>
       </div>
     </div>
     <div class="seg" role="group" aria-label="Sezione">
@@ -284,7 +285,7 @@ body[data-sec="lotto"] .ball{background:var(--chip);color:var(--ink)}
       <div class="tabs" role="group" aria-label="Vista">
         <button data-v="partite" aria-pressed="true">Partite</button>
         <button data-v="classifica" aria-pressed="false">Classifica</button>
-        <button data-v="scommesse" aria-pressed="false">3 Schedine</button>
+        <button data-v="scommesse" aria-pressed="false">Schedine</button>
         <button data-v="verifica" aria-pressed="false">Affidabilità</button>
         <button data-v="conto" aria-pressed="false">Conto</button>
       </div>
