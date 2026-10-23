@@ -1715,11 +1715,11 @@ if (typeof module !== "undefined") module.exports = Model;
   // Prima provo con partite tutte diverse; se non bastano, una schedina può riusare qualche partita,
   // ma non può essere uguale, contenuta o contenente un'altra schedina.
   // Se con le sole giocate sicure non si arriva alla vincita richiesta, l'obiettivo si abbassa
-  // (al 90% della quota massima raggiungibile, mai sotto quota 2): meglio vincere meno che perdere più spesso.
+  // (al 90% della quota massima raggiungibile, mai sotto quota 2,80: sotto non è giocabile).
   function safeNeed(picks, want) {
     const probe = bestCombo(picks, want, new Set(), null);
-    if (probe.legs || probe.maxQ < 2) return want;
-    return Math.max(2, Math.floor(probe.maxQ * 0.9 * 100) / 100);
+    if (probe.legs || probe.maxQ < 2.8) return want;
+    return Math.max(2.8, Math.floor(probe.maxQ * 0.9 * 100) / 100);
   }
   function buildTickets(rows) {
     const picks = favourites(rows);
