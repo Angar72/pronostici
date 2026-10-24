@@ -290,6 +290,7 @@ body[data-sec="lotto"] .ball{background:var(--chip);color:var(--ink)}
         <button data-v="scommesse" aria-pressed="false">Schedine</button>
         <button data-v="verifica" aria-pressed="false">Affidabilità</button>
         <button data-v="conto" aria-pressed="false">Conto</button>
+        <button data-v="extra" aria-pressed="false">Extra</button>
       </div>
     </div>
   </header>
@@ -624,7 +625,7 @@ if (typeof module !== "undefined") module.exports = Model;
   const pct = v => Math.round(v * 100);
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   // stemmi delle squadre (solo sul sito: arrivano da ESPN) ed espulsioni lette dai risultati in diretta
-  const LOGOS = {}, REDS = {};
+  const LOGOS = {}, REDS = {}, EXTRA_EV = {};
   const TL = n => (LOGOS[n] ? `<img class="tlogo" src="${esc(LOGOS[n])}" alt="" loading="lazy" decoding="async">` : "") + esc(n);
   const RC = (id, h, a) => { const r = REDS[id + "|" + h + "|" + a]; return r && r.length ? ` <span class="redbadge" title="${esc(r.join(", "))}">${r.map(() => '<span class="red-ic" aria-label="espulsione"></span>').join("")}</span>` : ""; };
   const store = {
@@ -2019,6 +2020,12 @@ if (typeof module !== "undefined") module.exports = Model;
         <h2>${C.done ? (C.net >= 0 ? "In attivo " : "In passivo ") + euro(Math.abs(C.net)) : "Conto delle giocate"}</h2>
         <div class="kpis">${kpi(euro(C.played), "giocato")}${kpi(euro(C.won), "vinto")}${kpi(C.pending ? euro(C.pending) : "–", "in gioco")}</div>`;
     }
+    if (state.view === "extra") {
+      const X = extraTally();
+      return `<div class="eyebrow">Giocate extra · da seguire</div>
+        <h2>${X.slips.length ? `${X.slips.length} multipl${X.slips.length === 1 ? "a" : "e"} extra` : "Giocate extra"}</h2>
+        <div class="kpis">${kpi(X.slips.length ? euro(X.played) : "–", "giocato")}${kpi(X.slips.length ? euro(X.won) : "–", "vinto")}${kpi(X.slips.length ? `${X.nWon} ✓ · ${X.nLost} ✗` : "–", "vinte · perse")}</div>`;
+    }
     if (state.view === "scommesse") {
       const t = today(), ft = frozenFor(t);
       const tks = ft ? ft.tickets : [], st = ft?.stake || state.stake;
@@ -2041,7 +2048,7 @@ if (typeof module !== "undefined") module.exports = Model;
   }
   function applyTheme() {
     document.body.dataset.sec = state.sec;
-    document.body.dataset.comp = state.sec === "calcio" ? (state.view === "scommesse" || state.view === "conto" ? "schedine" : state.league) : state.sec;
+    document.body.dataset.comp = state.sec === "calcio" ? (state.view === "scommesse" || state.view === "conto" || state.view === "extra" ? "schedine" : state.league) : state.sec;
     const h = $("#hero");
     if (!state.ready) { h.hidden = true; return; }
     try { h.innerHTML = heroHtml(); h.hidden = !h.innerHTML.trim(); } catch (e) { h.hidden = true; }
@@ -2090,6 +2097,76 @@ if (typeof module !== "undefined") module.exports = Model;
     return html;
   }
 
+  // ---- giocate extra (multiple prese da fuori): controllo automatico quando i dati ci sono, altrimenti a mano ----
+  const extraMan = () => { try { return JSON.parse(store.get("pr.xres", "{}")) || {}; } catch (e) { return {}; } };
+  function extraEval(l) {
+    const x = EXTRA_EV[l.id + "|" + l.h + "|" + l.a];
+    if (!x || !x.done) return null;
+    const [r, arg] = String(l.r || "manual").split(":"), [lo, hi] = String(arg || "").split("-").map(Number);
+    const tot = x.hg + x.ag, ht = x.hl.length >= 2 && x.al.length >= 2;
+    switch (r) {
+      case "mgh": return x.hg >= lo && x.hg <= hi;
+      case "over": return tot > lo;
+      case "awayscores": return x.ag >= 1;
+      case "homewin": return x.hg > x.ag;
+      case "awaywin": return x.ag > x.hg;
+      case "awaymg": return x.ag > x.hg && tot >= lo && tot <= hi;
+      case "t1both": return ht ? x.hl[0] >= 1 && x.hl[1] >= 1 : null;
+      case "t1half": return ht ? x.hl[0] > x.al[0] || x.hl[1] > x.al[1] : null;
+      case "o1t2t": return ht ? x.hl[0] + x.al[0] >= 1 && x.hl[1] + x.al[1] >= 1 : null;
+      case "xhtft": return x.hg === x.ag ? true : ht ? x.hl[0] === x.al[0] : null;
+      case "cards": return x.hasDet ? x.cards > lo : null;
+      case "corners": return x.hs.wonCorners >= 0 && x.as.wonCorners >= 0 ? x.hs.wonCorners + x.as.wonCorners > lo : null;
+      case "sota": return x.as.shotsOnTarget >= 0 ? x.as.shotsOnTarget > lo : null;
+      default: return null;
+    }
+  }
+  function extraState(si, li, l) {
+    const k = si + "-" + li, man = extraMan(), db = state.extra?.res || {};
+    if (k in man) return { v: man[k], src: "a mano" };
+    if (k in db) return { v: db[k], src: "" };
+    const v = extraEval(l);
+    return { v, src: v == null ? "" : "automatico" };
+  }
+  function extraTally() {
+    const slips = state.extra?.slips || [], stake = +store.get("pr.xstake", String(state.extra?.stake || 20)) || 20;
+    let played = 0, won = 0, nWon = 0, nLost = 0;
+    const rows = slips.map((sl, si) => {
+      const st = sl.legs.map((l, li) => extraState(si, li, l)), q = sl.legs.reduce((a, l) => a * l.odd, 1);
+      const lost = st.some(x => x.v === false), win = !lost && st.every(x => x.v === true);
+      if (lost) { played += stake; nLost++; } else if (win) { played += stake; won += stake * q; nWon++; }
+      return { sl, st, q, lost, win };
+    });
+    return { slips, rows, stake, played, won, nWon, nLost };
+  }
+  function viewExtra() {
+    const X = extraTally();
+    if (!X.slips.length) return `<div class="empty">Qui compaiono le multiple extra da seguire.</div>`;
+    const sign = v => (v > 0 ? "+" : v < 0 ? "−" : "") + euro(Math.abs(v));
+    let html = `<div class="summary">
+        <div class="stat"><b class="num ${X.won - X.played > 0 ? "ok" : X.won - X.played < 0 ? "ko" : ""}">${X.nWon + X.nLost ? sign(X.won - X.played) : "in gioco"}</b><span>saldo delle multiple extra concluse</span></div>
+        <div class="stat"><label for="xstake" class="note"><b>Giocata per multipla</b></label> <input id="xstake" type="number" min="1" step="1" inputmode="decimal" value="${X.stake}" style="width:70px;font:inherit;padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink)"> <span class="note">€ · separata dal conto delle schedine</span></div>
+      </div>`;
+    X.rows.forEach((r, si) => {
+      const head = r.win ? `<span class="ok">✓ vinta · +${euro(X.stake * r.q - X.stake)}</span>` : r.lost ? `<span class="ko">✗ persa · −${euro(X.stake)}</span>` : `in gioco · possibile vincita ${euro(X.stake * r.q)}`;
+      html += `<div class="day">${esc(r.sl.name)} · quota ${r.q.toFixed(2).replace(".", ",")} · ${head}</div><div class="card">`;
+      r.sl.legs.forEach((l, li) => {
+        const s = r.st[li], ev = EXTRA_EV[l.id + "|" + l.h + "|" + l.a], k = si + "-" + li;
+        const score = ev ? (ev.live ? `<b class="num">${ev.hg}-${ev.ag}</b> · <b class="min">${esc(ev.min)}</b>` : ev.done ? `finale <b class="num">${ev.hg}-${ev.ag}</b>${ev.hl.length >= 2 ? ` (1° t. ${ev.hl[0]}-${ev.al[0]})` : ""}` : ev.off ? "rinviata" : "") : "";
+        const mark = s.v === true ? `<span class="ok">✓</span>` : s.v === false ? `<span class="ko">✗</span>` : "·";
+        const btns = `<button class="chip" data-x="${k}=1">Vinta</button> <button class="chip" data-x="${k}=0">Persa</button>${s.src === "a mano" ? ` <button class="chip" data-x="${k}=">Annulla</button>` : ""}`;
+        html += `<div class="res"><div class="m">${TL(l.h)} – ${TL(l.a)}</div>
+          <div class="sc" style="font-size:20px">${mark}</div>
+          <div class="meta">${esc(fmtShort(l.d))} ${esc(l.t || "")} · ${esc(l.mkt)} · <b>${esc(l.pick)}</b> a ${l.odd.toFixed(2).replace(".", ",")}${score ? " · " + score : ""}${s.src ? ` · <span class="note">${s.src}</span>` : ""}</div>
+          ${s.v == null && (!ev || ev.done || (l.r || "manual") === "manual") ? `<div class="meta">${(l.r || "manual") === "manual" || (ev && ev.done) ? "Da controllare: " + btns : ""}</div>` : s.src === "a mano" ? `<div class="meta">${btns}</div>` : ""}
+        </div>`;
+      });
+      html += `</div>`;
+    });
+    html += `<p class="note">Multiple extra inserite da te. Risultato, tempi, cartellini, angoli e tiri in porta si controllano da soli sul sito quando ESPN li fornisce; le giocate sui singoli giocatori (gol, assist, cartellino, palo) le segni tu con Vinta o Persa.</p>`;
+    return html;
+  }
+
   function render() {
     $("#sec-calcio").setAttribute("aria-pressed", state.sec === "calcio");
     $("#sec-lotto").setAttribute("aria-pressed", state.sec === "lotto");
@@ -2112,15 +2189,20 @@ if (typeof module !== "undefined") module.exports = Model;
       return;
     }
     renderChips();
-    $("#chips").hidden = state.view === "scommesse" || state.view === "conto";
+    $("#chips").hidden = state.view === "scommesse" || state.view === "conto" || state.view === "extra";
     const L = league(state.league);
     if (!L) { main.innerHTML = `<div class="empty">I campionati compaiono qui dopo il primo aggiornamento.</div>`; return; }
     $("#stamp").textContent = "Aggiornato " + fmtStamp(L.d.updated);
-    main.innerHTML = state.view === "scommesse" ? viewScommesse() : state.view === "conto" ? viewConto() : state.view === "classifica" ? viewClassifica(L) : state.view === "verifica" ? viewVerifica(L) : viewPartite(L);
+    main.innerHTML = state.view === "scommesse" ? viewScommesse() : state.view === "conto" ? viewConto() : state.view === "extra" ? viewExtra() : state.view === "classifica" ? viewClassifica(L) : state.view === "verifica" ? viewVerifica(L) : viewPartite(L);
   }
 
   document.addEventListener("click", e => {
     const t = e.target.closest("button,[data-w]"); if (!t) return;
+    if (t.dataset.x) {
+      const [k, v] = t.dataset.x.split("="), m = extraMan();
+      if (v === "") delete m[k]; else m[k] = v === "1";
+      store.set("pr.xres", JSON.stringify(m)); render(); return;
+    }
     if (t.id === "prep-btn") { if (!t.disabled) firePrep(t); return; }
     if (t.id === "do-import") {
       const txt = $("#paste")?.value || "";
@@ -2178,6 +2260,7 @@ if (typeof module !== "undefined") module.exports = Model;
       render(); window.scrollTo({ top: 0, behavior: "auto" });
     }
     if (e.target.id === "mstake" || e.target.id === "mtarget") { const v = parseFloat(String(e.target.value).replace(",", ".")); if (v > 0) { state[e.target.id] = v; store.set("pr." + e.target.id + "20", String(v)); } render(); return; }
+    if (e.target.id === "xstake") { const v = parseFloat(String(e.target.value).replace(",", ".")); if (v > 0) store.set("pr.xstake", String(v)); render(); return; }
     if (e.target.id === "stake") { const v = parseFloat(String(e.target.value).replace(",", ".")); if (v > 0) { state.stake = v; store.set("pr.stake20", String(v)); } render(); }
   });
   render();
@@ -2250,6 +2333,7 @@ if (typeof module !== "undefined") module.exports = Model;
       gotLeagues = true; done();
     }, () => { gotLeagues = true; done(); });
     db.doc("live/prep").onSnapshot(doc => { state.prep = doc.exists ? doc.data() : null; if (state.prep?.date === today()) store.set("pr.prep", "0"); if (state.ready) render(); }, () => {});
+    db.doc("live/extra").onSnapshot(doc => { state.extra = doc.exists ? doc.data() : null; if (state.ready) render(); }, () => {});
     db.doc("live/schedine").onSnapshot(doc => { state.saved = doc.exists ? doc.data() : null; state.savedLoaded = true; if (state.ready) render(); }, () => {});
     if (!SITE) db.doc("live/now").onSnapshot(doc => { state.live = doc.exists ? doc.data() : null; landed(state.live?.updated); if (state.ready) render(); }, () => {});
     db.collection("news").onSnapshot(snap => {
@@ -2378,11 +2462,31 @@ if (typeof module !== "undefined") module.exports = Model;
           });
         }
       } catch (e) {}
+      try { await extraSync(cache); } catch (e) {}
       state.manual = { rows: rows.sort(), live, liveDate: t, liveRead: now, updated: new Date().toISOString() };
       mergeManual();
       const st = $("#stamp"); if (st) st.textContent = "Risultati letti alle " + now;
       render();
     } finally { espnBusy = false; }
+  }
+  // giocate extra: risultato, tempi, cartellini, angoli e tiri in porta letti da ESPN
+  async function extraSync(cache) {
+    const now = hhmm(), t = today();
+    const legs = (state.extra?.slips || []).flatMap(x => x.legs);
+    await Promise.all(legs.map(async l => {
+      const key = l.id + "|" + l.h + "|" + l.a;
+      if (!ESPN_LG[l.id] || l.d > t || (l.d === t && l.t > now) || EXTRA_EV[key]?.done) return;
+      let hit = null;
+      for (const day of [l.d, addDays(l.d, -1), addDays(l.d, 1)]) { const ev = await espnBoard(cache, ESPN_LG[l.id], day); if (ev && (hit = espnPick(ev, l.h, l.a))) break; }
+      if (!hit) return;
+      const s = hit.e.status?.type || {}, c = hit.e.competitions?.[0] || {}, det = c.details || [];
+      const ls = x => (x.linescores || []).map(v => +v.value || 0);
+      const st = x => { const m = {}; (x.statistics || []).forEach(v => { if (v.name) m[v.name] = +v.displayValue; }); return m; };
+      EXTRA_EV[key] = { done: !!s.completed, live: s.state === "in", off: /postpon|cancel|abandon/i.test(s.name || ""),
+        hg: +hit.H.score || 0, ag: +hit.A.score || 0, hl: ls(hit.H), al: ls(hit.A), hs: st(hit.H), as: st(hit.A),
+        cards: det.filter(x => x.yellowCard || x.redCard).length, hasDet: Array.isArray(c.details),
+        min: s.state === "in" ? (/HALFTIME|HALF_TIME|INTERMISSION/i.test(s.name || "") ? "intervallo" : clockTxt({ sec: +hit.e.status.clock || 0, period: +hit.e.status.period || 1, at: Date.now() })) : "" };
+    }));
   }
   async function loadLogos() {
     let cached = null; try { cached = JSON.parse(localStorage.getItem("pr.logos") || "null"); } catch (e) {}
