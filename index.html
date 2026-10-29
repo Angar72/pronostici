@@ -312,7 +312,7 @@ const Model = (() => {
   const HALF_LIFE = 180;          // giorni: un risultato di 6 mesi fa pesa la metà
   const K = 4;                    // partite "virtuali" di partenza per ogni squadra
   const RHO = -0.06;              // correzione Dixon-Coles
-  const PRIOR = { up: [0.82, 1.18], down: [1.15, 0.87], B: [0.9, 1.12], C: [0.75, 1.3] }; // [attacco, difesa] di partenza
+  const PRIOR = { up: [0.82, 1.18], down: [1.15, 0.87], B: [0.9, 1.12], C: [0.6, 1.55] }; // [attacco, difesa] di partenza
   const S = 20;                   // partite "medie" virtuali che stabilizzano media gol e fattore campo
 
   const dayMs = 86400000;

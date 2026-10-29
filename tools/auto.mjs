@@ -84,6 +84,11 @@ async function page(u) { try { const r = await fetch(u, { headers: { "User-Agent
 }
 if (LOTTO_ONLY) { if (changed.lotto) await seal("lotto", lotto); log("solo Lotto:", changed.lotto); process.exit(0); }
 
+// forza di una squadra del campionato dentro la coppa: rapporto gol fatti/subiti attenuato, poi il salto di categoria
+const tierPrior = (home, att, def) => {
+  const top = /_1$/.test(home), r = x => Math.round(x * 1000) / 1000;
+  return top ? [r((att + 1) / 2 * 1.45), r((def + 1) / 2 * 0.7)] : [r((att + 1) / 2 * 0.9), r((def + 1) / 2 * 1.12)];
+};
 // ---------- 0b. coppe nazionali: squadre dal calendario ESPN, collegate al loro campionato ----------
 for (const [id, [lg, , name, flag, doms]] of Object.entries(NAT_CUPS)) {
   const fresh = () => ({ code: id, name, flag, cup: true, ver: 2, k: 10, season: "", fixtures: [], played: [], prev: [], teams: [], dom: {}, prior: {} });
@@ -107,9 +112,15 @@ for (const [id, [lg, , name, flag, doms]] of Object.entries(NAT_CUPS)) {
         const mine = P.filter(q => q[1] === nm || q[2] === nm);
         const gf = mine.reduce((a, q) => a + +(q[1] === nm ? q[3] : q[4]), 0), ga = mine.reduce((a, q) => a + +(q[1] === nm ? q[4] : q[3]), 0);
         C.dom[nm] = [home.replace("_", "."), nm];
-        if (mine.length >= 4) C.prior[nm] = [Math.round(gf / mine.length / avg * 1000) / 1000, Math.round(ga / mine.length / avg * 1000) / 1000];
+        C.prior[nm] = mine.length >= 4 ? tierPrior(home, gf / mine.length / avg, ga / mine.length / avg) : tierPrior(home, 1, 1);
       } else C.prior[nm] = "C";
     }
+  }
+  // forza di partenza v2: chi è in prima divisione parte nettamente favorito contro le squadre di categoria inferiore
+  if (C.pv !== 2) {
+    for (const [t, p] of Object.entries(C.prior)) if (Array.isArray(p) && C.dom[t]) C.prior[t] = tierPrior(C.dom[t][0].replace(".", "_"), p[0], p[1]);
+    for (const t of Object.keys(C.dom)) if (!(t in C.prior)) C.prior[t] = tierPrior(C.dom[t][0].replace(".", "_"), 1, 1);
+    C.pv = 2; touched = true;
   }
   if (touched) { C.teams.sort(); leagues[id] = C; changed.leagues = true; }
 }
@@ -179,8 +190,18 @@ for (const f of opFix) {
   const id = T2ID[f.tournamentId], L = leagues[id]; if (!L) continue;
   const mk = f.bookmakerOdds?.[BK]?.markets; if (!mk) continue;
   const pr = (m, o) => { const v = mk[m]?.outcomes?.[o]?.players?.["0"]?.price; return v > 1 ? Math.round(v * 100) / 100 : null; };
-  const h = teamOf(L, names[f.participant1Id]), a = teamOf(L, names[f.participant2Id]); if (!h || !a) continue;
   const when = rome(f.startTime);
+  let h = teamOf(L, names[f.participant1Id]), a = teamOf(L, names[f.participant2Id]);
+  if (L.cup && (!h || !a)) {
+    // coppe: i nomi delle squadre minori cambiano da un sito all'altro. Se il calendario ha una sola partita
+    // quel giorno con la squadra riconosciuta (o con nomi abbastanza simili), prendo l'avversaria dal calendario
+    const day = L.fixtures.map(x => x.split("|")).filter(q => Math.abs(dayDiff(q[0], when.d)) <= 1);
+    const loose = (t, n) => n && Math.min(eSim(t, n), 1) + Math.min(eSim(n, t), 1) >= 1;
+    const m = day.filter(q => (h ? q[2] === h : loose(q[2], names[f.participant1Id])) && (a ? q[3] === a : loose(q[3], names[f.participant2Id])));
+    const m1 = m.length ? m : day.filter(q => (h && q[2] === h) || (a && q[3] === a));
+    if (m1.length === 1) { h = m1[0][2]; a = m1[0][3]; }
+  }
+  if (!h || !a) continue;
   const o = [pr("101", "101"), pr("101", "102"), pr("101", "103")]; if (o.some(x => !x)) continue;
   const row = [when.d, h, a, ...o, pr("1010", "1010") || "-", pr("1010", "1011") || "-", pr("104", "104") || "-", pr("104", "105") || "-"].join("|");
   const O = odds[id] || (odds[id] = { code: ESPN_LG[id] || id, rows: [] });
@@ -321,14 +342,14 @@ if (!sch.byDay[TODAY] || FORCE) {
 }
 sch.updated = NOW.toISOString().slice(0, 16) + "Z";
 
-// ---------- 4. extra: sistema con 1 errore permesso (6 partite, combinazioni da 5) ----------
+// ---------- 4. extra: sistema con 1 errore permesso (da 3 a 6 partite, combinazioni con una in meno) ----------
 const sis = live.sistemi || (live.sistemi = { byDay: {} });
 if (!sis.byDay[TODAY] || FORCE) {
   // per ogni partita la giocata con la quota più alta tra quelle ammesse (regole più larghe), poi le 6 più probabili
   const byM = {};
   for (const c of candidates(true)) if (c.odd >= 1.2 && (!byM[c.key] || c.odd > byM[c.key].odd)) byM[c.key] = c;
   const legs = Object.values(byM).sort((x, y) => y.prob - x.prob).slice(0, 6);
-  if (legs.length >= 4) {
+  if (legs.length >= 3) {
     sis.byDay[TODAY] = { per: 2, legs: legs.map(legOut) };
     for (const d of Object.keys(sis.byDay)) if (d < addDays(TODAY, -14)) delete sis.byDay[d];
     changed.live = true; log("sistema", legs.length - 1 + "/" + legs.length, "quota piena", legs.reduce((a, c) => a * c.odd, 1).toFixed(2));
