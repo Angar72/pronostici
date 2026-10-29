@@ -2236,7 +2236,8 @@ if (typeof module !== "undefined") module.exports = Model;
     const gi = ((+store.get("pr.gidx", "0") || 0) % gn) + 1; store.set("pr.gidx", String(gi));
     const box = document.createElement("div"); box.id = "giulia";
     box.innerHTML = `<div style="position:fixed;inset:0;z-index:60;background:#000" role="dialog" aria-label="Schedina vinta">
-        <style>.gv{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}@media (min-aspect-ratio:4/5){.gv{object-fit:contain}}</style>
+        <style>.gv,.gb{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.gb{display:none;filter:blur(28px) brightness(.55);transform:scale(1.15)}@media (min-aspect-ratio:4/5){.gv{object-fit:contain}.gb{display:block}}</style>
+        <video class="gb" autoplay muted playsinline aria-hidden="true"></video>
         <video class="gv" autoplay muted playsinline></video>
         <div style="position:absolute;left:0;right:0;bottom:0;padding:24px 16px calc(24px + env(safe-area-inset-bottom,0px));background:linear-gradient(transparent,rgba(0,0,0,.85));text-align:center;color:#fff;display:grid;gap:8px">
           <div style="font-family:var(--font-display);font-style:italic;font-weight:800;font-size:32px;text-transform:uppercase;color:#12C25E;text-shadow:0 2px 12px rgba(0,0,0,.6)">${won.length > 1 ? won.length + " schedine vinte!" : esc(won[0].name) + " vinta!"}</div>
@@ -2246,12 +2247,12 @@ if (typeof module !== "undefined") module.exports = Model;
     document.body.appendChild(box);
     const close = () => box.remove();
     box.querySelector("button").onclick = close;
-    box.querySelector("video").addEventListener("click", close);
+    box.querySelectorAll("video").forEach(v => v.addEventListener("click", close));
     // i video sono cifrati con il codice: li apro qui sul telefono
-    const vEl = box.querySelector("video");
+    const vEl = box.querySelector(".gv"), bEl = box.querySelector(".gb");
     window.claude?.blob?.(`assets/giulia-${gi}.jpg.enc`, "image/jpeg").then(u => { vEl.poster = u; }).catch(() => {});
-    window.claude?.blob?.(`assets/giulia-${gi}.mp4.enc`, "video/mp4").then(u => { vEl.src = u; vEl.play().catch(() => {}); }).catch(() => {});
-    const v = box.querySelector("video"); v.onended = () => setTimeout(close, 2500); v.onerror = () => {};
+    window.claude?.blob?.(`assets/giulia-${gi}.mp4.enc`, "video/mp4").then(u => { vEl.src = u; vEl.play().catch(() => {}); if (getComputedStyle(bEl).display !== "none") { bEl.src = u; bEl.play().catch(() => {}); } }).catch(() => {});
+    const v = box.querySelector(".gv"); v.onended = () => setTimeout(close, 2500); v.onerror = () => {};
   }
 
   function render() {
