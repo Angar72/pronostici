@@ -28,8 +28,8 @@ jobs:
           for url in $(grep -v '^ *$' /tmp/urls.txt); do
             n=$((n+1))
             curl -sSL -o /tmp/g.mp4 "$url"
-            ffmpeg -nostdin -y -loglevel error -i /tmp/g.mp4 -vf "scale=720:-2" -c:v libx264 -preset slow -crf 25 -an -movflags +faststart assets/giulia-$n.mp4
-            ffmpeg -nostdin -y -loglevel error -i /tmp/g.mp4 -vf "fps=10,scale=240:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=96[p];[b][p]paletteuse=dither=bayer" assets/giulia-$n.gif
+            ffmpeg -nostdin -y -loglevel error -i /tmp/g.mp4 -vf "scale=720:-2,tpad=stop_mode=clone:stop_duration=1.2" -c:v libx264 -preset slow -crf 25 -an -movflags +faststart assets/giulia-$n.mp4
+            ffmpeg -nostdin -y -loglevel error -i /tmp/g.mp4 -vf "tpad=stop_mode=clone:stop_duration=1.2,fps=10,scale=240:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=96[p];[b][p]paletteuse=dither=bayer" assets/giulia-$n.gif
             ffmpeg -nostdin -y -loglevel error -ss 4.2 -i /tmp/g.mp4 -frames:v 1 -vf "scale=480:-2" assets/giulia-$n.jpg
           done
           echo "{\"n\":$n}" > assets/giulia.json
