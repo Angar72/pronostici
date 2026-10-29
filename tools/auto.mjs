@@ -3,7 +3,7 @@
 // Env: SITE_CODE, ODDSPAPI_KEY. Opzionali: FORCE=true (rifà le schedine di oggi), NOW (per le prove).
 import { webcrypto as w } from "node:crypto"; import fs from "node:fs";
 const code = (process.env.SITE_CODE || "").trim().toUpperCase(), OP_KEY = (process.env.ODDSPAPI_KEY || "").trim();
-const FORCE = process.env.FORCE === "true", LOTTO_ONLY = process.env.LOTTO_ONLY === "true", NOW = new Date(process.env.NOW || Date.now());
+const COPPE = process.env.COPPE === "true", FORCE = process.env.FORCE === "true", LOTTO_ONLY = process.env.LOTTO_ONLY === "true", NOW = new Date(process.env.NOW || Date.now());
 if (!code) { console.log("SITE_CODE mancante"); process.exit(0); }
 const log = (...a) => console.log(...a);
 const fetchJ = async (u, tries = 2) => { for (let i = 0; i < tries; i++) { try { const r = await fetch(u); if (r.ok) return await r.json(); log("HTTP", r.status, u.replace(/apiKey=[^&]+/, "apiKey=***")); } catch (e) { log("errore rete", String(e).slice(0, 80)); } } return null; };
@@ -164,11 +164,12 @@ const BK = "planetwin365.it", DC = {};
 const NAMES_F = "tools/op-nomi.json"; let names = {}; try { names = JSON.parse(fs.readFileSync(NAMES_F, "utf8")); } catch {}
 let opFix = [];
 // se le schedine di oggi ci sono già (esecuzione di riserva), non spreco richieste di quote
-const ready = !!sch.byDay[TODAY] && !FORCE;
+const ready = !!sch.byDay[TODAY] && !FORCE && !COPPE;
 if (ready) log("schedine di oggi già pronte: aggiorno solo risultati e Lotto");
 if (OP_KEY && !ready) {
   // solo i campionati che giocano oggi o domani, al massimo 5 per richiesta (limite di OddsPapi)
-  const ids = Object.entries(OP_T).filter(([id]) => leagues[id]?.fixtures?.some(f => f.slice(0, 10) === TODAY || f.slice(0, 10) === addDays(TODAY, 1))).map(([, t]) => t);
+  // COPPE=true (a mano, schedine già fatte): solo le coppe nazionali, per gli extra della sera
+  const ids = Object.entries(OP_T).filter(([id]) => (!COPPE || NAT_CUPS[id]) && leagues[id]?.fixtures?.some(f => f.slice(0, 10) === TODAY || f.slice(0, 10) === addDays(TODAY, 1))).map(([, t]) => t);
   for (let i = 0; i < ids.length; i += 5) {
     // OddsPapi limita le richieste ravvicinate: una pausa tra una e l'altra, e un secondo tentativo se risponde 429
     if (i) await new Promise(r => setTimeout(r, 2500));
@@ -354,6 +355,31 @@ if (!sis.byDay[TODAY] || FORCE) {
     for (const d of Object.keys(sis.byDay)) if (d < addDays(TODAY, -14)) delete sis.byDay[d];
     changed.live = true; log("sistema", legs.length - 1 + "/" + legs.length, "quota piena", legs.reduce((a, c) => a * c.odd, 1).toFixed(2));
   } else log("sistema: partite insufficienti");
+}
+
+// ---------- 5. extra: le partite di coppa nazionale di oggi, solo da seguire ----------
+// per ogni coppa una multipla con la squadra di prima divisione contro quella di categoria inferiore:
+// vittoria secca se la quota è bassa, altrimenti doppia chance. Non entra nel conto.
+{
+  const ex = live.extra || (live.extra = { slips: [], res: {} }); ex.slips = ex.slips || [];
+  for (const [id, [, , cname]] of Object.entries(NAT_CUPS)) {
+    const L = leagues[id], O = odds[id]; if (!L || !O) continue;
+    const legs = [];
+    for (const f of L.fixtures) {
+      const [d, t, h, a] = f.split("|"); if (d !== TODAY || !t || t <= addMin(NOWT, 5)) continue;
+      const row = O.rows.find(r => { const q = r.split("|"); return q[0] === d && q[1] === h && q[2] === a; }); if (!row) continue;
+      const [o1, , o2] = row.split("|").slice(3).map(Number), dc = DC[id + "|" + h + "|" + a] || {};
+      const topH = !!L.dom?.[h]?.[0]?.endsWith(".1"), topA = !!L.dom?.[a]?.[0]?.endsWith(".1");
+      const lowH = !L.dom?.[h] || /\.2$/.test(L.dom[h][0]), lowA = !L.dom?.[a] || /\.2$/.test(L.dom[a][0]);
+      const base = { id, d, t, h, a };
+      if (topH && lowA) legs.push(o1 <= 1.6 || !dc["1X"] ? { ...base, mkt: "Esito finale", pick: "1", odd: o1, r: "homewin" } : { ...base, mkt: "Doppia chance", pick: "1X", odd: dc["1X"], r: "dc1x" });
+      else if (topA && lowH) legs.push(o2 <= 1.6 || !dc["X2"] ? { ...base, mkt: "Esito finale", pick: "2", odd: o2, r: "awaywin" } : { ...base, mkt: "Doppia chance", pick: "X2", odd: dc["X2"], r: "dcx2" });
+    }
+    const name = `${cname} · ${TODAY.slice(8, 10)}/${TODAY.slice(5, 7)}`;
+    if (legs.length < 2 || ex.slips.some(x => x.name === name)) continue;
+    ex.slips.push({ name, legs, auto: true }); changed.live = true;
+    log("extra coppa", name, legs.length, "partite");
+  }
 }
 
 if (changed.leagues) await seal("leagues", leagues);

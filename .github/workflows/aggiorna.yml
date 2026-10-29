@@ -11,6 +11,9 @@ on:
       rifai:
         description: "Rifai le schedine di oggi anche se ci sono già"
         type: boolean
+      coppe:
+        description: "Solo quote delle coppe nazionali per gli extra (non tocca le schedine)"
+        type: boolean
         default: false
 permissions:
   contents: write
@@ -28,6 +31,7 @@ jobs:
           SITE_CODE: ${{ secrets.SITE_CODE }}
           ODDSPAPI_KEY: ${{ secrets.ODDSPAPI_KEY }}
           FORCE: ${{ inputs.rifai }}
+          COPPE: ${{ inputs.coppe }}
           LOTTO_ONLY: ${{ github.event.schedule == '45 19 * * 2,4,5,6' }}
       - name: Pubblica
         run: |

@@ -2129,6 +2129,8 @@ if (typeof module !== "undefined") module.exports = Model;
       case "over": return tot > lo;
       case "awayscores": return x.ag >= 1;
       case "homewin": return x.hg > x.ag;
+      case "dc1x": return x.hg >= x.ag;
+      case "dcx2": return x.ag >= x.hg;
       case "awaywin": return x.ag > x.hg;
       case "awaymg": return x.ag > x.hg && tot >= lo && tot <= hi;
       case "t1both": return ht ? x.hl[0] >= 1 && x.hl[1] >= 1 : null;
