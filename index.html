@@ -2173,7 +2173,7 @@ if (typeof module !== "undefined") module.exports = Model;
     return { legs, st, wrong, open, combos, cost, max, per, state, pay, n };
   }
   function sistemiHtml() {
-    const by = state.sistemi?.byDay || {}, days = Object.keys(by).filter(d => d >= addDays(today(), -6)).sort().reverse();
+    const by = state.sistemi?.byDay || {}, days = Object.keys(by).filter(d => d >= today()).sort();
     if (!days.length) return "";
     const q = v => v.toFixed(2).replace(".", ",");
     return `<div class="day">Sistema con 1 errore permesso</div><p class="note">Si vince anche sbagliando una partita: si giocano tutte le combinazioni con una partita in meno. Solo da seguire, non entra nel conto.</p>` + days.map(d => {
@@ -2190,13 +2190,12 @@ if (typeof module !== "undefined") module.exports = Model;
   function viewExtra() {
     const X = extraTally();
     const SIS = sistemiHtml();
-    if (!X.slips.length) return SIS || `<div class="empty">Qui compaiono le multiple extra da seguire.</div>`;
-    const sign = v => (v > 0 ? "+" : v < 0 ? "−" : "") + euro(Math.abs(v));
-    let html = SIS + `<div class="day" style="margin-top:18px">Multiple extra da seguire</div><div class="summary">
-        <div class="stat"><b class="num">${X.legsOk + X.legsKo ? `${X.legsOk}/${X.legsOk + X.legsKo}` : "–"}</b><span>giocate indovinate finora</span></div>
-        <div class="stat"><b class="num">${X.nWon} ✓ · ${X.nLost} ✗</b><span>multiple vinte · perse · solo da seguire, non giocate</span></div>
-      </div>`;
+    // solo le multiple di oggi (o ancora da giocare): quelle passate non servono
+    const cur = r => r.sl.legs.some(l => l.d >= today());
+    if (!X.rows.some(cur)) return SIS || `<div class="empty">Oggi non ci sono extra.</div>`;
+    let html = SIS + `<div class="day" style="margin-top:18px">Multiple extra da seguire</div>`;
     X.rows.forEach((r, si) => {
+      if (!cur(r)) return;
       const head = r.win ? `<span class="ok">✓ vinta</span>` : r.lost ? `<span class="ko">✗ persa</span>` : "in gioco";
       html += `<div class="day">${esc(r.sl.name)} · quota ${r.q.toFixed(2).replace(".", ",")} · ${head}</div><div class="card">`;
       r.sl.legs.forEach((l, li) => {
