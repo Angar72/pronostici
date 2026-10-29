@@ -1,0 +1,34 @@
+name: Avvisi schedine vinte
+on:
+  schedule:
+    - cron: "*/15 0-1,11-23 * * *"
+  workflow_dispatch:
+    inputs:
+      prova:
+        description: "Manda una notifica di prova"
+        type: boolean
+        default: true
+permissions:
+  contents: write
+concurrency: dati
+jobs:
+  avvisi:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node tools/avvisi.mjs
+        env:
+          SITE_CODE: ${{ secrets.SITE_CODE }}
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          PROVA: ${{ inputs.prova }}
+      - name: Salva lo stato degli avvisi
+        run: |
+          git config user.name "avvisi"
+          git config user.email "avvisi@users.noreply.github.com"
+          git add tools/avvisi-stato.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Stato avvisi"
+          git pull --rebase -q && git push -q

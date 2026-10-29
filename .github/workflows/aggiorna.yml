@@ -1,0 +1,39 @@
+name: Aggiorna pronostici
+on:
+  schedule:
+    # tre orari di riserva: GitHub può ritardare o saltare un'esecuzione programmata
+    - cron: "5 5 * * *"
+    - cron: "40 5 * * *"
+    - cron: "10 6 * * *"
+    - cron: "45 19 * * 2,4,5,6"
+  workflow_dispatch:
+    inputs:
+      rifai:
+        description: "Rifai le schedine di oggi anche se ci sono già"
+        type: boolean
+        default: false
+permissions:
+  contents: write
+concurrency: dati
+jobs:
+  aggiorna:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node tools/auto.mjs
+        env:
+          SITE_CODE: ${{ secrets.SITE_CODE }}
+          ODDSPAPI_KEY: ${{ secrets.ODDSPAPI_KEY }}
+          FORCE: ${{ inputs.rifai }}
+          LOTTO_ONLY: ${{ github.event.schedule == '45 19 * * 2,4,5,6' }}
+      - name: Pubblica
+        run: |
+          git config user.name "aggiorna"
+          git config user.email "aggiorna@users.noreply.github.com"
+          git add data tools/op-nomi.json 2>/dev/null || git add data
+          git diff --cached --quiet && exit 0
+          git commit -m "Aggiornamento automatico $(TZ=Europe/Rome date +%d/%m\ %H:%M)"
+          git pull --rebase -q && git push -q
