@@ -374,6 +374,9 @@ if (!sis.byDay[TODAY] || FORCE) {
       const base = { id, d, t, h, a };
       if (topH && lowA) legs.push(o1 <= 1.6 || !dc["1X"] ? { ...base, mkt: "Esito finale", pick: "1", odd: o1, r: "homewin" } : { ...base, mkt: "Doppia chance", pick: "1X", odd: dc["1X"], r: "dc1x" });
       else if (topA && lowH) legs.push(o2 <= 1.6 || !dc["X2"] ? { ...base, mkt: "Esito finale", pick: "2", odd: o2, r: "awaywin" } : { ...base, mkt: "Doppia chance", pick: "X2", odd: dc["X2"], r: "dcx2" });
+      // altrimenti la favorita secondo le quote, con la doppia chance
+      else if (o1 <= 2.2 && o1 < o2 && dc["1X"]) legs.push({ ...base, mkt: "Doppia chance", pick: "1X", odd: dc["1X"], r: "dc1x" });
+      else if (o2 <= 2.2 && o2 < o1 && dc["X2"]) legs.push({ ...base, mkt: "Doppia chance", pick: "X2", odd: dc["X2"], r: "dcx2" });
     }
     const name = `${cname} · ${TODAY.slice(8, 10)}/${TODAY.slice(5, 7)}`;
     if (legs.length < 2 || ex.slips.some(x => x.name === name)) continue;
