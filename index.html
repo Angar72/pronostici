@@ -2182,9 +2182,10 @@ if (typeof module !== "undefined") module.exports = Model;
       const E = sistemaEval(by[d]);
       const head = E.state === "won" ? `<span class="ok">✓ vinto${E.wrong ? " con 1 errore" : " con tutte giuste"} · ${euro(E.pay)}</span>` : E.state === "lost" ? `<span class="ko">✗ perso (${E.wrong} errori)</span>` : `in gioco · ${E.wrong ? "1 errore già usato" : "nessun errore finora"}`;
       return `<div class="day">${esc(dayLabel(d))} · sistema ${E.n - 1}/${E.n} · ${head}</div><div class="card">
-        ${E.legs.map((r, i) => `<div class="res"><div class="m">${TL(r.m.h)} – ${TL(r.m.a)}</div>
-          <div class="sc" style="font-size:20px">${E.st[i] > 0 ? '<span class="ok">✓</span>' : E.st[i] < 0 ? '<span class="ko">✗</span>' : "·"}</div>
-          <div class="meta">${esc(r.m.t || "")} · ${esc(r.L.d.name || "")} · <b>${esc(r.s.k)}</b> a ${q(r.s.odd)}${r.res ? ` · finale <b class="num">${r.res.hg}-${r.res.ag}</b>` : ""}</div></div>`).join("")}
+        ${E.legs.map((r, i) => `<div class="res" style="display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:baseline">
+          <span style="min-width:0;font-weight:600">${TL(r.m.h)} – ${TL(r.m.a)}${r.res ? ` <span class="note">${r.res.hg}-${r.res.ag}</span>` : ""}</span>
+          <b style="white-space:nowrap">${esc(r.s.k)} · ${q(r.s.odd)} ${E.st[i] > 0 ? '<span class="ok">✓</span>' : E.st[i] < 0 ? '<span class="ko">✗</span>' : "·"}</b>
+          <span class="note" style="grid-column:1/-1">${esc(r.m.t || "")} · ${esc(r.L.d.name || "")}</span></div>`).join("")}
         <div class="res"><div class="m">Giocata: ${E.n} combinazioni da ${euro(E.per)} = ${euro(E.cost)}</div>
           <div class="meta">Tutte giuste: ${euro(E.max)} · con 1 errore da ${euro(Math.min(...E.combos))} a ${euro(Math.max(...E.combos))}, secondo la partita sbagliata</div></div></div>`;
     }).join("");
@@ -2205,10 +2206,12 @@ if (typeof module !== "undefined") module.exports = Model;
         const score = ev ? (ev.live ? `<b class="num">${ev.hg}-${ev.ag}</b> · <b class="min">${esc(ev.min)}</b>` : ev.done ? `finale <b class="num">${ev.hg}-${ev.ag}</b>${ev.hl.length >= 2 ? ` (1° t. ${ev.hl[0]}-${ev.al[0]})` : ""}` : ev.off ? "rinviata" : "") : "";
         const mark = s.v === true ? `<span class="ok">✓</span>` : s.v === false ? `<span class="ko">✗</span>` : "·";
         const btns = `<button class="chip" data-x="${k}=1">Vinta</button> <button class="chip" data-x="${k}=0">Persa</button>${s.src === "a mano" ? ` <button class="chip" data-x="${k}=">Annulla</button>` : ""}`;
-        html += `<div class="res"><div class="m">${TL(l.h)} – ${TL(l.a)}</div>
-          <div class="sc" style="font-size:20px">${mark}</div>
-          <div class="meta">${esc(fmtShort(l.d))} ${esc(l.t || "")} · ${esc(l.mkt)} · <b>${esc(l.pick)}</b> a ${l.odd.toFixed(2).replace(".", ",")}${score ? " · " + score : ""}${s.src ? ` · <span class="note">${s.src}</span>` : ""}</div>
-          ${s.v == null && (!ev || ev.done || (l.r || "manual") === "manual") ? `<div class="meta">${(l.r || "manual") === "manual" || (ev && ev.done) ? "Da controllare: " + btns : ""}</div>` : s.src === "a mano" ? `<div class="meta">${btns}</div>` : ""}
+        const q2 = v => v.toFixed(2).replace(".", ",");
+        html += `<div class="res" style="display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:baseline">
+          <span style="min-width:0;font-weight:600">${TL(l.h)} – ${TL(l.a)}${ev && ev.done ? ` <span class="note">${ev.hg}-${ev.ag}</span>` : ""}</span>
+          <b style="text-align:right;max-width:58vw">${esc(l.pick === "Sì" ? l.mkt : l.pick)} · ${q2(l.odd)} ${mark}</b>
+          <span class="note" style="grid-column:1/-1">${esc(fmtShort(l.d))} ${esc(l.t || "")}${l.pick === "Sì" ? "" : " · " + esc(l.mkt)}${score ? " · " + score : ""}${s.src ? ` · ${s.src}` : ""}</span>
+          ${s.v == null && (!ev || ev.done || (l.r || "manual") === "manual") ? ((l.r || "manual") === "manual" || (ev && ev.done) ? `<span class="note" style="grid-column:1/-1">Da controllare: ${btns}</span>` : "") : s.src === "a mano" ? `<span class="note" style="grid-column:1/-1">${btns}</span>` : ""}
         </div>`;
       });
       html += `</div>`;
