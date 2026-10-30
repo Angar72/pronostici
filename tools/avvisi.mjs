@@ -55,8 +55,10 @@ const live = await open("live"), byDay = live.schedine?.byDay || {};
 let GN = 1; try { GN = JSON.parse(fs.readFileSync("assets/giulia.json", "utf8")).n || 1; } catch {}
 let stateG = 0; try { stateG = JSON.parse(fs.readFileSync(STATE, "utf8"))._giulia || 0; } catch {}
 // manda l'avviso con la GIF di Giulia (decifrata qui e caricata su ntfy, che la tiene solo per poche ore)
-async function send(title, msg, tags) {
-  const q = new URLSearchParams({ title, message: msg, tags, priority: "high", click: "https://angar72.github.io/pronostici/#c=" + encodeURIComponent(code) });
+// go: "scommesse|GIORNO" o "extra|GIORNO" per aprire il sito sulla pagina e sul giorno giusti
+async function send(title, msg, tags, go) {
+  const [gv, gd] = String(go || "").split("|");
+  const q = new URLSearchParams({ title, message: msg, tags, priority: "high", click: "https://angar72.github.io/pronostici/#c=" + encodeURIComponent(code) + (gv ? "&v=" + gv + "&d=" + gd : "") });
   try {
     stateG++; const n = ((stateG - 1) % GN) + 1;
     const { iv, ct } = JSON.parse(fs.readFileSync(`assets/giulia-${n}.gif.enc`, "utf8"));
@@ -99,7 +101,7 @@ for (const day of days) {
     const msg = `${t.name} vinta! Quota ${q.toFixed(2).replace(".", ",")} · incassi ${euro(t.stake * q)} con ${euro(t.stake)} giocati.\n` + t.legs.map((l, i) => `${l.h}-${l.a} ${res[i].hg}-${res[i].ag} (${l.k}) ✓`).join("\n");
     console.log(DRY ? "[prova] " : "", key);
     if (!DRY) {
-      const r = await send("Schedina vinta!", msg, "tada,soccer");
+      const r = await send("Schedina vinta!", msg, "tada,soccer", "scommesse|" + day);
       if (!r.ok) { console.log("invio non riuscito", r.status); continue; }
     }
     state[key] = "vinta"; sent++;
@@ -116,8 +118,8 @@ for (const day of days) {
   if (wrong >= 2) { state[key] = "perso"; continue; }
   const combos = D.legs.map((_, s) => D.legs.reduce((a, l, i) => i === s ? a : a * l.odd, 1) * per);
   const pay = wrong ? combos[ok.indexOf(false)] : combos.reduce((a, b) => a + b, 0);
-  const msg = `Sistema ${n - 1}/${n} vinto ${wrong ? "con 1 errore" : "con tutte giuste"}! Incasso ${euro(pay)} su ${euro(n * per)} giocati.\n` + D.legs.map((l, i) => `${l.h}-${l.a} ${res[i].hg}-${res[i].ag} (${l.k}) ${ok[i] ? "✓" : "✗"}`).join("\n");
-  if (!DRY) { const r = await send("Sistema vinto!", msg, "tada,soccer"); if (!r.ok) continue; }
+  const msg = (pay >= 20 ? `Sistema ${n - 1}/${n} vinto ${wrong ? "con 1 errore" : "con tutte giuste"}! Incasso ${euro(pay)} su ${euro(n * per)} giocati.\n` : `Sistema ${n - 1}/${n} chiuso con 1 errore: recuperi ${euro(pay)} su ${euro(n * per)} giocati.\n`) + D.legs.map((l, i) => `${l.h}-${l.a} ${res[i].hg}-${res[i].ag} (${l.k}) ${ok[i] ? "✓" : "✗"}`).join("\n");
+  if (!DRY) { const r = await send(pay >= 20 ? "Sistema vinto!" : "Sistema con 1 errore", msg, "tada,soccer", "extra|" + day); if (!r.ok) continue; }
   state[key] = "vinto"; sent++;
 }
 state._giulia = stateG;

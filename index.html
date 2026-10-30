@@ -649,8 +649,15 @@ if (typeof module !== "undefined") module.exports = Model;
     sec: store.get("pr.sec", "calcio"), league: store.get("pr.league", "it_1"), view: store.get("pr.view", "partite"),
     wheel: store.get("pr.wheel", "Roma"), leagues: {}, raw: {}, manual: null, lotto: null, se: null, tracking: {}, odds: {}, news: {}, live: null, ready: false, day: null, stake: +store.get("pr.stake20", "20") || 20,
     mstake: +store.get("pr.mstake20", "20") || 20, mtarget: +store.get("pr.mtarget20", "100") || 100,
-    bf: "tutte", bl: "tutti"
+    bf: "tutte", bl: "tutti", xday: null
   };
+  // aperto da una notifica: vado sulla pagina e sul giorno della vincita
+  try {
+    const hv = /[#&]v=([a-z]+)/.exec(location.hash || ""), hd = /[#&]d=(\d{4}-\d{2}-\d{2})/.exec(location.hash || "");
+    // dalla notifica: pagina e giorno da aprire (#c=…&v=extra&d=AAAA-MM-GG), letti prima che l'indirizzo venga ripulito
+    const go = hv ? hv[1] + "|" + (hd ? hd[1] : "") : null;
+    if (go) { const [v, d] = go.split("|"); if (v === "scommesse" || v === "extra") { state.sec = "calcio"; state.view = v; if (d) { if (v === "extra") state.xday = d; else { state.day = d; state.dayPicked = true; } } } }
+  } catch (e) {}
   const cache = {};
 
   const today = () => {
@@ -2176,7 +2183,7 @@ if (typeof module !== "undefined") module.exports = Model;
     return { legs, st, wrong, open, combos, cost, max, per, state, pay, n };
   }
   function sistemiHtml() {
-    const by = state.sistemi?.byDay || {}, days = Object.keys(by).filter(d => d >= today()).sort();
+    const by = state.sistemi?.byDay || {}, days = Object.keys(by).filter(d => d === state.xd).sort();
     if (!days.length) return "";
     const q = v => v.toFixed(2).replace(".", ",");
     return `<div class="day">Sistema con 1 errore permesso</div><p class="note">Si vince anche sbagliando una partita: si giocano tutte le combinazioni con una partita in meno. Solo da seguire, non entra nel conto.</p>` + days.map(d => {
@@ -2201,11 +2208,18 @@ if (typeof module !== "undefined") module.exports = Model;
   }
   function viewExtra() {
     const X = extraTally();
-    const SIS = sistemiHtml();
-    // solo le multiple di oggi (o ancora da giocare): quelle passate non servono
-    const cur = r => r.sl.legs.some(l => l.d >= today());
-    if (!X.rows.some(cur)) return SIS || `<div class="empty">Oggi non ci sono extra.</div>`;
-    let html = SIS + `<div class="day" style="margin-top:18px">Multiple extra da seguire</div>`;
+    // da sinistra: l'altro ieri, ieri, oggi (come le schedine); si apre su oggi
+    const t = today(), lastD = sl => sl.legs.map(l => l.d).sort().pop();
+    const xs = new Set(Object.keys(state.sistemi?.byDay || {}).concat(X.rows.map(r => lastD(r.sl))).filter(d => d >= addDays(t, -2) && d <= t));
+    xs.add(t);
+    const xdays = [...xs].sort();
+    if (!xdays.includes(state.xday)) state.xday = t;
+    state.xd = state.xday;
+    const chips = xdays.length > 1 ? `<div class="chips" role="group" aria-label="Giorno">${xdays.map(d => `<button class="chip" data-xday="${d}" aria-pressed="${d === state.xd}">${dayLabel(d)}</button>`).join("")}</div>` : "";
+    const SIS2 = sistemiHtml();
+    const cur = r => lastD(r.sl) === state.xd || (state.xd === t && lastD(r.sl) > t);
+    if (!X.rows.some(cur)) return chips + (SIS2 || `<div class="empty">${state.xd === t ? "Oggi" : "In questo giorno"} non ci sono extra.</div>`);
+    let html = chips + SIS2 + `<div class="day" style="margin-top:18px">Multiple extra da seguire</div>`;
     X.rows.forEach((r, si) => {
       if (!cur(r)) return;
       const head = r.win ? `<span class="ok">✓ vinta</span>` : r.lost ? `<span class="ko">✗ persa</span>` : "in gioco";
@@ -2344,6 +2358,7 @@ if (typeof module !== "undefined") module.exports = Model;
     if (t.id === "sec-calcio" || t.id === "sec-lotto" || t.id === "sec-bilancio") { state.sec = t.id.slice(4); store.set("pr.sec", state.sec); }
     else if (t.dataset.bf) { state.bf = t.dataset.bf; }
     else if (t.dataset.day) { state.day = t.dataset.day; state.dayPicked = true; }
+    else if (t.dataset.xday) { state.xday = t.dataset.xday; }
     else if (t.dataset.l) { state.league = t.dataset.l; store.set("pr.league", state.league); keepTop = true; }
     else if (t.dataset.v) { state.view = t.dataset.v; store.set("pr.view", state.view); keepTop = true; }
     else if (t.dataset.w) { state.wheel = t.dataset.w; store.set("pr.wheel", state.wheel); }
