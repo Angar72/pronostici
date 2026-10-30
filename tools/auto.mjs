@@ -351,7 +351,7 @@ if (!sis.byDay[TODAY] || FORCE) {
   for (const c of candidates(true)) if (c.odd >= 1.2 && (!byM[c.key] || c.odd > byM[c.key].odd)) byM[c.key] = c;
   const legs = Object.values(byM).sort((x, y) => y.prob - x.prob).slice(0, 6);
   if (legs.length >= 3) {
-    sis.byDay[TODAY] = { per: 2, legs: legs.map(legOut) };
+    sis.byDay[TODAY] = { per: Math.round(STAKE / legs.length * 100) / 100, legs: legs.map(legOut) };
     for (const d of Object.keys(sis.byDay)) if (d < addDays(TODAY, -14)) delete sis.byDay[d];
     changed.live = true; log("sistema", legs.length - 1 + "/" + legs.length, "quota piena", legs.reduce((a, c) => a * c.odd, 1).toFixed(2));
   } else log("sistema: partite insufficienti");

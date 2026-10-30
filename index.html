@@ -2163,8 +2163,9 @@ if (typeof module !== "undefined") module.exports = Model;
     return { slips, rows, stake, played, won, nWon, nLost, legsOk, legsKo };
   }
   // ---- sistema "1 errore permesso": n partite, si giocano tutte le combinazioni da n-1 ----
+  const SIS_STAKE = 20;
   function sistemaEval(D) {
-    const legs = D.legs.map(hydrate), n = legs.length, per = D.per || 2;
+    const legs = D.legs.map(hydrate), n = legs.length, per = SIS_STAKE / n; // 20 € in tutto, divisi tra le combinazioni
     const st = legs.map(r => r.res ? (hit(r.s.k, r.res) ? 1 : -1) : 0);
     const wrong = st.filter(x => x < 0).length, open = st.filter(x => x === 0).length;
     const combos = legs.map((_, skip) => legs.reduce((a, r, i) => i === skip ? a : a * r.s.odd, 1) * per);
@@ -2188,8 +2189,14 @@ if (typeof module !== "undefined") module.exports = Model;
           <span style="min-width:0;font-weight:600">${TL(r.m.h)}${RCt(r.id, r.m.h, r.m.a, r.m.h)} – ${TL(r.m.a)}${RCt(r.id, r.m.h, r.m.a, r.m.a)}${r.res ? ` <span class="note">${r.res.hg}-${r.res.ag}</span>` : ""}</span>
           <b style="white-space:nowrap">${esc(r.s.k)} · ${q(r.s.odd)} ${mk}</b>
           <span class="note" style="grid-column:1/-1">${esc(r.m.t || "")} · ${esc(r.L.d.name || "")}${r.res ? " · finale" : lv ? ` · <span class="live-inline"><span class="dot"></span>in corso ${lv.hg}-${lv.ag} ${lv.min.txt === "intervallo" ? "all'intervallo" : "al " + minTxt(lv)}</span> · per ora` : ""}</span></div>`; }).join("")}
-        <div class="res"><div class="m">Giocata: ${E.n} combinazioni da ${euro(E.per)} = ${euro(E.cost)}</div>
-          <div class="meta">Tutte giuste: ${euro(E.max)} · con 1 errore da ${euro(Math.min(...E.combos))} a ${euro(Math.max(...E.combos))}, secondo la partita sbagliata</div></div></div>`;
+        <div class="res" style="display:grid;gap:8px">
+          <div class="money-box ${E.state === "won" ? "win" : E.state === "lost" ? "lose" : ""}">
+            <div><span>Giocata</span><b class="num">${euro(E.cost)}</b></div>
+            <div><span>Quota tutte giuste</span><b class="num">${q(E.legs.reduce((a, r) => a * r.s.odd, 1))}</b></div>
+            <div><span>Vincita tutte giuste</span><b class="num">${euro(E.max)}</b></div>
+            <div><span>Vincita con 1 errore</span><b class="num">${euro(Math.min(...E.combos))} – ${euro(Math.max(...E.combos))}</b></div>
+          </div>
+          <div class="note">${E.n} combinazioni da ${E.n - 1} partite, ${euro(E.per)} ciascuna. Con 1 errore la vincita dipende da quale partita si sbaglia: più bassa la sua quota, più alta la vincita.</div></div></div>`;
     }).join("");
   }
   function viewExtra() {
@@ -2217,7 +2224,11 @@ if (typeof module !== "undefined") module.exports = Model;
           ${s.v == null && (!ev || ev.done || (l.r || "manual") === "manual") ? ((l.r || "manual") === "manual" || (ev && ev.done) ? `<span class="note" style="grid-column:1/-1">Da controllare: ${btns}</span>` : "") : s.src === "a mano" ? `<span class="note" style="grid-column:1/-1">${btns}</span>` : ""}
         </div>`;
       });
-      html += `</div>`;
+      html += `<div class="res"><div class="money-box ${r.win ? "win" : r.lost ? "lose" : ""}">
+          <div><span>Giocata</span><b class="num">${euro(20)}</b></div>
+          <div><span>Quota</span><b class="num">${r.q.toFixed(2).replace(".", ",")}</b></div>
+          <div><span>${r.lost ? "Vincita persa" : r.win ? "Vinto" : "Vincita possibile"}</span><b class="num">${euro(20 * r.q)}</b></div>
+        </div></div></div>`;
     });
     html += `<p class="note">Multiple extra solo da seguire: non sono giocate e non entrano nel conto. Risultato, tempi, cartellini, angoli e tiri in porta si controllano da soli sul sito quando ESPN li fornisce; le giocate sui singoli giocatori (gol, assist, cartellino, palo) le segni tu con Vinta o Persa.</p>`;
     return html;

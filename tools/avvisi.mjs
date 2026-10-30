@@ -112,7 +112,7 @@ for (const day of days) {
   const last = D.legs.map(l => new Date(`${l.d}T${l.t || "23:00"}:00${l.d >= "2026-10-25" && l.d < "2027-03-28" ? "+01:00" : "+02:00"}`).getTime()).sort().pop();
   if (Date.now() < last + 110 * 60000) continue;
   const res = await Promise.all(D.legs.map(result)); if (res.some(r => !r || r.pending)) continue;
-  const ok = D.legs.map((l, i) => hit(l.k, res[i].hg, res[i].ag)), wrong = ok.filter(x => !x).length, per = D.per || 2, n = D.legs.length;
+  const ok = D.legs.map((l, i) => hit(l.k, res[i].hg, res[i].ag)), wrong = ok.filter(x => !x).length, n = D.legs.length, per = 20 / n;
   if (wrong >= 2) { state[key] = "perso"; continue; }
   const combos = D.legs.map((_, s) => D.legs.reduce((a, l, i) => i === s ? a : a * l.odd, 1) * per);
   const pay = wrong ? combos[ok.indexOf(false)] : combos.reduce((a, b) => a + b, 0);
