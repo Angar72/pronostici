@@ -3,17 +3,17 @@
 // Env: SITE_CODE, ODDSPAPI_KEY. Opzionali: FORCE=true (rifà le schedine di oggi), NOW (per le prove).
 import { webcrypto as w } from "node:crypto"; import fs from "node:fs";
 const code = (process.env.SITE_CODE || "").trim().toUpperCase(), OP_KEY = (process.env.ODDSPAPI_KEY || "").trim();
-const COPPE = process.env.COPPE === "true", FORCE = process.env.FORCE === "true", LOTTO_ONLY = process.env.LOTTO_ONLY === "true", NOW = new Date(process.env.NOW || Date.now());
+const BACKTEST = process.env.BACKTEST === "true", COPPE = process.env.COPPE === "true", FORCE = process.env.FORCE === "true", LOTTO_ONLY = process.env.LOTTO_ONLY === "true", NOW = new Date(process.env.NOW || Date.now());
 if (!code) { console.log("SITE_CODE mancante"); process.exit(0); }
 const log = (...a) => console.log(...a);
-const fetchJ = async (u, tries = 2) => { for (let i = 0; i < tries; i++) { try { const r = await fetch(u); if (r.ok) return await r.json(); log("HTTP", r.status, u.replace(/apiKey=[^&]+/, "apiKey=***")); } catch (e) { log("errore rete", String(e).slice(0, 80)); } } return null; };
+const fetchJ = async (u, tries = 2) => { if (BACKTEST) return null; for (let i = 0; i < tries; i++) { try { const r = await fetch(u); if (r.ok) return await r.json(); log("HTTP", r.status, u.replace(/apiKey=[^&]+/, "apiKey=***")); } catch (e) { log("errore rete", String(e).slice(0, 80)); } } return null; };
 
 // ---------- cifratura (come tools/seal.mjs e la pagina) ----------
 const S = w.subtle, salt = Buffer.from(fs.readFileSync("data/salt.txt", "utf8").trim(), "base64");
 const base = await S.importKey("raw", new TextEncoder().encode(code), "PBKDF2", false, ["deriveKey"]);
 const KEY = await S.deriveKey({ name: "PBKDF2", hash: "SHA-256", salt, iterations: 200000 }, base, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]);
 async function open(c) { const { iv, ct } = JSON.parse(fs.readFileSync(`data/${c}.enc`, "utf8")); return JSON.parse(new TextDecoder().decode(await S.decrypt({ name: "AES-GCM", iv: Buffer.from(iv, "base64") }, KEY, Buffer.from(ct, "base64")))); }
-async function seal(c, obj) { const iv = w.getRandomValues(new Uint8Array(12)); const ct = new Uint8Array(await S.encrypt({ name: "AES-GCM", iv }, KEY, new TextEncoder().encode(JSON.stringify(obj)))); fs.writeFileSync(`data/${c}.enc`, JSON.stringify({ iv: Buffer.from(iv).toString("base64"), ct: Buffer.from(ct).toString("base64") })); }
+async function seal(c, obj) { if (BACKTEST) return; const iv = w.getRandomValues(new Uint8Array(12)); const ct = new Uint8Array(await S.encrypt({ name: "AES-GCM", iv }, KEY, new TextEncoder().encode(JSON.stringify(obj)))); fs.writeFileSync(`data/${c}.enc`, JSON.stringify({ iv: Buffer.from(iv).toString("base64"), ct: Buffer.from(ct).toString("base64") })); }
 
 // ---------- date e nomi ----------
 const romeFmt = new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Rome", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" });
@@ -56,6 +56,8 @@ function teamOf(L, name) {
 }
 
 const leagues = await open("leagues"), odds = await open("odds"), live = await open("live"), lotto = await open("lotto");
+// BT_RES (solo prove): risultati in più "id|data|casa|ospite|gc|go;..."
+if (BACKTEST && process.env.BT_RES) for (const x of process.env.BT_RES.split(";")) { const [id, ...r] = x.split("|"); if (leagues[id] && !leagues[id].played.some(p => p.startsWith(r[0] + "|" + r[1] + "|" + r[2]))) leagues[id].played.push(r.join("|") + "|"); }
 const sch = live.schedine || (live.schedine = { byDay: {} }); sch.byDay = sch.byDay || {};
 let changed = { leagues: false, odds: false, live: false, lotto: false };
 
@@ -227,7 +229,7 @@ function stats(id) {
   const T = {};
   const g = t => T[t] || (T[t] = { p: 0, n: 0, gf: 0, ga: 0, hp: 0, hn: 0, ap: 0, an: 0, o: 0, gg: 0 });
   for (const r of L.played) {
-    const q = r.split("|"); if (q[0] < from) continue;
+    const q = r.split("|"); if (q[0] < from || q[0] >= TODAY) continue;
     const hg = +q[3], ag = +q[4], ph = hg > ag ? 3 : hg === ag ? 1 : 0, pa = ag > hg ? 3 : hg === ag ? 1 : 0;
     const H = g(q[1]), A = g(q[2]);
     H.p += ph; H.n++; H.gf += hg; H.ga += ag; H.hp += ph; H.hn++; A.p += pa; A.n++; A.gf += ag; A.ga += hg; A.ap += pa; A.an++;
@@ -242,8 +244,10 @@ function candidates(relaxed = false) {
   for (const [id, L] of Object.entries(leagues)) {
     const O = odds[id]; if (!O) continue;
     const st = stats(id);
-    for (const f of L.fixtures) {
-      const [d, t, h, a] = f.split("|"); if (d !== TODAY || !t || t <= addMin(NOWT, 30)) continue;
+    // prova sul passato (BACKTEST): le partite già giocate quel giorno contano come in calendario
+    const FX = BACKTEST ? L.fixtures.concat(L.played.filter(r => r.startsWith(TODAY)).map(r => { const q = r.split("|"); return [q[0], "12:00", q[1], q[2], ""].join("|"); })) : L.fixtures;
+    for (const f of FX) {
+      const [d, t, h, a] = f.split("|"); if (d !== TODAY || !t || (!BACKTEST && t <= addMin(NOWT, 30))) continue;
       const row = O.rows.find(r => { const q = r.split("|"); return q[0] === d && q[1] === h && q[2] === a; }); if (!row) continue;
       const q = row.split("|").slice(3).map(Number), [o1, oX, o2, ov, un, gg] = q;
       if (NAT_CUPS[id]) {
@@ -261,7 +265,7 @@ function candidates(relaxed = false) {
       }
       const H = st.T[h], A = st.T[a]; if (!H || !A || H.n < 4 || A.n < 4) continue;
       const s = 1 / o1 + 1 / oX + 1 / o2, p1 = 1 / o1 / s, pX = 1 / oX / s, p2 = 1 / o2 / s, half = st.n / 2;
-      const dc = DC[id + "|" + h + "|" + a] || {};
+      const dc = DC[id + "|" + h + "|" + a] || (BACKTEST ? { "1X": Math.round(0.95 / (1 / o1 + 1 / oX) * 100) / 100, "X2": Math.round(0.95 / (1 / o2 + 1 / oX) * 100) / 100 } : {});
       const hppg = H.hp / Math.max(H.hn, 1), appg = A.ap / Math.max(A.an, 1);
       const nordic = id === "se_1" || id === "no_1", late = nordic && (+TODAY.slice(5, 7) >= 9);
       const leg = (k, odd, prob, why) => odd && odd > 1.01 && out.push({ id, d, t, h, a, k, odd, prob: Math.round(prob * 1000) / 1000, why, key: id + "|" + h + "|" + a, secca: k === "1" || k === "2" });
@@ -269,7 +273,12 @@ function candidates(relaxed = false) {
       // a fine stagione nei campionati nordici niente giocate contro chi lotta per non retrocedere
       if (late && opp.pos > st.n - 3) continue;
       // doppia chance sulla favorita meglio piazzata
-      if (fav.pos < opp.pos && (fav.pos <= half || opp.pos - fav.pos >= st.n / 4)) leg(favH ? "1X" : "X2", favH ? dc["1X"] : dc["X2"], favH ? p1 + pX : p2 + pX, "doppia chance");
+      // doppia chance sulla favorita: molto meglio piazzata e con il fattore campo dalla sua parte.
+      // In casa: forte in casa e avversaria debole fuori. Fuori casa (più rischioso): avversaria debole in casa,
+      // favorita forte in trasferta e distacco in classifica netto (30/10: Elversberg-Mainz e Nice-Rennes perse così)
+      const gap = opp.pos - fav.pos;
+      if (favH && gap >= Math.max(3, st.n / 6) && hppg >= 1.5 && appg <= 1.5) leg("1X", dc["1X"], p1 + pX, "doppia chance");
+      if (!favH && gap >= Math.max(4, st.n / 5) && fav.pos <= half && appg >= 1.6 && hppg <= 1.3) leg("X2", dc["X2"], p2 + pX, "doppia chance");
       // vittoria secca solo per favorita in alto, forte in casa/fuori, contro avversaria debole
       if (favH && o1 <= 1.8 && H.pos <= half && hppg >= 2 && appg <= 1.3) leg("1", o1, p1, "secca casa");
       else if (relaxed && favH && p1 >= 0.5 && o1 <= 2.2 && H.pos < A.pos) leg("1", o1, p1, "secca casa");
@@ -316,9 +325,11 @@ if (!sch.byDay[TODAY] || FORCE) {
   const inAll = () => new Set(Object.keys(count).filter(k => count[k] >= 2));
   const add = t => { if (!t) return; tickets.push(t); t.forEach(c => { count[c.key] = (count[c.key] || 0) + 1; if (c.secca && c.odd > 1.3) usedSecca.add(c.key); }); };
   const legSet = t => new Set(t.map(c => c.key + c.k));
+  // ogni partita in una sola schedina: un errore non deve far perdere più schedine insieme
+  const used = () => new Set(tickets.flat().map(c => c.key));
   const t1 = best(cands, { usedSecca }); add(t1);
-  const t2 = t1 && best(cands, { usedSecca, differ: [legSet(t1)] }); add(t2);
-  const t3 = t2 && best(cands, { usedSecca, avoid: inAll(), differ: [legSet(t1), legSet(t2)] }); add(t3);
+  const t2 = t1 && best(cands, { usedSecca, avoid: used() }); add(t2);
+  const t3 = t2 && best(cands, { usedSecca, avoid: used() }); add(t3);
   // niente doppioni
   const sig = t => t.map(c => c.key + c.k).sort().join(";");
   const uniq = tickets.filter((t, i) => tickets.findIndex(x => sig(x) === sig(t)) === i);
@@ -385,6 +396,12 @@ if (!sis.byDay[TODAY] || FORCE) {
   }
 }
 
+if (BACKTEST) {
+  const D = sch.byDay[TODAY]; const out = [];
+  for (const tk of D?.tickets || []) { const st = ticketState(tk); out.push(st + " " + tk.reduce((a, l) => a * l.odd, 1).toFixed(2) + ": " + tk.map(l => { const r = resultOf(l); return `${l.h}-${l.a} ${l.k} ${l.odd}${r ? ` [${r.hg}-${r.ag} ${hit(l.k, r.hg, r.ag) ? "✓" : "✗"}]` : ""}`; }).join(" | ")); }
+  log("BT", TODAY, D?.low ? "(unica)" : "", "\n  " + (out.join("\n  ") || "nessuna schedina"));
+  process.exit(0);
+}
 if (changed.leagues) await seal("leagues", leagues);
 if (changed.odds) await seal("odds", odds);
 if (changed.live) await seal("live", live);
