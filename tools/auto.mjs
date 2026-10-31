@@ -287,13 +287,17 @@ function candidates(relaxed = false) {
       if (!favH && o2 <= 1.8 && A.pos <= half && appg >= 2 && hppg <= 1.3) leg("2", o2, p2, "secca fuori");
       else if (relaxed && !favH && p2 >= 0.5 && o2 <= 2.2 && A.pos < H.pos) leg("2", o2, p2, "secca fuori");
       // gol: solo se lo dicono entrambe le squadre
-      const rq = relaxed ? 0.5 : 0.6;
-      if (ov && ov <= (relaxed ? 2 : 1.8) && H.o / H.n >= rq && A.o / A.n >= rq) leg("Over 2,5", ov, 1 / ov / (1 / ov + 1 / un), "over");
+      const GM = process.env.GOALS || "on";
+      const rq = relaxed ? 0.5 : GM === "strict" ? 0.7 : 0.6, gMax = relaxed ? 2 : GM === "strict" ? 1.45 : 1.8, gN = GM === "strict" && !relaxed ? 6 : 0;
+      if (GM === "off" && !relaxed) {} else {
+      if (ov && ov <= gMax && H.n >= gN && A.n >= gN && H.o / H.n >= rq && A.o / A.n >= rq) leg("Over 2,5", ov, 1 / ov / (1 / ov + 1 / un), "over");
       if (un && un <= 1.85 && H.o / H.n <= 0.35 && A.o / A.n <= 0.35 && Math.min(o1, o2) > 1.6) leg("Under 2,5", un, 1 / un / (1 / ov + 1 / un), "under");
-      if (gg && gg <= (relaxed ? 2 : 1.85) && H.gg / H.n >= rq && A.gg / A.n >= rq) leg("Goal", gg, 1 / gg / (1 / gg + 1 / q[6]), "goal");
+      if (gg && gg <= (relaxed ? 2 : GM === "strict" ? 1.5 : 1.85) && H.n >= gN && A.n >= gN && H.gg / H.n >= rq && A.gg / A.n >= rq) leg("Goal", gg, 1 / gg / (1 / gg + 1 / q[6]), "goal");
+      }
     }
   }
-  return out.filter(c => c.prob >= (relaxed ? 0.45 : 0.55)).sort((x, y) => y.prob - x.prob);
+  const MAXO = +(process.env.MAXODD || 99);
+  return out.filter(c => c.prob >= (relaxed ? 0.45 : 0.55) && (relaxed || c.odd < MAXO)).sort((x, y) => y.prob - x.prob);
 }
 function addMin(t, m) { const [h, mm] = t.split(":").map(Number); const x = h * 60 + mm + m; return String(Math.floor(x / 60)).padStart(2, "0") + ":" + String(x % 60).padStart(2, "0"); }
 // la combinazione con la probabilità di vincita più alta che arriva alla quota minima (al massimo 7 partite)
