@@ -132,8 +132,8 @@ for (const day of days) {
 // ---------- last minute: giocate facili durante le partite ----------
 // Per ogni partita in corso (tra il 55' e l'80', senza espulsioni) parto dai gol attesi prima della partita
 // (ricavati dalle quote 1X2 e Over/Under del mattino), li riduco al tempo che resta e calcolo la probabilità
-// di ogni esito dal punteggio attuale. Avviso solo se un esito è tra l'85% e il 95% (oltre, la quota non vale nulla),
-// una volta per partita, al massimo 4 al giorno. La quota live non la conosco: indico la quota minima per cui conviene.
+// di ogni esito dal punteggio attuale. Avviso se un esito è tra il 55% e il 70%: giocato a quota 2 o più è a nostro favore.
+// Una volta per partita, al massimo 4 al giorno. La quota live non la conosco: indico la quota minima (mai sotto 2,00).
 const LM_MAX = 4;
 try {
   const nowR = new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Rome", hour: "2-digit", minute: "2-digit" }).format(new Date(process.env.NOW || Date.now()));
@@ -170,12 +170,13 @@ try {
         for (const n of [0.5, 1.5, 2.5, 3.5, 4.5]) { if (t > n) add("Over " + String(n).replace(".", ","), p); else add("Under " + String(n).replace(".", ","), p); }
         if (x > 0 && y > 0) add("Goal", p); else add("NoGoal", p);
       }
-      // esiti non ancora decisi, nella fascia 85-95%: il più sicuro
-      const pick = Object.entries(P).filter(([, p]) => p >= 0.85 && p <= 0.95).sort((x, y) => y[1] - x[1])[0];
+      // quota minima 2,00 (sotto non vale la pena): servono esiti con probabilità sopra il 55%, così a quota 2
+      // la giocata è a nostro favore; sopra il 70% la quota live non arriva mai a 2. Prendo il più probabile.
+      const pick = Object.entries(P).filter(([, p]) => p >= 0.55 && p <= 0.70).sort((x, y) => y[1] - x[1])[0];
       if (!pick) continue;
-      const [k, p] = pick, qmin = Math.ceil(1 / p * 1.06 * 100) / 100;
+      const [k, p] = pick, qmin = Math.max(2, Math.ceil(1 / p * 1.06 * 100) / 100);
       const it = { id, h, a, t: nowR, min, hg, ag, k, prob: Math.round(p * 1000) / 1000, qmin };
-      const msg = `${h}-${a} ${hg}-${ag} al ${min}': gioca ${k}. Probabilità ${Math.round(p * 100)}%. Conviene solo se la quota live è almeno ${fmt(qmin)}.`;
+      const msg = `${h}-${a} ${hg}-${ag} al ${min}': gioca ${k}. Probabilità ${Math.round(p * 100)}%. Giocala solo se la quota live è almeno ${fmt(qmin)}.`;
       console.log("last minute:", msg);
       if (!DRY) { const r = await send("Last minute ⚡", msg, "zap,soccer", "extra|" + today, true); if (!r.ok) continue; }
       lm.byDay[today].push(it); nDay++; live._lmChanged = true;

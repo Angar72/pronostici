@@ -2223,7 +2223,7 @@ if (typeof module !== "undefined") module.exports = Model;
         <span style="min-width:0;font-weight:600">${TL(x.h)} – ${TL(x.a)}${r ? ` <span class="note">${r.hg}-${r.ag}</span>` : ""}</span>
         <b style="white-space:nowrap">${esc(x.k)} ${mk}</b>
         <span class="note" style="grid-column:1/-1">Segnalata alle ${esc(x.t)} sul ${x.hg}-${x.ag} al ${x.min}' · probabilità ${Math.round(x.prob * 100)}% · conviene con quota live da ${q(x.qmin)} in su${r ? " · finale" : lv ? ` · <span class="live-inline"><span class="dot"></span>in corso ${lv.hg}-${lv.ag}</span>` : ""}</span></div>`;
-    }).join("")}</div><p class="note">Giocate durante la partita, trovate da sole tra il 55' e l'80' quando un esito è molto probabile (85-95%). La quota live non la vedo: giocala solo se in Planetwin è almeno quella indicata. Solo da seguire, non entrano nel conto.</p>`;
+    }).join("")}</div><p class="note">Giocate durante la partita, trovate da sole tra il 55' e l'80': esiti con probabilità tra il 55% e il 70%, da giocare solo con quota live da 2,00 in su (sotto non vale la pena). La quota live non la vedo: controllala in Planetwin. Solo da seguire, non entrano nel conto.</p>`;
   }
   function viewExtra() {
     const X = extraTally();
