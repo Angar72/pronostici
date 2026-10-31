@@ -2206,17 +2206,36 @@ if (typeof module !== "undefined") module.exports = Model;
           <div class="note">${E.n} combinazioni da ${E.n - 1} partite, ${euro(E.per)} ciascuna. Con 1 errore la vincita dipende da quale partita si sbaglia: più bassa la sua quota, più alta la vincita.</div></div></div>`;
     }).join("");
   }
+  // last minute: giocate suggerite durante le partite (le trova da sola il controllo ogni 15 minuti)
+  function lmHit(k, h, a) {
+    const m = /^(Over|Under) (\d),5$/.exec(k);
+    if (m) return m[1] === "Over" ? h + a > +m[2] : h + a <= +m[2];
+    return hit(k, { hg: h, ag: a });
+  }
+  function lastMinuteHtml(day) {
+    const L = state.lastminute?.byDay?.[day] || [];
+    if (!L.length) return "";
+    const q = v => v.toFixed(2).replace(".", ",");
+    return `<div class="day" style="margin-top:18px">Last minute ⚡ · ${esc(dayLabel(day))}</div><div class="card">${L.map(x => {
+      const r = hydrate({ id: x.id, d: day, h: x.h, a: x.a, k: x.k, odd: x.qmin, prob: x.prob }).res, lv = !r && liveFor(x.id, x.h, x.a);
+      const mk = r ? (lmHit(x.k, r.hg, r.ag) ? '<span class="ok">✓</span>' : '<span class="ko">✗</span>') : lv ? (lmHit(x.k, lv.hg, lv.ag) ? '<span class="ok">✓</span>' : '<span class="ko">✗</span>') : "·";
+      return `<div class="res" style="display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:baseline">
+        <span style="min-width:0;font-weight:600">${TL(x.h)} – ${TL(x.a)}${r ? ` <span class="note">${r.hg}-${r.ag}</span>` : ""}</span>
+        <b style="white-space:nowrap">${esc(x.k)} ${mk}</b>
+        <span class="note" style="grid-column:1/-1">Segnalata alle ${esc(x.t)} sul ${x.hg}-${x.ag} al ${x.min}' · probabilità ${Math.round(x.prob * 100)}% · conviene con quota live da ${q(x.qmin)} in su${r ? " · finale" : lv ? ` · <span class="live-inline"><span class="dot"></span>in corso ${lv.hg}-${lv.ag}</span>` : ""}</span></div>`;
+    }).join("")}</div><p class="note">Giocate durante la partita, trovate da sole tra il 55' e l'80' quando un esito è molto probabile (85-95%). La quota live non la vedo: giocala solo se in Planetwin è almeno quella indicata. Solo da seguire, non entrano nel conto.</p>`;
+  }
   function viewExtra() {
     const X = extraTally();
     // da sinistra: l'altro ieri, ieri, oggi (come le schedine); si apre su oggi
     const t = today(), lastD = sl => sl.legs.map(l => l.d).sort().pop();
-    const xs = new Set(Object.keys(state.sistemi?.byDay || {}).concat(X.rows.map(r => lastD(r.sl))).filter(d => d >= addDays(t, -2) && d <= t));
+    const xs = new Set(Object.keys(state.sistemi?.byDay || {}).concat(Object.keys(state.lastminute?.byDay || {}), X.rows.map(r => lastD(r.sl))).filter(d => d >= addDays(t, -2) && d <= t));
     xs.add(t);
     const xdays = [...xs].sort();
     if (!xdays.includes(state.xday)) state.xday = t;
     state.xd = state.xday;
     const chips = xdays.length > 1 ? `<div class="chips" role="group" aria-label="Giorno">${xdays.map(d => `<button class="chip" data-xday="${d}" aria-pressed="${d === state.xd}">${dayLabel(d)}</button>`).join("")}</div>` : "";
-    const SIS2 = sistemiHtml();
+    const SIS2 = sistemiHtml() + lastMinuteHtml(state.xd);
     const cur = r => lastD(r.sl) === state.xd || (state.xd === t && lastD(r.sl) > t);
     if (!X.rows.some(cur)) return chips + (SIS2 || `<div class="empty">${state.xd === t ? "Oggi" : "In questo giorno"} non ci sono extra.</div>`);
     let html = chips + SIS2 + `<div class="day" style="margin-top:18px">Multiple extra da seguire</div>`;
@@ -2455,6 +2474,7 @@ if (typeof module !== "undefined") module.exports = Model;
     }, () => { gotLeagues = true; done(); });
     db.doc("live/prep").onSnapshot(doc => { state.prep = doc.exists ? doc.data() : null; if (state.prep?.date === today()) store.set("pr.prep", "0"); if (state.ready) render(); }, () => {});
     db.doc("live/sistemi").onSnapshot(doc => { state.sistemi = doc.exists ? doc.data() : null; if (state.ready) render(); }, () => {});
+    db.doc("live/lastminute").onSnapshot(doc => { state.lastminute = doc.exists ? doc.data() : null; if (state.ready) render(); }, () => {});
     db.doc("live/extra").onSnapshot(doc => { state.extra = doc.exists ? doc.data() : null; if (state.ready) render(); }, () => {});
     db.doc("live/schedine").onSnapshot(doc => { state.saved = doc.exists ? doc.data() : null; state.savedLoaded = true; if (state.ready) render(); }, () => {});
     if (!SITE) db.doc("live/now").onSnapshot(doc => { state.live = doc.exists ? doc.data() : null; landed(state.live?.updated); if (state.ready) render(); }, () => {});

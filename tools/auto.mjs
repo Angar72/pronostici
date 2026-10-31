@@ -354,12 +354,18 @@ if (!sch.byDay[TODAY] || FORCE) {
 }
 sch.updated = NOW.toISOString().slice(0, 16) + "Z";
 
+// partite già usate oggi (schedine, recupero, sistema): negli extra non si ripetono
+const usedToday = () => {
+  const k = l => l.id + "|" + l.h + "|" + l.a, D = sch.byDay[TODAY], Y = sch.byDay[addDays(TODAY, -1)];
+  return new Set([...(D?.tickets || []).flat(), ...(Y?.recovery?.legs || []).filter(l => l.d === TODAY), ...(live.sistemi?.byDay?.[TODAY]?.legs || [])].map(k));
+};
 // ---------- 4. extra: sistema con 1 errore permesso (da 3 a 6 partite, combinazioni con una in meno) ----------
 const sis = live.sistemi || (live.sistemi = { byDay: {} });
 if (!sis.byDay[TODAY] || FORCE) {
   // per ogni partita la giocata con la quota più alta tra quelle ammesse (regole più larghe), poi le 6 più probabili
-  const byM = {};
-  for (const c of candidates(true)) if (c.odd >= 1.2 && (!byM[c.key] || c.odd > byM[c.key].odd)) byM[c.key] = c;
+  if (FORCE) delete sis.byDay[TODAY];
+  const byM = {}, taken = usedToday();
+  for (const c of candidates(true)) if (!taken.has(c.key) && c.odd >= 1.2 && (!byM[c.key] || c.odd > byM[c.key].odd)) byM[c.key] = c;
   const legs = Object.values(byM).sort((x, y) => y.prob - x.prob).slice(0, 6);
   if (legs.length >= 3) {
     sis.byDay[TODAY] = { per: Math.round(STAKE / legs.length * 100) / 100, legs: legs.map(legOut) };
@@ -373,11 +379,12 @@ if (!sis.byDay[TODAY] || FORCE) {
 // vittoria secca se la quota è bassa, altrimenti doppia chance. Non entra nel conto.
 {
   const ex = live.extra || (live.extra = { slips: [], res: {} }); ex.slips = ex.slips || [];
+  const taken = usedToday();
   for (const [id, [, , cname]] of Object.entries(NAT_CUPS)) {
     const L = leagues[id], O = odds[id]; if (!L || !O) continue;
     const legs = [];
     for (const f of L.fixtures) {
-      const [d, t, h, a] = f.split("|"); if (d !== TODAY || !t || t <= addMin(NOWT, 5)) continue;
+      const [d, t, h, a] = f.split("|"); if (d !== TODAY || !t || t <= addMin(NOWT, 5) || taken.has(id + "|" + h + "|" + a)) continue;
       const row = O.rows.find(r => { const q = r.split("|"); return q[0] === d && q[1] === h && q[2] === a; }); if (!row) continue;
       const [o1, , o2] = row.split("|").slice(3).map(Number), dc = DC[id + "|" + h + "|" + a] || {};
       const topH = !!L.dom?.[h]?.[0]?.endsWith(".1"), topA = !!L.dom?.[a]?.[0]?.endsWith(".1");

@@ -15,6 +15,13 @@ async function open(name) {
   return JSON.parse(new TextDecoder().decode(await s.decrypt({ name: "AES-GCM", iv: Buffer.from(iv, "base64") }, key, Buffer.from(ct, "base64"))));
 }
 
+async function seal(name, obj) {
+  const s = w.subtle, salt = Buffer.from(fs.readFileSync("data/salt.txt", "utf8").trim(), "base64");
+  const base = await s.importKey("raw", new TextEncoder().encode(code), "PBKDF2", false, ["deriveKey"]);
+  const key = await s.deriveKey({ name: "PBKDF2", hash: "SHA-256", salt, iterations: 200000 }, base, { name: "AES-GCM", length: 256 }, false, ["encrypt"]);
+  const iv = w.getRandomValues(new Uint8Array(12)), ct = new Uint8Array(await s.encrypt({ name: "AES-GCM", iv }, key, new TextEncoder().encode(JSON.stringify(obj))));
+  fs.writeFileSync(`data/${name}.enc`, JSON.stringify({ iv: Buffer.from(iv).toString("base64"), ct: Buffer.from(ct).toString("base64") }));
+}
 // stessi abbinamenti dei nomi usati dalla pagina
 const ESPN_LG = { it_1: "ita.1", it_2: "ita.2", en_1: "eng.1", es_1: "esp.1", de_1: "ger.1", fr_1: "fra.1", nl_1: "ned.1", pt_1: "por.1", be_1: "bel.1", no_1: "nor.1", se_1: "swe.1", cl: "uefa.champions", el: "uefa.europa", ecl: "uefa.europa.conf" };
 const E_ALIAS = { "psg": "paris saint germain", "inter": "internazionale", "man united": "manchester united", "man utd": "manchester united", "man city": "manchester city", "wolves": "wolverhampton", "spurs": "tottenham", "atletico": "atletico madrid", "bayern": "bayern munich", "gladbach": "monchengladbach", "sporting": "sporting cp", "athletic": "athletic club", "betis": "real betis", "leverkusen": "bayer leverkusen", "paris": "paris fc", "rennes": "stade rennais", "lione": "lyon", "marsiglia": "marseille", "stoccarda": "stuttgart", "barcellona": "barcelona", "siviglia": "sevilla", "lipsia": "leipzig", "bayern monaco": "bayern munich", "union saint gilloise": "union st gilloise", "lilla": "lille", "bruges": "club brugge", "magonza": "mainz", "friburgo": "freiburg", "colonia": "cologne" };
@@ -56,10 +63,10 @@ let GN = 1; try { GN = JSON.parse(fs.readFileSync("assets/giulia.json", "utf8"))
 let stateG = 0; try { stateG = JSON.parse(fs.readFileSync(STATE, "utf8"))._giulia || 0; } catch {}
 // manda l'avviso con la GIF di Giulia (decifrata qui e caricata su ntfy, che la tiene solo per poche ore)
 // go: "scommesse|GIORNO" o "extra|GIORNO" per aprire il sito sulla pagina e sul giorno giusti
-async function send(title, msg, tags, go) {
+async function send(title, msg, tags, go, noGif) {
   const [gv, gd] = String(go || "").split("|");
   const q = new URLSearchParams({ title, message: msg, tags, priority: "high", click: "https://angar72.github.io/pronostici/#c=" + encodeURIComponent(code) + (gv ? "&v=" + gv + "&d=" + gd : "") });
-  try {
+  if (!noGif) try {
     stateG++; const n = ((stateG - 1) % GN) + 1;
     const { iv, ct } = JSON.parse(fs.readFileSync(`assets/giulia-${n}.gif.enc`, "utf8"));
     const S = w.subtle, salt = Buffer.from(fs.readFileSync("data/salt.txt", "utf8").trim(), "base64");
@@ -122,6 +129,62 @@ for (const day of days) {
   if (!DRY) { const r = await send(pay >= 20 ? "Sistema vinto!" : "Sistema con 1 errore", msg, "tada,soccer", "extra|" + day); if (!r.ok) continue; }
   state[key] = "vinto"; sent++;
 }
+// ---------- last minute: giocate facili durante le partite ----------
+// Per ogni partita in corso (tra il 55' e l'80', senza espulsioni) parto dai gol attesi prima della partita
+// (ricavati dalle quote 1X2 e Over/Under del mattino), li riduco al tempo che resta e calcolo la probabilità
+// di ogni esito dal punteggio attuale. Avviso solo se un esito è tra l'85% e il 95% (oltre, la quota non vale nulla),
+// una volta per partita, al massimo 4 al giorno. La quota live non la conosco: indico la quota minima per cui conviene.
+const LM_MAX = 4;
+try {
+  const nowR = new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Rome", hour: "2-digit", minute: "2-digit" }).format(new Date(process.env.NOW || Date.now()));
+  const odds = await open("odds");
+  const lm = live.lastminute || (live.lastminute = { byDay: {} }); lm.byDay[today] = lm.byDay[today] || [];
+  const pois = (l, k) => { let p = Math.exp(-l); for (let i = 1; i <= k; i++) p *= l / i; return p; };
+  const pOver = (l, n) => { let c = 0; for (let k = 0; k <= n; k++) c += pois(l, k); return 1 - c; };
+  const solve = (f, lo, hi) => { for (let i = 0; i < 50; i++) { const m = (lo + hi) / 2; if (f(m) > 0) hi = m; else lo = m; } return (lo + hi) / 2; };
+  const pHome = (lh, la) => { let p = 0; for (let i = 0; i < 12; i++) for (let j = 0; j < i; j++) p += pois(lh, i) * pois(la, j); return p; };
+  const fmt = v => v.toFixed(2).replace(".", ",");
+  let nDay = lm.byDay[today].length;
+  for (const [id, lg] of Object.entries(ESPN_LG)) {
+    if (nDay >= LM_MAX) break;
+    const rows = (odds[id]?.rows || []).filter(r => r.startsWith(today)); if (!rows.length) continue;
+    for (const e of await board(lg, today)) {
+      const st = e.status?.type || {}; if (st.state !== "in" || +e.status.period !== 2) continue;
+      const min = Math.floor((+e.status.clock || 0) / 60); if (min < 55 || min > 80) continue;
+      const c = e.competitions?.[0] || {}, H = c.competitors?.find(x => x.homeAway === "home"), A = c.competitors?.find(x => x.homeAway === "away"); if (!H || !A) continue;
+      if ((c.details || []).some(x => x.redCard)) continue;
+      const nm = t => [t.team?.displayName, t.team?.shortDisplayName, t.team?.name].filter(Boolean);
+      const row = rows.map(r => r.split("|")).find(q => Math.max(...nm(H).map(n => eSim(q[1], n))) >= 1 && Math.max(...nm(A).map(n => eSim(q[2], n))) >= 1);
+      if (!row) continue;
+      const [, h, a, o1, oX, o2, ov, un] = row; if (lm.byDay[today].some(x => x.h === h && x.a === a)) continue;
+      if (!(+ov > 1 && +un > 1)) continue;
+      const po = (1 / ov) / (1 / ov + 1 / un), s3 = 1 / o1 + 1 / oX + 1 / o2, p1 = 1 / o1 / s3;
+      const lt = solve(l => pOver(l, 2) - po, 0.3, 6), fh = solve(f => pHome(lt * f, lt * (1 - f)) - p1, 0.05, 0.95);
+      const rem = Math.max(0, 94 - min) / 90, mh = lt * fh * rem, ma = lt * (1 - fh) * rem, hg = +H.score || 0, ag = +A.score || 0;
+      const P = {};
+      const add = (k, p) => { P[k] = (P[k] || 0) + p; };
+      for (let i = 0; i < 9; i++) for (let j = 0; j < 9; j++) {
+        const p = pois(mh, i) * pois(ma, j), x = hg + i, y = ag + j, t = x + y;
+        if (x > y) add("1", p); else if (x === y) add("X", p); else add("2", p);
+        if (x >= y) add("1X", p); if (x <= y) add("X2", p); if (x !== y) add("12", p);
+        for (const n of [0.5, 1.5, 2.5, 3.5, 4.5]) { if (t > n) add("Over " + String(n).replace(".", ","), p); else add("Under " + String(n).replace(".", ","), p); }
+        if (x > 0 && y > 0) add("Goal", p); else add("NoGoal", p);
+      }
+      // esiti non ancora decisi, nella fascia 85-95%: il più sicuro
+      const pick = Object.entries(P).filter(([, p]) => p >= 0.85 && p <= 0.95).sort((x, y) => y[1] - x[1])[0];
+      if (!pick) continue;
+      const [k, p] = pick, qmin = Math.ceil(1 / p * 1.06 * 100) / 100;
+      const it = { id, h, a, t: nowR, min, hg, ag, k, prob: Math.round(p * 1000) / 1000, qmin };
+      const msg = `${h}-${a} ${hg}-${ag} al ${min}': gioca ${k}. Probabilità ${Math.round(p * 100)}%. Conviene solo se la quota live è almeno ${fmt(qmin)}.`;
+      console.log("last minute:", msg);
+      if (!DRY) { const r = await send("Last minute ⚡", msg, "zap,soccer", "extra|" + today, true); if (!r.ok) continue; }
+      lm.byDay[today].push(it); nDay++; live._lmChanged = true;
+      if (nDay >= LM_MAX) break;
+    }
+  }
+  for (const d of Object.keys(lm.byDay)) if (d < addDays(today, -3)) delete lm.byDay[d];
+  if (live._lmChanged && !DRY) { delete live._lmChanged; await seal("live", live); }
+} catch (e) { console.log("last minute:", String(e).slice(0, 120)); }
 state._giulia = stateG;
 // tengo solo gli ultimi 10 giorni
 for (const k of Object.keys(state)) if (k !== "_giulia" && k.slice(0, 10) < addDays(today, -10)) delete state[k];
