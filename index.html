@@ -788,6 +788,8 @@ if (typeof module !== "undefined") module.exports = Model;
     return { hg: +p[3], ag: +p[4], st: p[5], goals: list(p[6]), reds: list(p[7]), read: lv.read, min };
   }
   const minTxt = lv => `${esc(lv.min.txt)}${lv.min.est ? " circa" : ""}`;
+  // minuto della partita in corso; "sospesa" se l'arbitro l'ha interrotta (punteggio fermo al momento della sospensione)
+  const liveWhen = lv => lv.st === "sospesa" ? "· partita sospesa" : lv.min.txt === "intervallo" ? "all'intervallo" : "al " + minTxt(lv);
   // marcatori solo delle squadre italiane; espulsioni con il solo cartellino rosso
   const isIta = n => ["it_1", "it_2"].some(id => (state.raw[id]?.teams || []).includes(n));
   const eventsHtml = lv => {
@@ -1432,7 +1434,7 @@ if (typeof module !== "undefined") module.exports = Model;
         const lv = liveFor(r.id, r.m.h, r.m.a);
         if (!lv) return `<b>risultato in arrivo</b>`;
         const ok = hit(s.k, lv);
-        return `<span class="live-inline"><span class="dot"></span>in corso ${lv.hg}-${lv.ag} ${lv.min.txt === "intervallo" ? "all'intervallo" : "al " + minTxt(lv)}</span> (letto alle ${esc(lv.read)}) · per ora <b class="${ok ? "ok" : "ko"}">${ok ? "✓" : "✗"}</b>${eventsHtml(lv)}`;
+        return `<span class="live-inline"><span class="dot"></span>in corso ${lv.hg}-${lv.ag} ${liveWhen(lv)}</span> (letto alle ${esc(lv.read)}) · per ora <b class="${ok ? "ok" : "ko"}">${ok ? "✓" : "✗"}</b>${eventsHtml(lv)}`;
       }
       const ok = hit(s.k, r.res);
       return `finita ${r.res.hg}-${r.res.ag} · <b class="${ok ? "ok" : "ko"}">${ok ? "✓ indovinata" : "✗ sbagliata"}</b>${eventsHtml({ goals: SCORERS[r.id + "|" + r.m.h + "|" + r.m.a] || [], reds: [] })}`;
@@ -1492,7 +1494,7 @@ if (typeof module !== "undefined") module.exports = Model;
         ${tk.map(r => `<div style="display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:baseline">
             <span style="min-width:0;font-weight:600">${TL(r.m.h)}${RCt(r.id, r.m.h, r.m.a, r.m.h)} – ${TL(r.m.a)}${RCt(r.id, r.m.h, r.m.a, r.m.a)}${r.res ? ` <span class="note">${r.res.hg}-${r.res.ag}</span>` : ""}</span>
             <b style="white-space:nowrap">${esc(r.s.k)} · ${fmtQ(r.s.odd)}${r.s.est ? "*" : ""}${r.res ? (hit(r.s.k, r.res) ? ' <span class="ok">✓</span>' : ' <span class="ko">✗</span>') : ""}</b>
-            <span class="note">${r.m.d !== state.day ? esc(dayLabel(r.m.d)) + " " : ""}${r.m.t ? esc(r.m.t) + " · " : ""}${esc(r.L.d.name)} · indice di favore <b>${pct(r.s.prob)}</b> (${r.s.mkt == null ? `solo modello ${pct(r.s.model)}%, prudenzialmente ${pct(r.s.prob)}, quota stimata` : `modello ${pct(r.s.model)}%, bookmaker ${pct(r.s.mkt)}%${r.s.edge ? ", con valore" : ""}`})${(() => { if (r.res) return ""; const lv = liveFor(r.id, r.m.h, r.m.a); return lv ? ` · <span class="live-inline"><span class="dot"></span>in corso ${lv.hg}-${lv.ag} ${lv.min.txt === "intervallo" ? "all'intervallo" : "al " + minTxt(lv)}</span> per ora ${hit(r.s.k, lv) ? '<span class="ok">✓</span>' : '<span class="ko">✗</span>'}${eventsHtml(lv)}` : ""; })()}</span><span></span>
+            <span class="note">${r.m.d !== state.day ? esc(dayLabel(r.m.d)) + " " : ""}${r.m.t ? esc(r.m.t) + " · " : ""}${esc(r.L.d.name)} · indice di favore <b>${pct(r.s.prob)}</b> (${r.s.mkt == null ? `solo modello ${pct(r.s.model)}%, prudenzialmente ${pct(r.s.prob)}, quota stimata` : `modello ${pct(r.s.model)}%, bookmaker ${pct(r.s.mkt)}%${r.s.edge ? ", con valore" : ""}`})${(() => { if (r.res) return ""; const lv = liveFor(r.id, r.m.h, r.m.a); return lv ? ` · <span class="live-inline"><span class="dot"></span>in corso ${lv.hg}-${lv.ag} ${liveWhen(lv)}</span> per ora ${hit(r.s.k, lv) ? '<span class="ok">✓</span>' : '<span class="ko">✗</span>'}${eventsHtml(lv)}` : ""; })()}</span><span></span>
             ${(() => { const g = SCORERS[r.id + "|" + r.m.h + "|" + r.m.a]; return g && g.length ? `<span style="grid-column:1/-1">${eventsHtml({ goals: g, reds: [] })}</span>` : ""; })()}
           </div>`).join("")}
         <div class="note">Quota: ${tk.map(r => fmtQ(r.s.odd) + (r.s.est ? "*" : "")).join(" × ")} = <b>${fmtQ(q)}</b>${anyEst ? `<br>* quota stimata dal modello: il bookmaker non l'ha ancora pubblicata, controlla la quota reale prima di giocare.` : ""}</div>
@@ -1544,7 +1546,7 @@ if (typeof module !== "undefined") module.exports = Model;
       ${tk.map(r => `<div style="display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:baseline">
           <span style="min-width:0;font-weight:600">${TL(r.m.h)}${RCt(r.id, r.m.h, r.m.a, r.m.h)} – ${TL(r.m.a)}${RCt(r.id, r.m.h, r.m.a, r.m.a)}${r.res ? ` <span class="note">${r.res.hg}-${r.res.ag}</span>` : ""}</span>
           <b style="white-space:nowrap">${esc(r.s.k)} · ${fmtQ(r.s.odd)}${r.res ? (hit(r.s.k, r.res) ? ' <span class="ok">✓</span>' : ' <span class="ko">✗</span>') : ""}</b>
-          <span class="note">${esc(dayLabel(r.m.d))}${r.m.t ? " " + esc(r.m.t) : ""} · ${esc(r.L.d.name)} · indice <b>${pct(r.s.prob)}</b> (modello ${pct(r.s.model)}%, bookmaker ${pct(r.s.mkt)}%)${(() => { if (r.res) return ""; const lv = liveFor(r.id, r.m.h, r.m.a); return lv ? ` · <span class="live-inline"><span class="dot"></span>in corso ${lv.hg}-${lv.ag} ${lv.min.txt === "intervallo" ? "all'intervallo" : "al " + minTxt(lv)}</span> per ora ${hit(r.s.k, lv) ? '<span class="ok">✓</span>' : '<span class="ko">✗</span>'}` : ""; })()}</span><span></span>
+          <span class="note">${esc(dayLabel(r.m.d))}${r.m.t ? " " + esc(r.m.t) : ""} · ${esc(r.L.d.name)} · indice <b>${pct(r.s.prob)}</b> (modello ${pct(r.s.model)}%, bookmaker ${pct(r.s.mkt)}%)${(() => { if (r.res) return ""; const lv = liveFor(r.id, r.m.h, r.m.a); return lv ? ` · <span class="live-inline"><span class="dot"></span>in corso ${lv.hg}-${lv.ag} ${liveWhen(lv)}</span> per ora ${hit(r.s.k, lv) ? '<span class="ok">✓</span>' : '<span class="ko">✗</span>'}` : ""; })()}</span><span></span>
           ${(() => { const g = SCORERS[r.id + "|" + r.m.h + "|" + r.m.a]; return g && g.length ? `<span style="grid-column:1/-1">${eventsHtml({ goals: g, reds: [] })}</span>` : ""; })()}
         </div>`).join("")}
       <div class="note">Quota: ${tk.map(r => fmtQ(r.s.odd)).join(" × ")} = <b>${fmtQ(q)}</b></div>
@@ -2195,7 +2197,7 @@ if (typeof module !== "undefined") module.exports = Model;
           return `<div class="res" style="display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:baseline">
           <span style="min-width:0;font-weight:600">${TL(r.m.h)}${RCt(r.id, r.m.h, r.m.a, r.m.h)} – ${TL(r.m.a)}${RCt(r.id, r.m.h, r.m.a, r.m.a)}${r.res ? ` <span class="note">${r.res.hg}-${r.res.ag}</span>` : ""}</span>
           <b style="white-space:nowrap">${esc(r.s.k)} · ${q(r.s.odd)} ${mk}</b>
-          <span class="note" style="grid-column:1/-1">${esc(r.m.t || "")} · ${esc(r.L.d.name || "")}${r.res ? " · finale" : lv ? ` · <span class="live-inline"><span class="dot"></span>in corso ${lv.hg}-${lv.ag} ${lv.min.txt === "intervallo" ? "all'intervallo" : "al " + minTxt(lv)}</span> · per ora` : ""}</span></div>`; }).join("")}
+          <span class="note" style="grid-column:1/-1">${esc(r.m.t || "")} · ${esc(r.L.d.name || "")}${r.res ? " · finale" : lv ? ` · <span class="live-inline"><span class="dot"></span>in corso ${lv.hg}-${lv.ag} ${liveWhen(lv)}</span> · per ora` : ""}</span></div>`; }).join("")}
         <div class="res" style="display:grid;gap:8px">
           <div class="money-box ${E.state === "won" ? "win" : E.state === "lost" ? "lose" : ""}">
             <div><span>Giocata</span><b class="num">${euro(E.cost)}</b></div>
@@ -2585,6 +2587,11 @@ if (typeof module !== "undefined") module.exports = Model;
           SCORERS[m.id + "|" + m.h + "|" + m.a] = det.filter(x => x.scoringPlay).map(lab);
         }
         if (m.evOnly) return;
+        if (/suspend|abandon|delay/i.test(s.name || "") && (s.state === "in" || hg + ag > 0)) {
+          // partita interrotta: la mostro col punteggio del momento, così non sembra ferma senza motivo
+          live.push([m.id, m.h, m.a, hg, ag, "sospesa", m.goals || "", (REDS[m.id + "|" + m.h + "|" + m.a] || []).join(";")].join("|"));
+          return;
+        }
         if (/postpon|cancel|abandon|suspend|delay/i.test(s.name || "")) return;
         if (s.completed) rows.push([m.id, m.d, m.h, m.a, hg, ag].join("|"));
         else if (s.state === "in") {
