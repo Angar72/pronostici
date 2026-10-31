@@ -23,6 +23,7 @@ jobs:
         env:
           SITE_CODE: ${{ secrets.SITE_CODE }}
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          ODDSPAPI_KEY: ${{ secrets.ODDSPAPI_KEY }}
           PROVA: ${{ inputs.prova }}
       - name: Salva lo stato degli avvisi
         run: |

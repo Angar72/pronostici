@@ -210,6 +210,8 @@ for (const f of opFix) {
   const O = odds[id] || (odds[id] = { code: ESPN_LG[id] || id, rows: [] });
   O.rows = O.rows.filter(r => { const q = r.split("|"); return !(q[1] === h && q[2] === a) && q[0] >= addDays(TODAY, -10); });
   O.rows.push(row); O.rows.sort(); O.updated = NOW.toISOString().slice(0, 16) + "Z"; O.source = "Planetwin365 (OddsPapi)";
+  // id della partita su OddsPapi: serve al last minute per leggere la quota live
+  if (f.fixtureId) { O.fx = O.fx || {}; O.fx[h + "|" + a] = f.fixtureId; }
   DC[id + "|" + h + "|" + a] = { "1X": pr("101902", "101902"), "12": pr("101902", "101903"), "X2": pr("101902", "101904") };
   // la data della partita dalle quote, se il calendario non l'ha
   if (!L.fixtures.some(x => { const q = x.split("|"); return q[2] === h && q[3] === a; }) && !L.played.some(x => { const q = x.split("|"); return q[1] === h && q[2] === a && Math.abs(dayDiff(q[0], when.d)) <= 4; }) && when.d >= TODAY) { L.fixtures.push([when.d, when.t, h, a, ""].join("|")); L.fixtures.sort(); changed.leagues = true; }

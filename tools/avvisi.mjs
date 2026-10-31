@@ -2,7 +2,7 @@
 // Gira su GitHub Actions: legge le schedine cifrate in data/live.enc, controlla i risultati su ESPN
 // e manda un avviso una sola volta per schedina. Env: SITE_CODE, NTFY_TOPIC (segreti del repository).
 import { webcrypto as w } from "node:crypto"; import fs from "node:fs";
-const code = (process.env.SITE_CODE || "").trim().toUpperCase(), topic = (process.env.NTFY_TOPIC || "").trim();
+const code = (process.env.SITE_CODE || "").trim().toUpperCase(), topic = (process.env.NTFY_TOPIC || "").trim(), OP_KEY = (process.env.ODDSPAPI_KEY || "").trim();
 const DRY = !!process.env.DRY, STATE = "tools/avvisi-stato.json";
 if (!code || !topic) { console.log("segreti mancanti"); process.exit(0); }
 const fetchJ = async u => { try { const r = await fetch(u); return r.ok ? r.json() : null; } catch { return null; } };
@@ -129,26 +129,31 @@ for (const day of days) {
   if (!DRY) { const r = await send(pay >= 20 ? "Sistema vinto!" : "Sistema con 1 errore", msg, "tada,soccer", "extra|" + day); if (!r.ok) continue; }
   state[key] = "vinto"; sent++;
 }
-// ---------- last minute: giocate facili durante le partite ----------
+// ---------- last minute: giocate durante le partite, con la quota live vera di Planetwin ----------
 // Per ogni partita in corso (tra il 55' e l'80', senza espulsioni) parto dai gol attesi prima della partita
 // (ricavati dalle quote 1X2 e Over/Under del mattino), li riduco al tempo che resta e calcolo la probabilità
-// di ogni esito dal punteggio attuale. Avviso se un esito è tra il 55% e il 70%: giocato a quota 2 o più è a nostro favore.
-// Una volta per partita, al massimo 4 al giorno. La quota live non la conosco: indico la quota minima (mai sotto 2,00).
-const LM_MAX = 4;
+// di ogni esito dal punteggio attuale. Se un esito è al 55% o più, leggo la quota live di Planetwin (OddsPapi):
+// avviso solo se la quota è almeno 2,00 e la giocata è a nostro favore (probabilità × quota ≥ 1,05).
+// Le richieste a OddsPapi sono poche al mese (piano gratuito): al massimo LM_CHECKS letture al giorno.
+const LM_MAX = 4, LM_CHECKS = 3, BK = "planetwin365.it";
+// esiti che so leggere nelle quote di Planetwin: [mercato, esito]
+const MK = { "1": ["101", "101"], "X": ["101", "102"], "2": ["101", "103"], "1X": ["101902", "101902"], "12": ["101902", "101903"], "X2": ["101902", "101904"], "Over 2,5": ["1010", "1010"], "Under 2,5": ["1010", "1011"], "Goal": ["104", "104"], "NoGoal": ["104", "105"] };
 try {
   const nowR = new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Rome", hour: "2-digit", minute: "2-digit" }).format(new Date(process.env.NOW || Date.now()));
   const odds = await open("odds");
   const lm = live.lastminute || (live.lastminute = { byDay: {} }); lm.byDay[today] = lm.byDay[today] || [];
+  const chk = lm.checked || (lm.checked = {}); for (const k of Object.keys(chk)) if (!k.startsWith(today)) delete chk[k];
   const pois = (l, k) => { let p = Math.exp(-l); for (let i = 1; i <= k; i++) p *= l / i; return p; };
   const pOver = (l, n) => { let c = 0; for (let k = 0; k <= n; k++) c += pois(l, k); return 1 - c; };
   const solve = (f, lo, hi) => { for (let i = 0; i < 50; i++) { const m = (lo + hi) / 2; if (f(m) > 0) hi = m; else lo = m; } return (lo + hi) / 2; };
   const pHome = (lh, la) => { let p = 0; for (let i = 0; i < 12; i++) for (let j = 0; j < i; j++) p += pois(lh, i) * pois(la, j); return p; };
   const fmt = v => v.toFixed(2).replace(".", ",");
-  let nDay = lm.byDay[today].length;
+  let nDay = lm.byDay[today].length, nChk = Object.keys(chk).length;
   for (const [id, lg] of Object.entries(ESPN_LG)) {
-    if (nDay >= LM_MAX) break;
+    if (nDay >= LM_MAX || nChk >= LM_CHECKS) break;
     const rows = (odds[id]?.rows || []).filter(r => r.startsWith(today)); if (!rows.length) continue;
     for (const e of await board(lg, today)) {
+      if (nDay >= LM_MAX || nChk >= LM_CHECKS) break;
       const st = e.status?.type || {}; if (st.state !== "in" || +e.status.period !== 2) continue;
       const min = Math.floor((+e.status.clock || 0) / 60); if (min < 55 || min > 80) continue;
       const c = e.competitions?.[0] || {}, H = c.competitors?.find(x => x.homeAway === "home"), A = c.competitors?.find(x => x.homeAway === "away"); if (!H || !A) continue;
@@ -156,7 +161,9 @@ try {
       const nm = t => [t.team?.displayName, t.team?.shortDisplayName, t.team?.name].filter(Boolean);
       const row = rows.map(r => r.split("|")).find(q => Math.max(...nm(H).map(n => eSim(q[1], n))) >= 1 && Math.max(...nm(A).map(n => eSim(q[2], n))) >= 1);
       if (!row) continue;
-      const [, h, a, o1, oX, o2, ov, un] = row; if (lm.byDay[today].some(x => x.h === h && x.a === a)) continue;
+      const [, h, a, o1, oX, o2, ov, un] = row, mkey = today + "|" + h + "|" + a;
+      if (chk[mkey] || lm.byDay[today].some(x => x.h === h && x.a === a)) continue;
+      const fid = odds[id]?.fx?.[h + "|" + a]; if (!fid || !OP_KEY) continue;
       if (!(+ov > 1 && +un > 1)) continue;
       const po = (1 / ov) / (1 / ov + 1 / un), s3 = 1 / o1 + 1 / oX + 1 / o2, p1 = 1 / o1 / s3;
       const lt = solve(l => pOver(l, 2) - po, 0.3, 6), fh = solve(f => pHome(lt * f, lt * (1 - f)) - p1, 0.05, 0.95);
@@ -167,20 +174,23 @@ try {
         const p = pois(mh, i) * pois(ma, j), x = hg + i, y = ag + j, t = x + y;
         if (x > y) add("1", p); else if (x === y) add("X", p); else add("2", p);
         if (x >= y) add("1X", p); if (x <= y) add("X2", p); if (x !== y) add("12", p);
-        for (const n of [0.5, 1.5, 2.5, 3.5, 4.5]) { if (t > n) add("Over " + String(n).replace(".", ","), p); else add("Under " + String(n).replace(".", ","), p); }
+        if (t > 2.5) add("Over 2,5", p); else add("Under 2,5", p);
         if (x > 0 && y > 0) add("Goal", p); else add("NoGoal", p);
       }
-      // quota minima 2,00 (sotto non vale la pena): servono esiti con probabilità sopra il 55%, così a quota 2
-      // la giocata è a nostro favore; sopra il 70% la quota live non arriva mai a 2. Prendo il più probabile.
-      const pick = Object.entries(P).filter(([, p]) => p >= 0.55 && p <= 0.70).sort((x, y) => y[1] - x[1])[0];
-      if (!pick) continue;
-      const [k, p] = pick, qmin = Math.max(2, Math.ceil(1 / p * 1.06 * 100) / 100);
-      const it = { id, h, a, t: nowR, min, hg, ag, k, prob: Math.round(p * 1000) / 1000, qmin };
-      const msg = `${h}-${a} ${hg}-${ag} al ${min}': gioca ${k}. Probabilità ${Math.round(p * 100)}%. Giocala solo se la quota live è almeno ${fmt(qmin)}.`;
+      // esiti non ancora decisi e abbastanza probabili: solo allora spendo una lettura di quote
+      const cands = Object.entries(P).filter(([, p]) => p >= 0.55 && p <= 0.97);
+      if (!cands.length) continue;
+      chk[mkey] = nowR; nChk++; live._lmChanged = true;
+      const j = await fetchJ(`https://api.oddspapi.io/v4/odds?fixtureId=${encodeURIComponent(fid)}&bookmakers=${BK}&apiKey=${OP_KEY}`);
+      const mk = j?.bookmakerOdds?.[BK]?.markets; if (!mk) { console.log("last minute: quote live non disponibili per", h, a); continue; }
+      const price = k => { const [m, o] = MK[k]; const pl = mk[m]?.outcomes?.[o]?.players?.["0"], v = pl?.active === false ? 0 : pl?.price; return v > 1 ? Math.round(v * 100) / 100 : null; };
+      const good = cands.map(([k, p]) => ({ k, p, q: price(k) })).filter(x => x.q && x.q >= 2 && x.p * x.q >= 1.05).sort((x, y) => y.p * y.q - x.p * x.q)[0];
+      if (!good) { console.log("last minute: nessuna quota da 2 a favore per", h, a); continue; }
+      const it = { id, h, a, t: nowR, min, hg, ag, k: good.k, prob: Math.round(good.p * 1000) / 1000, odd: good.q, qmin: good.q };
+      const msg = `${h}-${a} ${hg}-${ag} al ${min}': gioca ${good.k} a quota ${fmt(good.q)} su Planetwin. Probabilità ${Math.round(good.p * 100)}%. Con 20 € vinci ${euro(20 * good.q)}. Se la quota è scesa sotto 2,00 lascia perdere.`;
       console.log("last minute:", msg);
       if (!DRY) { const r = await send("Last minute ⚡", msg, "zap,soccer", "extra|" + today, true); if (!r.ok) continue; }
-      lm.byDay[today].push(it); nDay++; live._lmChanged = true;
-      if (nDay >= LM_MAX) break;
+      lm.byDay[today].push(it); nDay++;
     }
   }
   for (const d of Object.keys(lm.byDay)) if (d < addDays(today, -3)) delete lm.byDay[d];
