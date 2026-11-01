@@ -59,6 +59,8 @@ const leagues = await open("leagues"), odds = await open("odds"), live = await o
 // BT_RES (solo prove): risultati in più "id|data|casa|ospite|gc|go;..."
 if (BACKTEST && process.env.BT_RES) for (const x of process.env.BT_RES.split(";")) { const [id, ...r] = x.split("|"); if (leagues[id] && !leagues[id].played.some(p => p.startsWith(r[0] + "|" + r[1] + "|" + r[2]))) leagues[id].played.push(r.join("|") + "|"); }
 const sch = live.schedine || (live.schedine = { byDay: {} }); sch.byDay = sch.byDay || {};
+// riserva (dal controllo ogni 15 minuti): lavora solo se dopo le 6 le schedine di oggi mancano ancora
+if (process.env.ONLY_IF_MISSING === "true" && (sch.byDay[TODAY] || NOWT < "06:00")) { log("schedine di oggi già pronte (o troppo presto): niente da fare"); process.exit(0); }
 let changed = { leagues: false, odds: false, live: false, lotto: false };
 
 // ---------- 0. Lotto e SuperEnalotto da estrazionedellotto.it ----------

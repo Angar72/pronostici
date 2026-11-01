@@ -1,7 +1,8 @@
 name: Avvisi schedine vinte
 on:
   schedule:
-    - cron: "*/15 0-1,11-23 * * *"
+    # ogni 15 minuti tutto il giorno: avvisi di vincita, last minute e, di riserva, le schedine del mattino
+    - cron: "*/15 * * * *"
   workflow_dispatch:
     inputs:
       prova:
@@ -19,6 +20,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+      - name: Schedine di oggi se mancano ancora (riserva se GitHub salta l'aggiornamento del mattino)
+        run: node tools/auto.mjs
+        env:
+          SITE_CODE: ${{ secrets.SITE_CODE }}
+          ODDSPAPI_KEY: ${{ secrets.ODDSPAPI_KEY }}
+          ONLY_IF_MISSING: "true"
       - run: node tools/avvisi.mjs
         env:
           SITE_CODE: ${{ secrets.SITE_CODE }}
@@ -29,7 +36,7 @@ jobs:
         run: |
           git config user.name "avvisi"
           git config user.email "avvisi@users.noreply.github.com"
-          git add tools/avvisi-stato.json data/live.enc
+          git add tools/avvisi-stato.json data tools/op-nomi.json
           git diff --cached --quiet && exit 0
           git commit -m "Stato avvisi"
           git pull --rebase -q && git push -q
