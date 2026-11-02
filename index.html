@@ -1462,7 +1462,7 @@ if (typeof module !== "undefined") module.exports = Model;
     // le schedine di oggi si formulano solo dopo «Prepara le schedine di oggi» (risultati, quote e assenze controllati);
     // poi si fissano e non cambiano più
     // le schedine di oggi le prepara l'aggiornamento automatico delle 7:30
-    if (!frozen && state.day === t) return html + `<div class="empty">Le schedine di oggi arrivano da sole verso le 7:30, insieme alle quote Planetwin365.${hhmm() >= "08:30" ? "<br>Oggi non ci sono partite abbastanza sicure per arrivare a quota 2,80: meglio non giocare." : ""}</div>`;
+    if (!frozen && state.day === t) { setTimeout(autoKick, 300); return html + `<div class="empty">Le schedine di oggi arrivano da sole verso le 7:30, insieme alle quote Planetwin365.${ghTok() ? `<br>${kickMsg()}` : ""}</div>${ghPanel()}`; }
     if (!frozen && state.day === t && tickets.length) saveSched(n => { n.byDay[t] = { stake, tickets: tickets.map(tk => tk.map(dehyd)) }; });
     const fmtQ = v => v.toFixed(2).replace(".", ",");
     const dayTxt = state.day === "next3" ? "dei prossimi 3 giorni" : isPast ? (state.day === yesterday ? "di ieri" : "del " + fmtDay(state.day)) : state.day === t ? "di oggi" : "· " + fmtDay(state.day);
@@ -1516,6 +1516,7 @@ if (typeof module !== "undefined") module.exports = Model;
     html += `<p class="note"><b>Come è costruita.</b> Ogni mattina, con «Prepara le schedine di oggi», controllo i dati di tutte le partite: risultati delle ultime giornate, quote dei bookmaker e assenti. Poi per ogni partita il pronostico incrocia forza delle squadre, forma delle ultime 5, rendimento in casa di chi gioca in casa e fuori di chi gioca fuori, classifica, assenze e quote. Entrano in schedina solo le giocate con tutti i dati controllati, su cui modello e bookmaker sono d'accordo e coerenti con forma, rendimento, classifica e assenze (per i gol anche con la frequenza di Over e Goal delle due squadre). Le schedine hanno da 2 a 5 partite e quota sopra ${fmtQ(need)}, o più bassa se con le sole giocate sicure non ci si arriva. Ogni errore delle schedine passate alza in automatico le soglie per il tipo di giocata o il campionato che ha sbagliato.</p>
       <p class="note">Una schedina a quota ${fmtQ(need)} si perde più spesso di quanto si vinca: anche con favorite forti si vince circa 1 volta su 3 o 4, e il margine del bookmaker si moltiplica a ogni partita aggiunta.</p>`;
     html += winRateHtml(tickets, stake);
+    if (state.day === today()) html += ghPanel();
     return html;
   }
 
@@ -2337,8 +2338,42 @@ if (typeof module !== "undefined") module.exports = Model;
     main.innerHTML = state.view === "scommesse" ? viewScommesse() : state.view === "conto" ? viewConto() : state.view === "extra" ? viewExtra() : state.view === "classifica" ? viewClassifica(L) : state.view === "verifica" ? viewVerifica(L) : viewPartite(L);
   }
 
+  // ---- avvio dell'aggiornamento da qui (GitHub a volte salta o ritarda di ore gli orari programmati) ----
+  // Toni incolla una volta, su ogni dispositivo, un token GitHub che può solo avviare l'aggiornamento di questo sito.
+  // Il token resta solo in questo browser. Se dopo le 6 le schedine di oggi mancano, aprendo il sito l'aggiornamento parte da solo.
+  const GH_RUN = "https://api.github.com/repos/Angar72/pronostici/actions/workflows/aggiorna.yml/dispatches";
+  const ghTok = () => { try { return localStorage.getItem("pr.gh") || ""; } catch (e) { return ""; } };
+  const kickAt = () => { try { return +localStorage.getItem("pr.ghkick") || 0; } catch (e) { return 0; } };
+  const kickMsg = () => Date.now() - kickAt() < 6 * 60000 ? "Aggiornamento avviato: le schedine arrivano tra 2-3 minuti, la pagina si ricarica da sola." : "";
+  async function kick(manual) {
+    const tok = ghTok(); if (!tok) return false;
+    try {
+      const r = await fetch(GH_RUN, { method: "POST", headers: { Authorization: "Bearer " + tok, Accept: "application/vnd.github+json" }, body: JSON.stringify({ ref: "main" }) });
+      if (!r.ok) { toast(r.status === 401 || r.status === 403 ? "Il token GitHub non è valido o è scaduto: incollane uno nuovo." : "GitHub non ha accettato l'avvio (" + r.status + ")."); return false; }
+      try { localStorage.setItem("pr.ghkick", String(Date.now())); } catch (e) {}
+      toast(manual ? "Aggiornamento avviato: 2-3 minuti." : "Le schedine di oggi mancavano: ho avviato l'aggiornamento, 2-3 minuti.");
+      setTimeout(() => location.reload(), 180000);
+      render(); return true;
+    } catch (e) { toast("Non riesco a contattare GitHub."); return false; }
+  }
+  function autoKick() {
+    if (!ghTok() || hhmm() < "06:00" || Date.now() - kickAt() < 10 * 60000) return;
+    if (frozenFor(today())) return;
+    kick(false);
+  }
+  function ghPanel() {
+    return ghTok()
+      ? `<p class="note" style="text-align:center"><button class="chip" id="gh-run">Aggiorna adesso</button> <button class="chip" id="gh-del">Togli il token</button></p>`
+      : `<div class="card" style="padding:12px;display:grid;gap:8px"><b>Avvio automatico da questo dispositivo</b>
+          <span class="note">Incolla qui il token GitHub (una volta sola su ogni dispositivo). Se GitHub salta l'orario del mattino, aprendo il sito l'aggiornamento parte da solo.</span>
+          <input id="gh-tok" type="password" autocomplete="off" placeholder="github_pat_…" style="font:inherit;padding:10px;border-radius:10px;border:1px solid var(--line);background:transparent;color:inherit">
+          <button class="chip" id="gh-save">Salva</button></div>`;
+  }
   document.addEventListener("click", e => {
     const t = e.target.closest("button,[data-w]"); if (!t) return;
+    if (t.id === "gh-save") { const v = ($("#gh-tok")?.value || "").trim(); if (!/^(github_pat_|ghp_)/.test(v)) { toast("Non sembra un token GitHub."); return; } try { localStorage.setItem("pr.gh", v); } catch (e) {} kick(true); return; }
+    if (t.id === "gh-run") { kick(true); return; }
+    if (t.id === "gh-del") { try { localStorage.removeItem("pr.gh"); } catch (e) {} render(); return; }
     if (t.dataset.x) {
       const [k, v] = t.dataset.x.split("="), m = extraMan();
       if (v === "") delete m[k]; else m[k] = v === "1";
