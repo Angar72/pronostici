@@ -267,6 +267,16 @@ function candidates(relaxed = false) {
         if (topA && lowH && !euro(a)) push("X2", dcN["X2"], q2 + qX);
         continue;
       }
+      if (["cl", "el", "ecl"].includes(id)) {
+        // coppe europee: poche partite giocate per avere una classifica, decidono le quote.
+        // Solo la favorita netta: vittoria secca fino a 1,35, altrimenti doppia chance se la favorita è sotto 1,60
+        const s0 = 1 / o1 + 1 / oX + 1 / o2, e1 = 1 / o1 / s0, eX = 1 / oX / s0, e2 = 1 / o2 / s0;
+        const dcE = DC[id + "|" + h + "|" + a] || (BACKTEST ? { "1X": Math.round(0.95 / (1 / o1 + 1 / oX) * 100) / 100, "X2": Math.round(0.95 / (1 / o2 + 1 / oX) * 100) / 100 } : {});
+        const pushE = (k, odd, prob) => odd && odd > 1.01 && out.push({ id, d, t, h, a, k, odd, prob: Math.round(prob * 1000) / 1000, why: "coppa europea", key: id + "|" + h + "|" + a, secca: k === "1" || k === "2" });
+        if (o1 <= 1.35) pushE("1", o1, e1); else if (o1 <= 1.6) pushE("1X", dcE["1X"], e1 + eX);
+        if (o2 <= 1.35) pushE("2", o2, e2); else if (o2 <= 1.6) pushE("X2", dcE["X2"], e2 + eX);
+        continue;
+      }
       const H = st.T[h], A = st.T[a]; if (!H || !A || H.n < 4 || A.n < 4) continue;
       const s = 1 / o1 + 1 / oX + 1 / o2, p1 = 1 / o1 / s, pX = 1 / oX / s, p2 = 1 / o2 / s, half = st.n / 2;
       const dc = DC[id + "|" + h + "|" + a] || (BACKTEST ? { "1X": Math.round(0.95 / (1 / o1 + 1 / oX) * 100) / 100, "X2": Math.round(0.95 / (1 / o2 + 1 / oX) * 100) / 100 } : {});
@@ -342,6 +352,10 @@ if (!sch.byDay[TODAY] || FORCE) {
   const sig = t => t.map(c => c.key + c.k).sort().join(";");
   const uniq = tickets.filter((t, i) => tickets.findIndex(x => sig(x) === sig(t)) === i);
   if (uniq.length) { sch.byDay[TODAY] = { stake: STAKE, tickets: uniq.map(t => t.map(legOut)), auto: true }; changed.live = true; }
+  else if (cands.length < 2) {
+    // nessuna partita abbastanza sicura: lo scrivo, così il sito lo dice e non riprova all'infinito
+    sch.byDay[TODAY] = { stake: STAKE, tickets: [], auto: true, none: true }; changed.live = true;
+  }
   else if (cands.length >= 2) {
     // giornata scarsa: una sola schedina con la vincita più alta possibile usando le giocate sicure (una per partita)
     const byMatch = {};

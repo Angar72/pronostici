@@ -1466,6 +1466,7 @@ if (typeof module !== "undefined") module.exports = Model;
     if (!frozen && state.day === t && tickets.length) saveSched(n => { n.byDay[t] = { stake, tickets: tickets.map(tk => tk.map(dehyd)) }; });
     const fmtQ = v => v.toFixed(2).replace(".", ",");
     const dayTxt = state.day === "next3" ? "dei prossimi 3 giorni" : isPast ? (state.day === yesterday ? "di ieri" : "del " + fmtDay(state.day)) : state.day === t ? "di oggi" : "· " + fmtDay(state.day);
+    if (!tickets.length && frozen && state.saved?.byDay?.[state.day]?.none) return html + `<div class="empty">${state.day === t ? "Oggi" : "In questo giorno"} non ci sono partite abbastanza sicure per una schedina: meglio non giocare.</div>${state.day === t ? ghPanel() : ""}`;
     if (!tickets.length) {
       const why = !rows.length ? "Nessuna partita in questo giorno."
         : !picks.length ? "Le quote dei bookmaker per questo giorno non sono ancora uscite, oppure non ci sono favorite abbastanza affidabili."
