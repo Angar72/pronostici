@@ -343,11 +343,11 @@ if (!sch.byDay[TODAY] || FORCE) {
   const inAll = () => new Set(Object.keys(count).filter(k => count[k] >= 2));
   const add = t => { if (!t) return; tickets.push(t); t.forEach(c => { count[c.key] = (count[c.key] || 0) + 1; if (c.secca && c.odd > 1.3) usedSecca.add(c.key); }); };
   const legSet = t => new Set(t.map(c => c.key + c.k));
-  // ogni partita in una sola schedina: un errore non deve far perdere più schedine insieme
-  const used = () => new Set(tickets.flat().map(c => c.key));
+  // la stessa partita può stare in più schedine (scelta di Toni, 6/11), ma ogni schedina ha almeno 2 partite
+  // diverse dalle altre e nessuna partita sta in tutte e 3
   const t1 = best(cands, { usedSecca }); add(t1);
-  const t2 = t1 && best(cands, { usedSecca, avoid: used() }); add(t2);
-  const t3 = t2 && best(cands, { usedSecca, avoid: used() }); add(t3);
+  const t2 = t1 && best(cands, { usedSecca, differ: [legSet(t1)] }); add(t2);
+  const t3 = t2 && best(cands, { usedSecca, avoid: inAll(), differ: [legSet(t1), legSet(t2)] }); add(t3);
   // niente doppioni
   const sig = t => t.map(c => c.key + c.k).sort().join(";");
   const uniq = tickets.filter((t, i) => tickets.findIndex(x => sig(x) === sig(t)) === i);
