@@ -1,0 +1,27 @@
+name: Scarica storico quote
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: dati
+  cancel-in-progress: false
+jobs:
+  scarica:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # risultati e quote di chiusura dei bookmaker (football-data.co.uk), 5 stagioni, campionati principali
+      - run: |
+          mkdir -p tools/storico
+          for s in 2122 2223 2324 2425 2526; do
+            for l in I1 I2 E0 SP1 D1 F1 N1 P1 B1; do
+              curl -sfL -o tools/storico/${l}_${s}.csv https://www.football-data.co.uk/mmz4281/${s}/${l}.csv || echo "manca $l $s"
+            done
+          done
+          ls -la tools/storico | head -60
+      - run: |
+          git config user.name "pronostici-bot"; git config user.email "pronostici-bot@users.noreply.github.com"
+          git add tools/storico
+          git commit -m "Storico quote per le prove" || exit 0
+          for i in 1 2 3; do git pull --rebase -q && git push -q && break; sleep 5; done
