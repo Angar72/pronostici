@@ -2,7 +2,7 @@
  "2026-10-28|Schedina 2": "persa",
  "2026-10-28|Schedina 1": "persa",
  "2026-10-28|Schedina 3": "vinta",
- "_giulia": 6,
+ "_giulia": 8,
  "2026-10-30|Schedina 1": "persa",
  "2026-10-30|Recupero": "persa",
  "2026-10-30|Schedina 2": "persa",
@@ -21,5 +21,8 @@
  "2026-11-05|Schedina 1": "persa",
  "2026-11-06|Schedina 1": "vinta",
  "2026-11-06|Recupero": "vinta",
- "2026-11-06|Sistema": "perso"
+ "2026-11-06|Sistema": "perso",
+ "2026-11-07|Schedina 1": "vinta",
+ "2026-11-07|Schedina 2": "vinta",
+ "2026-11-07|Schedina 3": "persa"
 }
