@@ -1,5 +1,5 @@
 {
- "_giulia": 8,
+ "_giulia": 10,
  "2026-10-30|Schedina 1": "persa",
  "2026-10-30|Recupero": "persa",
  "2026-10-30|Schedina 2": "persa",
@@ -22,5 +22,8 @@
  "2026-11-07|Schedina 1": "vinta",
  "2026-11-07|Schedina 2": "vinta",
  "2026-11-07|Schedina 3": "persa",
- "2026-11-08|Schedina 3": "persa"
+ "2026-11-08|Schedina 3": "persa",
+ "2026-11-08|Schedina 1": "vinta",
+ "2026-11-08|Schedina 2": "persa",
+ "2026-11-08|Sistema": "vinto"
 }
