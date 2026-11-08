@@ -635,7 +635,9 @@ if (typeof module !== "undefined") module.exports = Model;
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   // stemmi delle squadre (solo sul sito: arrivano da ESPN) ed espulsioni lette dai risultati in diretta
   const LOGOS = {}, REDS = {}, EXTRA_EV = {}, SCORERS = {};
-  const TL = n => (LOGOS[n] ? `<img class="tlogo" src="${esc(LOGOS[n])}" alt="" loading="lazy" decoding="async">` : "") + esc(n);
+  // nazionali (Nations League): bandiera e nome in italiano
+  const NAT = {"Albania": ["🇦🇱", "Albania"], "Andorra": ["🇦🇩", "Andorra"], "Armenia": ["🇦🇲", "Armenia"], "Austria": ["🇦🇹", "Austria"], "Azerbaijan": ["🇦🇿", "Azerbaigian"], "Belarus": ["🇧🇾", "Bielorussia"], "Belgium": ["🇧🇪", "Belgio"], "Bosnia-Herzegovina": ["🇧🇦", "Bosnia ed Erzegovina"], "Bosnia and Herzegovina": ["🇧🇦", "Bosnia ed Erzegovina"], "Bulgaria": ["🇧🇬", "Bulgaria"], "Croatia": ["🇭🇷", "Croazia"], "Cyprus": ["🇨🇾", "Cipro"], "Czechia": ["🇨🇿", "Rep. Ceca"], "Czech Republic": ["🇨🇿", "Rep. Ceca"], "Denmark": ["🇩🇰", "Danimarca"], "England": ["🏴󠁧󠁢󠁥󠁮󠁧󠁿", "Inghilterra"], "Estonia": ["🇪🇪", "Estonia"], "Faroe Islands": ["🇫🇴", "Isole Far Oer"], "Finland": ["🇫🇮", "Finlandia"], "France": ["🇫🇷", "Francia"], "Georgia": ["🇬🇪", "Georgia"], "Germany": ["🇩🇪", "Germania"], "Gibraltar": ["🇬🇮", "Gibilterra"], "Greece": ["🇬🇷", "Grecia"], "Hungary": ["🇭🇺", "Ungheria"], "Iceland": ["🇮🇸", "Islanda"], "Israel": ["🇮🇱", "Israele"], "Italy": ["🇮🇹", "Italia"], "Kazakhstan": ["🇰🇿", "Kazakistan"], "Kosovo": ["🇽🇰", "Kosovo"], "Latvia": ["🇱🇻", "Lettonia"], "Liechtenstein": ["🇱🇮", "Liechtenstein"], "Lithuania": ["🇱🇹", "Lituania"], "Luxembourg": ["🇱🇺", "Lussemburgo"], "Malta": ["🇲🇹", "Malta"], "Moldova": ["🇲🇩", "Moldavia"], "Montenegro": ["🇲🇪", "Montenegro"], "Netherlands": ["🇳🇱", "Paesi Bassi"], "North Macedonia": ["🇲🇰", "Macedonia del Nord"], "Northern Ireland": ["🇬🇧", "Irlanda del Nord"], "Norway": ["🇳🇴", "Norvegia"], "Poland": ["🇵🇱", "Polonia"], "Portugal": ["🇵🇹", "Portogallo"], "Republic of Ireland": ["🇮🇪", "Irlanda"], "Ireland": ["🇮🇪", "Irlanda"], "Romania": ["🇷🇴", "Romania"], "Russia": ["🇷🇺", "Russia"], "San Marino": ["🇸🇲", "San Marino"], "Scotland": ["🏴󠁧󠁢󠁳󠁣󠁴󠁿", "Scozia"], "Serbia": ["🇷🇸", "Serbia"], "Slovakia": ["🇸🇰", "Slovacchia"], "Slovenia": ["🇸🇮", "Slovenia"], "Spain": ["🇪🇸", "Spagna"], "Sweden": ["🇸🇪", "Svezia"], "Switzerland": ["🇨🇭", "Svizzera"], "Turkey": ["🇹🇷", "Turchia"], "Türkiye": ["🇹🇷", "Turchia"], "Ukraine": ["🇺🇦", "Ucraina"], "Wales": ["🏴󠁧󠁢󠁷󠁬󠁳󠁿", "Galles"]};
+  const TL = n => NAT[n] ? `<span class="tlogo" aria-hidden="true" style="width:auto;height:auto;font-size:1.05em">${NAT[n][0]}</span>${esc(NAT[n][1])}` : (LOGOS[n] ? `<img class="tlogo" src="${esc(LOGOS[n])}" alt="" loading="lazy" decoding="async">` : "") + esc(n);
   // cartellini rossi accanto alla squadra che li ha presi (le etichette finiscono con "(squadra)")
   const RCt = (id, h, a, team) => { const r = (REDS[id + "|" + h + "|" + a] || []).filter(x => x.endsWith("(" + team + ")")); return r.length ? ` <span class="redbadge" title="${esc(r.join(", "))}">${r.map(() => '<span class="red-ic" aria-label="espulsione"></span>').join("")}</span>` : ""; };
   const RC = (id, h, a) => { const r = REDS[id + "|" + h + "|" + a]; return r && r.length ? ` <span class="redbadge" title="${esc(r.join(", "))}">${r.map(() => '<span class="red-ic" aria-label="espulsione"></span>').join("")}</span>` : ""; };
@@ -791,7 +793,7 @@ if (typeof module !== "undefined") module.exports = Model;
   // minuto della partita in corso; "sospesa" se l'arbitro l'ha interrotta (punteggio fermo al momento della sospensione)
   const liveWhen = lv => lv.st === "sospesa" ? "· partita sospesa" : lv.min.txt === "intervallo" ? "all'intervallo" : "al " + minTxt(lv);
   // marcatori solo delle squadre italiane; espulsioni con il solo cartellino rosso
-  const isIta = n => ["it_1", "it_2"].some(id => (state.raw[id]?.teams || []).includes(n));
+  const isIta = n => n === "Italy" || ["it_1", "it_2"].some(id => (state.raw[id]?.teams || []).includes(n));
   const eventsHtml = lv => {
     const goals = lv.goals.filter(g => { const m = /\(([^)]+)\)\s*$/.exec(g); return m && isIta(m[1]); });
     return goals.length ? `<div class="events">
@@ -2603,8 +2605,9 @@ if (typeof module !== "undefined") module.exports = Model;
           if (q[0] >= from && (q[0] < t || (q[0] === t && q[1] && q[1] <= now))) need.push({ id, d: q[0], h: q[2], a: q[3] });
         });
         // partite italiane già concluse di ieri e oggi: solo per marcatori ed espulsioni
-        if (id === "it_1" || id === "it_2") (d.played || []).forEach(r => {
+        if (id === "it_1" || id === "it_2" || id === "unl") (d.played || []).forEach(r => {
           const q = r.split("|");
+          if (id === "unl" && q[1] !== "Italy" && q[2] !== "Italy") return;
           if (q[0] >= addDays(t, -1)) need.push({ id, d: q[0], h: q[1], a: q[2], evOnly: true });
         });
       });
