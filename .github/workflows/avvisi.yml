@@ -1,8 +1,5 @@
 name: Avvisi schedine vinte
 on:
-  schedule:
-    # ogni 15 minuti tutto il giorno: avvisi di vincita, last minute e, di riserva, le schedine del mattino
-    - cron: "*/15 * * * *"
   workflow_dispatch:
     inputs:
       prova:

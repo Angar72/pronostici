@@ -1,0 +1,49 @@
+name: Sentinella
+# Resta accesa e ogni 5 minuti fa il lavoro che gli orari programmati di GitHub saltano o ritardano di ore:
+# schedine del mattino se mancano, avvisi di vincita, last minute, estrazioni del Lotto.
+# Dopo quasi 6 ore (limite di GitHub) si riavvia da sola.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 */2 * * *"   # riserva: se la catena si interrompe, la fa ripartire
+permissions:
+  contents: write
+  actions: write
+concurrency:
+  group: sentinella
+  cancel-in-progress: false
+jobs:
+  guarda:
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    env:
+      SITE_CODE: ${{ secrets.SITE_CODE }}
+      ODDSPAPI_KEY: ${{ secrets.ODDSPAPI_KEY }}
+      NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - name: Giro ogni 5 minuti
+        run: |
+          git config user.name "pronostici-bot"; git config user.email "pronostici-bot@users.noreply.github.com"
+          end=$((SECONDS + 340*60)); lotto=0
+          while [ $SECONDS -lt $end ]; do
+            git fetch -q origin main && git reset -q --hard origin/main
+            ONLY_IF_MISSING=true node tools/auto.mjs || true
+            node tools/avvisi.mjs || true
+            d=$(TZ=Europe/Rome date +%u); hm=$(TZ=Europe/Rome date +%H%M)
+            if [[ "$d" =~ ^(2|4|5|6)$ ]] && [ "$hm" -ge 2015 ] && [ "$hm" -le 2330 ] && [ $SECONDS -ge $lotto ]; then
+              LOTTO_ONLY=true node tools/auto.mjs || true; lotto=$((SECONDS + 20*60))
+            fi
+            if [ -n "$(git status --porcelain data tools/avvisi-stato.json tools/op-nomi.json)" ]; then
+              git add data tools/avvisi-stato.json tools/op-nomi.json
+              git commit -qm "Aggiornamento automatico $(TZ=Europe/Rome date '+%d/%m %H:%M')"
+              git push -q origin HEAD:main || { git fetch -q origin main; git rebase -q origin/main && git push -q origin HEAD:main; } || echo "push non riuscito, riprovo al prossimo giro"
+            fi
+            sleep 300
+          done
+      - name: Riavvio
+        if: always()
+        run: gh workflow run sentinella.yml --ref main -R ${{ github.repository }}

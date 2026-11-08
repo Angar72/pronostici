@@ -21,7 +21,7 @@ const rome = d => { const [a, b] = romeFmt.format(new Date(d)).split(" "); retur
 const addDays = (s, n) => { const d = new Date(s + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
 const dayDiff = (a, b) => Math.round((new Date(a + "T12:00:00Z") - new Date(b + "T12:00:00Z")) / 864e5);
 const TODAY = rome(NOW).d, NOWT = rome(NOW).t;
-const ESPN_LG = { it_1: "ita.1", it_2: "ita.2", en_1: "eng.1", es_1: "esp.1", de_1: "ger.1", fr_1: "fra.1", nl_1: "ned.1", pt_1: "por.1", be_1: "bel.1", no_1: "nor.1", se_1: "swe.1", cl: "uefa.champions", el: "uefa.europa", ecl: "uefa.europa.conf" };
+const ESPN_LG = { it_1: "ita.1", it_2: "ita.2", en_1: "eng.1", es_1: "esp.1", de_1: "ger.1", fr_1: "fra.1", nl_1: "ned.1", pt_1: "por.1", be_1: "bel.1", no_1: "nor.1", se_1: "swe.1", cl: "uefa.champions", el: "uefa.europa", ecl: "uefa.europa.conf", unl: "uefa.nations" };
 // coppe nazionali: id -> [codice ESPN, id OddsPapi, nome, bandiera, campionati di casa]
 const NAT_CUPS = {
   es_c: ["esp.copa_del_rey", 329, "Coppa del Re", "🇪🇸", ["es_1"]],
@@ -34,7 +34,7 @@ const NAT_CUPS = {
   pt_c: ["por.taca.portugal", 336, "Coppa di Portogallo", "🇵🇹", ["pt_1"]],
 };
 for (const [id, c] of Object.entries(NAT_CUPS)) ESPN_LG[id] = c[0];
-const OP_T = { it_1: 23, it_2: 53, en_1: 17, es_1: 8, de_1: 35, fr_1: 34, nl_1: 37, pt_1: 238, be_1: 38, no_1: 20, se_1: 40, cl: 7, el: 679, ecl: 34480 };
+const OP_T = { it_1: 23, it_2: 53, en_1: 17, es_1: 8, de_1: 35, fr_1: 34, nl_1: 37, pt_1: 238, be_1: 38, no_1: 20, se_1: 40, cl: 7, el: 679, ecl: 34480, unl: 23755 };
 for (const [id, c] of Object.entries(NAT_CUPS)) OP_T[id] = c[1];
 const E_ALIAS = { "psg": "paris saint germain", "inter": "internazionale", "man united": "manchester united", "man utd": "manchester united", "man city": "manchester city", "wolves": "wolverhampton", "spurs": "tottenham", "atletico": "atletico madrid", "bayern": "bayern munich", "bayern munchen": "bayern munich", "gladbach": "monchengladbach", "sporting": "sporting cp", "athletic": "athletic club", "betis": "real betis", "leverkusen": "bayer leverkusen", "paris": "paris fc", "rennes": "stade rennais", "koln": "cologne", "hamburger": "hamburg", "union saint gilloise": "union st gilloise", "club brugge": "club brugge", "sint truiden": "sint truidense", "standard liege": "standard liege", "hamkam": "hamarkameratene", "vitoria guimaraes": "vitoria de guimaraes", "estrela da amadora": "estrela", "deportivo la coruna": "deportivo", "inter milan": "internazionale" };
 const E_STOP = new Set(["fc", "ac", "cf", "sc", "afc", "ssc", "as", "us", "ss", "calcio", "club", "de", "sk", "fk", "if", "bk", "ik", "cd", "rc", "ud", "sd", "ca", "and", "the", "bc", "sv", "vfb", "vfl", "tsg", "fsv", "rcd", "aj", "ogc", "losc", "stade", "real", "hove", "albion", "kv", "kvc", "krc", "royal", "aif", "is", "ff"]);
@@ -93,6 +93,19 @@ const tierPrior = (home, att, def) => {
   const top = /_1$/.test(home), r = x => Math.round(x * 1000) / 1000;
   return top ? [r((att + 1) / 2 * 1.45), r((def + 1) / 2 * 0.7)] : [r((att + 1) / 2 * 0.9), r((def + 1) / 2 * 1.12)];
 };
+// ---------- 0a. Nations League: le nazionali le prendo dal calendario ESPN (oggi e le prossime 2 settimane) ----------
+{
+  const U = leagues.unl || { code: "unl", name: "Nations League", flag: "🇪🇺", cup: true, ver: 2, k: 10, season: "2026/27", fixtures: [], played: [], prev: [], teams: [], dom: {}, prior: {} };
+  let touched = !leagues.unl;
+  for (let k = -3; k <= 14; k++) {
+    const j = await fetchJ(`https://site.api.espn.com/apis/site/v2/sports/soccer/uefa.nations/scoreboard?dates=${addDays(TODAY, k).replace(/-/g, "")}`);
+    for (const e of j?.events || []) for (const c of e.competitions?.[0]?.competitors || []) {
+      const nm = c.team?.displayName; if (nm && !U.teams.includes(nm)) { U.teams.push(nm); touched = true; }
+    }
+    if (!j) break;
+  }
+  if (touched && U.teams.length) { U.teams.sort(); leagues.unl = U; changed.leagues = true; }
+}
 // ---------- 0b. coppe nazionali: squadre dal calendario ESPN, collegate al loro campionato ----------
 for (const [id, [lg, , name, flag, doms]] of Object.entries(NAT_CUPS)) {
   const fresh = () => ({ code: id, name, flag, cup: true, ver: 2, k: 10, season: "", fixtures: [], played: [], prev: [], teams: [], dom: {}, prior: {} });
@@ -267,8 +280,8 @@ function candidates(relaxed = false) {
         if (topA && lowH && !euro(a)) push("X2", dcN["X2"], q2 + qX);
         continue;
       }
-      if (["cl", "el", "ecl"].includes(id)) {
-        // coppe europee: poche partite giocate per avere una classifica, decidono le quote.
+      if (["cl", "el", "ecl", "unl"].includes(id)) {
+        // coppe europee e Nations League: poche partite giocate per avere una classifica, decidono le quote.
         // Solo la favorita netta: vittoria secca fino a 1,35, altrimenti doppia chance se la favorita è sotto 1,60
         const s0 = 1 / o1 + 1 / oX + 1 / o2, e1 = 1 / o1 / s0, eX = 1 / oX / s0, e2 = 1 / o2 / s0;
         const dcE = DC[id + "|" + h + "|" + a] || (BACKTEST ? { "1X": Math.round(0.95 / (1 / o1 + 1 / oX) * 100) / 100, "X2": Math.round(0.95 / (1 / o2 + 1 / oX) * 100) / 100 } : {});

@@ -643,7 +643,7 @@ if (typeof module !== "undefined") module.exports = Model;
     get(k, d) { try { return localStorage.getItem(k) ?? d; } catch { return d; } },
     set(k, v) { try { localStorage.setItem(k, v); } catch {} }
   };
-  const ORDER = ["it_1", "it_2", "it_c", "cl", "el", "ecl", "en_1", "en_fa", "en_lc", "es_1", "es_c", "de_1", "de_c", "fr_1", "fr_c", "nl_1", "nl_c", "pt_1", "pt_c", "be_1", "no_1", "se_1"];
+  const ORDER = ["it_1", "it_2", "it_c", "cl", "el", "ecl", "unl", "en_1", "en_fa", "en_lc", "es_1", "es_c", "de_1", "de_c", "fr_1", "fr_c", "nl_1", "nl_c", "pt_1", "pt_c", "be_1", "no_1", "se_1"];
   const WHEELS = ["Bari", "Cagliari", "Firenze", "Genova", "Milano", "Napoli", "Palermo", "Roma", "Torino", "Venezia", "Nazionale"];
   const state = {
     sec: store.get("pr.sec", "calcio"), league: store.get("pr.league", "it_1"), view: store.get("pr.view", "partite"),
@@ -2539,7 +2539,7 @@ if (typeof module !== "undefined") module.exports = Model;
   })();
 
   // ---- sul sito: risultati finali e in diretta letti da ESPN (gratis, senza Claude), ogni minuto ----
-  const ESPN_LG = { it_1: "ita.1", it_2: "ita.2", en_1: "eng.1", es_1: "esp.1", de_1: "ger.1", fr_1: "fra.1", nl_1: "ned.1", pt_1: "por.1", be_1: "bel.1", no_1: "nor.1", se_1: "swe.1", cl: "uefa.champions", el: "uefa.europa", ecl: "uefa.europa.conf",
+  const ESPN_LG = { it_1: "ita.1", it_2: "ita.2", en_1: "eng.1", es_1: "esp.1", de_1: "ger.1", fr_1: "fra.1", nl_1: "ned.1", pt_1: "por.1", be_1: "bel.1", no_1: "nor.1", se_1: "swe.1", cl: "uefa.champions", el: "uefa.europa", ecl: "uefa.europa.conf", unl: "uefa.nations",
     es_c: "esp.copa_del_rey", it_c: "ita.coppa_italia", en_fa: "eng.fa", en_lc: "eng.league_cup", de_c: "ger.dfb_pokal", fr_c: "fra.coupe_de_france", nl_c: "ned.cup", pt_c: "por.taca.portugal" };
   const E_ALIAS = { "psg": "paris saint germain", "inter": "internazionale", "man united": "manchester united", "man utd": "manchester united", "man city": "manchester city",
     "wolves": "wolverhampton", "spurs": "tottenham", "atletico": "atletico madrid", "bayern": "bayern munich", "gladbach": "monchengladbach", "sporting": "sporting cp",
