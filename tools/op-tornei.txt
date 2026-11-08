@@ -1,0 +1,32 @@
+270|Africa Cup of Nations|International|0
+637|African Nations Championship|International|0
+981|U23 Africa Cup of Nations|International Youth|0
+1848|Africa Cup of Nations Qualification|International|49
+2108|U20 Africa Cup of Nations|International Youth|0
+13933|Virtual Football Nations Cup|Virtual Football|0
+13967|Virtual Football Nations Cup Retail|Virtual Football|0
+14604|Africa Cup of Nations, Women|International|0
+14836|Virtual Football Nations Cup Retail 2|Virtual Football|0
+14979|Virtual Football Nations Cup Eurobet|Virtual Football|0
+15081|Virtual Football Nations Cup Retail Betaland|Virtual Football|0
+15566|Virtual Football Nations Cup Retail Millennium|Virtual Football|0
+16668|Tournament of Nations, Women|International|0
+23755|UEFA Nations League|International|52
+24441|U20 Africa Cup of Nations NIU|International Youth|0
+25323|Virtual Football Nations Cup Retail Novomatic|Virtual Football|0
+26664|U17 Africa Cup of Nations|International Youth|0
+27420|CONCACAF Nations League|International|32
+27526|OFC Nations Cup, Women|International|0
+27799|Four Nations Tournament Women|International|0
+28671|U23 Africa Cup of Nations|International Youth|0
+30108|Virtual Football Nations Cup Millennium|Virtual Football|0
+30494|CONCACAF Nations League B|International|0
+30496|CONCACAF Nations League C|International|0
+30678|African Nations Championship Qualification|International|0
+30917|Virtual Football Nations Cup Microgame|Virtual Football|0
+33438|GT World Nations League|Electronic Leagues|0
+33696|Three Nations, One Goal, Women|International|0
+36219|UEFA Nations League SRL|Simulated Reality League|0
+39821|UEFA Nations League, Women|International|0
+49276|CONMEBOL Nations League, Women|International|0
+50174|Kings World Cup Nations|SoccerSpecials|0
