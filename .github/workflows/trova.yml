@@ -1,0 +1,26 @@
+name: Trova torneo quote
+on:
+  workflow_dispatch:
+    inputs:
+      cerca:
+        description: "Testo da cercare tra i tornei di calcio di OddsPapi"
+        default: "Nations"
+permissions:
+  contents: write
+jobs:
+  trova:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          curl -sf "https://api.oddspapi.io/v4/tournaments?sportId=10&apiKey=${{ secrets.ODDSPAPI_KEY }}" -o /tmp/t.json || echo "errore"
+          python3 -c "
+          import json,sys
+          d=json.load(open('/tmp/t.json'))
+          q='${{ inputs.cerca }}'.lower()
+          out=[f\"{t.get('tournamentId')}|{t.get('tournamentName')}|{t.get('categoryName')}|{t.get('futureFixtures')}\" for t in d if q in (str(t.get('tournamentName'))+str(t.get('categoryName'))).lower()]
+          open('tools/op-tornei.txt','w').write('\n'.join(out)+'\n')
+          print(out)"
+          git config user.name "pronostici-bot"; git config user.email "pronostici-bot@users.noreply.github.com"
+          git add tools/op-tornei.txt; git commit -m "Tornei trovati" || exit 0
+          for i in 1 2 3; do git pull --rebase -q && git push -q && break; sleep 5; done
