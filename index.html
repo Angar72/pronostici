@@ -1033,11 +1033,23 @@ if (typeof module !== "undefined") module.exports = Model;
     const g = lottoPlay(draws);
     if (!g) return "";
     const d = n => dl(g.st, n) >= g.st.N ? `mai uscito nelle ${g.st.N} estrazioni raccolte` : `assente da ${dl(g.st, n)} estrazioni`;
+    // prossima estrazione: martedì, giovedì, venerdì, sabato alle 20
+    const nx = (() => { const t = new Date(); for (let i = 0; i < 8; i++) { const x = new Date(t.getTime() + i * 864e5); const wd = x.getDay(); if ([2, 4, 5, 6].includes(wd) && (i > 0 || hhmm() < "20:00")) return x.toLocaleDateString("it-IT", { weekday: "long", day: "numeric", month: "long", timeZone: "Europe/Rome" }); } return ""; })();
+    const row = (k, v) => `<div style="display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid var(--line)"><span>${k}</span><b style="text-align:right">${v}</b></div>`;
     return `<div class="ticket">
-      <div class="sub">La giocata del Lotto · terno su ${esc(g.w)}</div>
+      <div class="sub">Cosa giocare in ricevitoria · Lotto</div>
       ${ballRow(g.nums, [g.hot])}
-      <div class="note"><b>${g.pair[0]}</b> e <b>${g.pair[1]}</b>: i ritardatari di ${esc(g.w)} (${d(g.pair[0])}; ${d(g.pair[1])}). <b>${g.hot}</b> (evidenziato): il numero più uscito di recente su ${esc(g.w)} (${g.st.freq[g.hot]} volte nelle ultime 8 estrazioni), la scelta "che potrebbe uscire".</div>
-      <div class="note">Gioca ambo e terno su ${esc(g.w)}. Probabilità per estrazione: almeno un ambo circa 1 su 134, il terno 1 su 11.748.</div>
+      <div style="margin-top:6px">
+        ${row("Ruota", esc(g.w))}
+        ${row("Numeri", g.nums.join(" – "))}
+        ${row("Sorte da giocare", "Ambo e Terno")}
+        ${row("Puntata", "1 € sull'ambo + 1 € sul terno = 2 €")}
+        ${row("Se escono 2 dei 3 numeri (ambo)", "vinci circa 83 €")}
+        ${row("Se escono tutti e 3 (terno)", "vinci 4.500 € + 250 € degli ambi")}
+        ${row("Estrazione", nx ? esc(nx) + ", ore 20" : "")}
+      </div>
+      <div class="note" style="margin-top:8px">In ricevitoria basta dire: <b>"${g.nums.join(", ")} sulla ruota di ${esc(g.w)}, 1 euro di ambo e 1 euro di terno"</b>. Vincite lorde da tabella ufficiale, prima delle trattenute.</div>
+      <div class="note">Perché questi numeri: <b>${g.pair[0]}</b> e <b>${g.pair[1]}</b> sono i più in ritardo su ${esc(g.w)} (${d(g.pair[0])}), <b>${g.hot}</b> è il più uscito di recente (${g.st.freq[g.hot]} volte nelle ultime 8 estrazioni). È solo statistica: le probabilità restano 1 su 134 per l'ambo e 1 su 11.748 per il terno.</div>
     </div>`;
   }
   function viewSE() {
@@ -1051,8 +1063,9 @@ if (typeof module !== "undefined") module.exports = Model;
         <div class="note">Jolly <b>${last.jolly}</b> · SuperStar <b>${last.superstar}</b></div>
       </div>
       <div class="ticket">
-        <div class="sub">La giocata del SuperEnalotto · 6 numeri</div>
+        <div class="sub">Cosa giocare in ricevitoria · SuperEnalotto</div>
         ${ballRow(g.nums, g.hot)}
+        <div class="note" style="margin-top:6px">Una schedina con questi 6 numeri: <b>${g.nums.join(" – ")}</b>. Costa 1 €, si vince da 2 numeri indovinati in su. Il SuperStar è facoltativo (0,50 € in più). Estrazioni martedì, giovedì, venerdì e sabato alle 20.</div>
         <div class="note"><b>Ritardatari</b>: ${g.late.map(n => `<b>${n}</b> (${d(n)})`).join(", ")}. <b>Più frequenti</b> nelle ultime 10 estrazioni (evidenziati): ${g.hot.map(n => `<b>${n}</b> (${g.st.freq[n]} volte)`).join(", ")}.</div>
         <div class="note">Probabilità di fare 6: 1 su 622.614.630 per ogni combinazione, qualunque numeri si scelgano.</div>
       </div>
