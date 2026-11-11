@@ -271,7 +271,7 @@ body[data-sec="lotto"] .ball{background:var(--chip);color:var(--ink)}
       <div style="display:grid;justify-items:end;gap:4px">
         <div class="stamp" id="stamp">In caricamento…</div>
         <a id="refresh" class="refresh" target="_blank" rel="noopener" href="https://angar72.github.io/pronostici/" style="text-decoration:none">Apri con risultati in diretta ↗</a>
-        <div class="stamp">Versione 12 nov · storico Lotto</div>
+        <div class="stamp">Versione 12 nov · aggiornamento automatico</div>
       </div>
     </div>
     <div class="seg" role="group" aria-label="Sezione">
@@ -2421,6 +2421,18 @@ if (typeof module !== "undefined") module.exports = Model;
           <input id="gh-tok" type="password" autocomplete="off" placeholder="github_pat_…" style="font:inherit;padding:10px;border-radius:10px;border:1px solid var(--line);background:transparent;color:inherit">
           <button class="chip" id="gh-save">Salva</button></div>`;
   }
+  // aggiornamento della pagina: l'app sulla schermata Home tiene in memoria la versione vecchia.
+  // Ogni volta che si riapre (e ogni 10 minuti) controllo se c'è una versione nuova e mi ricarico da solo.
+  const MY_VER = (document.querySelector(".stamp")?.textContent || "").trim();
+  async function checkNewVersion() {
+    try {
+      const r = await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" });
+      const m = /<div class="stamp">([^<]*)<\/div>/.exec(await r.text());
+      if (m && m[1].trim() && m[1].trim() !== MY_VER) location.replace(location.pathname + "?v=" + Date.now() + location.hash);
+    } catch (e) {}
+  }
+  setTimeout(checkNewVersion, 3000); setInterval(checkNewVersion, 10 * 60000);
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") checkNewVersion(); });
   document.addEventListener("click", e => {
     const t = e.target.closest("button,[data-w]"); if (!t) return;
     if (t.id === "gh-save") { const v = ($("#gh-tok")?.value || "").trim(); if (!/^(github_pat_|ghp_)/.test(v)) { toast("Non sembra un token GitHub."); return; } try { localStorage.setItem("pr.gh", v); } catch (e) {} kick(true); return; }
