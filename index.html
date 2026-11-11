@@ -1052,6 +1052,40 @@ if (typeof module !== "undefined") module.exports = Model;
       <div class="note">Perché questi numeri: <b>${g.pair[0]}</b> e <b>${g.pair[1]}</b> sono i più in ritardo su ${esc(g.w)} (${d(g.pair[0])}), <b>${g.hot}</b> è il più uscito di recente (${g.st.freq[g.hot]} volte nelle ultime 8 estrazioni). È solo statistica: le probabilità restano 1 su 134 per l'ambo e 1 su 11.748 per il terno.</div>
     </div>`;
   }
+  // giocate proposte nelle estrazioni passate e come sono andate: la proposta si ricalcola con le sole estrazioni precedenti
+  const eur = v => v.toLocaleString("it-IT", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
+  function lottoHistHtml(draws) {
+    const rows = []; let spent = 0, won = 0;
+    for (let i = 0; i < Math.min(10, draws.length - 3); i++) {
+      const g = lottoPlay(draws.slice(i + 1)); if (!g) continue;
+      const out = numsOf(draws[i].ruote?.[g.w]), hit = g.nums.filter(n => out.includes(n));
+      const pay = hit.length === 3 ? 4750 : hit.length === 2 ? 250 / 3 : 0;
+      spent += 2; won += pay;
+      rows.push(`<tr><td class="t">${esc(fmtShort(draws[i].date))}</td><td class="t">${esc(g.w)}</td>
+        <td class="t num">${g.nums.map(n => hit.includes(n) ? `<b class="ok">${n}</b>` : n).join(" · ")}</td>
+        <td class="t num" style="font-size:13px">${out.join(" ")}</td>
+        <td>${pay ? `<b class="ok">✓ ${hit.length === 3 ? "terno" : "ambo"} ${eur(pay)}</b>` : `<span class="ko">✗</span>${hit.length ? ` <span class="note">(${hit.length} numero)</span>` : ""}`}</td></tr>`);
+    }
+    if (!rows.length) return "";
+    return `<div class="day">Le giocate proposte · com'è andata</div>
+      <div class="tbl-wrap"><table><thead><tr><th class="t">Estrazione</th><th class="t">Ruota</th><th class="t">Giocato</th><th class="t">Uscito</th><th>Esito</th></tr></thead><tbody>${rows.join("")}</tbody></table></div>
+      <p class="note">Con 2 € a estrazione (1 € ambo + 1 € terno) sulle ultime ${rows.length} estrazioni: giocati ${eur(spent)}, vinti ${eur(won)}, saldo <b class="${won - spent >= 0 ? "ok" : "ko"}">${won - spent >= 0 ? "+" : "−"}${eur(Math.abs(won - spent))}</b>. In verde i numeri usciti.</p>`;
+  }
+  function seHistHtml(all) {
+    const rows = [];
+    for (let i = 0; i < Math.min(10, all.length - 3); i++) {
+      const g = sePlay({ draws: all.slice(i + 1) }); if (!g) continue;
+      const out = numsOf(all[i].numeri), hit = g.nums.filter(n => out.includes(n));
+      rows.push(`<tr><td class="t">${esc(fmtShort(all[i].date))}</td>
+        <td class="t num">${g.nums.map(n => hit.includes(n) ? `<b class="ok">${n}</b>` : n).join(" · ")}</td>
+        <td class="t num" style="font-size:13px">${out.slice().sort((p, q) => p - q).join(" ")}</td>
+        <td>${hit.length >= 2 ? `<b class="ok">✓ ${hit.length} numeri</b>` : `<span class="ko">✗</span> <span class="note">(${hit.length})</span>`}</td></tr>`);
+    }
+    if (!rows.length) return "";
+    return `<div class="day">Le sestine proposte · com'è andata</div>
+      <div class="tbl-wrap"><table><thead><tr><th class="t">Estrazione</th><th class="t">Giocato</th><th class="t">Uscito</th><th>Esito</th></tr></thead><tbody>${rows.join("")}</tbody></table></div>
+      <p class="note">Si vince da 2 numeri indovinati in su (il premio cambia a ogni estrazione). In verde i numeri usciti.</p>`;
+  }
   function viewSE() {
     const g = sePlay(state.se);
     if (!g) return `<div class="day">SuperEnalotto</div><div class="empty">Le estrazioni del SuperEnalotto compaiono qui dopo il prossimo aggiornamento.</div>`;
@@ -1069,6 +1103,7 @@ if (typeof module !== "undefined") module.exports = Model;
         <div class="note"><b>Ritardatari</b>: ${g.late.map(n => `<b>${n}</b> (${d(n)})`).join(", ")}. <b>Più frequenti</b> nelle ultime 10 estrazioni (evidenziati): ${g.hot.map(n => `<b>${n}</b> (${g.st.freq[n]} volte)`).join(", ")}.</div>
         <div class="note">Probabilità di fare 6: 1 su 622.614.630 per ogni combinazione, qualunque numeri si scelgano.</div>
       </div>
+      ${seHistHtml(g.draws)}
       <div class="day">Estrazioni precedenti</div>
       <div class="tbl-wrap"><table><thead><tr><th class="t">Data</th><th class="t">Sestina</th><th>Jolly</th><th>SS</th></tr></thead>
         <tbody>${g.draws.slice(1, 16).map(x => `<tr><td class="t">${fmtShort(x.date)}</td><td class="t num" style="font-size:16px;letter-spacing:.04em">${numsOf(x.numeri).sort((p, q) => p - q).join(" · ")}</td><td>${x.jolly}</td><td>${x.superstar}</td></tr>`).join("")}</tbody></table></div>
@@ -1094,6 +1129,7 @@ if (typeof module !== "undefined") module.exports = Model;
     }
     return `<div class="callout">Il Lotto è casuale: a ogni estrazione ogni numero ha la stessa probabilità, circa 1 su 18 di uscire su una ruota, qualunque cosa sia uscita prima. Frequenze e ritardi qui sotto sono solo statistiche, non pronostici: le giocate "sulla casistica" seguono i ritardi come chiesto, ma non aumentano le probabilità di vincere.</div>
       ${lottoPlayHtml(draws)}
+      ${lottoHistHtml(draws)}
       <div class="day">Estrazione di ${fmtDay(last.date)}</div>
       <div class="draw" role="group" aria-label="Ruote">${WHEELS.map(r => `<div class="wheel" role="button" tabindex="0" data-w="${r}" aria-pressed="${r === w}">
         <div class="wn">${r}</div><div class="balls">${nums(last.ruote?.[r]).map(n => `<span class="ball">${n}</span>`).join("")}</div></div>`).join("")}</div>
