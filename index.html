@@ -271,7 +271,7 @@ body[data-sec="lotto"] .ball{background:var(--chip);color:var(--ink)}
       <div style="display:grid;justify-items:end;gap:4px">
         <div class="stamp" id="stamp">In caricamento…</div>
         <a id="refresh" class="refresh" target="_blank" rel="noopener" href="https://angar72.github.io/pronostici/" style="text-decoration:none">Apri con risultati in diretta ↗</a>
-        <div class="stamp">Versione 12 nov · SuperStar</div>
+        <div class="stamp">Versione 12 nov · avvisi Lotto</div>
       </div>
     </div>
     <div class="seg" role="group" aria-label="Sezione">
@@ -658,6 +658,7 @@ if (typeof module !== "undefined") module.exports = Model;
     const hv = /[#&]v=([a-z]+)/.exec(location.hash || ""), hd = /[#&]d=(\d{4}-\d{2}-\d{2})/.exec(location.hash || "");
     // dalla notifica: pagina e giorno da aprire (#c=…&v=extra&d=AAAA-MM-GG), letti prima che l'indirizzo venga ripulito
     const go = hv ? hv[1] + "|" + (hd ? hd[1] : "") : null;
+    if (go && go.startsWith("lotto|")) { state.sec = "lotto"; state.lv = "giocate"; state.ld = go.split("|")[1] || null; }
     if (go) { const [v, d] = go.split("|"); if (v === "scommesse" || v === "extra") { state.sec = "calcio"; state.view = v; if (d) { if (v === "extra") state.xday = d; else { state.day = d; state.dayPicked = true; } } } }
   } catch (e) {}
   const cache = {};
@@ -2511,7 +2512,7 @@ if (typeof module !== "undefined") module.exports = Model;
   // aggiornamento della pagina: l'app sulla schermata Home tiene in memoria la versione vecchia.
   // Ogni volta che si riapre (e ogni 10 minuti) controllo se c'è una versione nuova e mi ricarico da solo.
   // numero di versione crescente (BUILD): mi ricarico solo se sul server ce n'è uno PIÙ ALTO, e al massimo una volta ogni 5 minuti
-  const BUILD = 2026111208;
+  const BUILD = 2026111215;
   async function checkNewVersion() {
     try {
       let last = 0; try { last = +sessionStorage.getItem("pr.reload") || 0; } catch (e) {}

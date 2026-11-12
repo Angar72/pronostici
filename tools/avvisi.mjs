@@ -129,6 +129,40 @@ for (const day of days) {
   if (!DRY) { const r = await send(pay >= 20 ? "Sistema vinto!" : "Sistema con 1 errore", msg, "tada,soccer", "extra|" + day); if (!r.ok) continue; }
   state[key] = "vinto"; sent++;
 }
+// ---------- Lotto e SuperEnalotto: avviso se la giocata proposta dal sito per l'ultima estrazione ha vinto ----------
+// Le regole delle giocate le prendo direttamente dalla pagina (index.html), così sono identiche a quelle che vedi sul sito.
+try {
+  const html = fs.readFileSync("index.html", "utf8");
+  const a = html.indexOf('// ---- giocate "sulla casistica"'), b = html.indexOf("const ballRow", a);
+  const W = /const WHEELS = (\[[^\]]*\]);/.exec(html)[1];
+  const lib = new Function(`const WHEELS = ${W};\n${html.slice(a, b)}\nreturn { lottoPlay, sePlay, numsOf };`)();
+  const lot = await open("lotto");
+  const LD = (lot.draws?.draws || []).slice().sort((x, y) => x.date < y.date ? 1 : -1);
+  const SD = (lot.superenalotto?.draws || []).slice().sort((x, y) => x.date < y.date ? 1 : -1);
+  const fresh = d => d && d >= addDays(today, -1);
+  if (LD.length > 3 && fresh(LD[0].date) && !state["lotto|" + LD[0].date]) {
+    const g = lib.lottoPlay(LD.slice(1)), out = lib.numsOf(LD[0].ruote?.[g.w]), hit = g.nums.filter(n => out.includes(n));
+    if (hit.length >= 2) {
+      const pay = hit.length === 3 ? 4750 : 250 / 3;
+      const msg = `${hit.length === 3 ? "TERNO" : "Ambo"} sulla ruota di ${g.w}! Giocati ${g.nums.join("-")}, usciti ${hit.join(" e ")}${hit.length === 3 ? "" : ""}. Vinci ${euro(pay)} con 2 € giocati.`;
+      console.log("lotto:", msg);
+      const r = DRY ? { ok: true } : await send(hit.length === 3 ? "Terno al Lotto!" : "Ambo al Lotto!", msg, "tada,moneybag", "lotto|" + LD[0].date);
+      if (r.ok) state["lotto|" + LD[0].date] = "vinta";
+    } else state["lotto|" + LD[0].date] = "persa";
+  }
+  if (SD.length > 3 && fresh(SD[0].date) && !state["se|" + SD[0].date]) {
+    const g = lib.sePlay({ draws: SD.slice(1) }), d = SD[0], out = lib.numsOf(d.numeri), hit = g.nums.filter(n => out.includes(n));
+    const ssHit = g.ss === +d.superstar, j51 = hit.length === 5 && g.nums.includes(+d.jolly);
+    if (hit.length >= 2 || ssHit) {
+      const what = (j51 ? "5+1" : hit.length + " numeri") + (ssHit ? " + SuperStar" : "");
+      const msg = `SuperEnalotto: hai preso ${what}! Sestina ${g.nums.join("-")}${ssHit ? `, SuperStar ${g.ss}` : ""}. Il premio esatto lo trovi in ricevitoria o sull'app Sisal.`;
+      console.log("se:", msg);
+      const r = DRY ? { ok: true } : await send("SuperEnalotto vinto!", msg, "tada,moneybag", "lotto|" + d.date);
+      if (r.ok) state["se|" + d.date] = "vinta";
+    } else state["se|" + d.date] = "persa";
+  }
+} catch (e) { console.log("lotto:", String(e).slice(0, 160)); }
+
 // ---------- last minute: giocate durante le partite, con la quota live vera di Planetwin ----------
 // Per ogni partita in corso (tra il 55' e l'80', senza espulsioni) parto dai gol attesi prima della partita
 // (ricavati dalle quote 1X2 e Over/Under del mattino), li riduco al tempo che resta e calcolo la probabilità
