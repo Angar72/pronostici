@@ -271,7 +271,7 @@ body[data-sec="lotto"] .ball{background:var(--chip);color:var(--ink)}
       <div style="display:grid;justify-items:end;gap:4px">
         <div class="stamp" id="stamp">In caricamento…</div>
         <a id="refresh" class="refresh" target="_blank" rel="noopener" href="https://angar72.github.io/pronostici/" style="text-decoration:none">Apri con risultati in diretta ↗</a>
-        <div class="stamp">Versione 12 nov · ritardatari</div>
+        <div class="stamp">Versione 12 nov · extra mix</div>
       </div>
     </div>
     <div class="seg" role="group" aria-label="Sezione">
@@ -1022,6 +1022,24 @@ if (typeof module !== "undefined") module.exports = Model;
     const { w, st, top } = best;
     return { w, nums: top, st, pair: top.slice(0, 2), hot: top[2], freq: true, recent: R };
   }
+  // extra (solo da seguire): mix tra ritardatari e frequenti. Ogni numero ha un punteggio = ritardo/ritardo massimo
+  // + uscite nelle ultime 20/uscite massime; sulla ruota col punteggio più alto si giocano i 3 numeri migliori.
+  // Prova sul passato (2009–2026, 2 € a estrazione): −3.731 €, 20 vincite e nessun terno.
+  function lottoPlayMix(draws) {
+    if (draws.length < 3) return null;
+    const seed = draws[0].date;
+    let best = null;
+    WHEELS.filter(w => w !== "Nazionale").forEach(w => {
+      const st = stats(draws.map(d => numsOf(d.ruote?.[w])), 20);
+      const all = Array.from({ length: 90 }, (_, i) => i + 1);
+      const md = Math.max(...all.map(n => dl(st, n))) || 1, mf = Math.max(...st.freq) || 1;
+      const sc = n => dl(st, n) / md + st.freq[n] / mf;
+      const top = all.sort((a, b) => sc(b) - sc(a) || tie(seed + "m" + w, a) - tie(seed + "m" + w, b)).slice(0, 3);
+      const tot = top.reduce((x, n) => x + sc(n), 0) + tie(seed, "m" + w) * 0.001;
+      if (!best || tot > best.tot) best = { w, st, top, tot };
+    });
+    return { w: best.w, nums: best.top, st: best.st };
+  }
   function lottoPlayOld(draws) {
     const seed = draws[0].date;
     let best = null;
@@ -1185,6 +1203,23 @@ if (typeof module !== "undefined") module.exports = Model;
         </div>
         ${future ? `<div class="note" style="margin-top:8px">In ricevitoria: <b>"${g.nums.join(", ")} sulla ruota di ${esc(g.w)}, 1 euro di ambo e 1 euro di terno"</b>.</div>` : ""}
       </div>`;
+    }
+    // extra: il mix ritardatari + frequenti, solo da seguire
+    {
+      const src = future ? draws : draws.slice(i + 1), mg = lottoPlayMix(src);
+      if (mg) {
+        const out = future ? null : numsOf(draws[i].ruote?.[mg.w]), hit = out ? mg.nums.filter(n => out.includes(n)) : [];
+        const pay = !out ? null : hit.length === 3 ? 4750 : hit.length === 2 ? 250 / 3 : 0;
+        html += `<div class="ticket" style="opacity:.92">
+          <div class="sub">Extra · mix ritardatari + frequenti · ruota di ${esc(mg.w)}</div>
+          ${lballs(mg.nums, hit)}
+          <div style="margin-top:6px">
+            ${!future ? row("Usciti su " + esc(mg.w), out.join(" · ")) : ""}
+            ${row("Esito", future ? res(null, "solo da seguire · estrazione alle 20") : pay ? res(true, (hit.length === 3 ? "Terno" : "Ambo") + " · avresti vinto " + eur(pay)) : res(false, "persa"))}
+          </div>
+          <div class="note" style="margin-top:6px">Solo da seguire, non entra nel conto. Punteggio di ogni numero = quanto è in ritardo + quanto è uscito nelle ultime 20 estrazioni.</div>
+        </div>`;
+      }
     }
     if (so) {
       const g = so.g;
@@ -2539,7 +2574,7 @@ if (typeof module !== "undefined") module.exports = Model;
   // aggiornamento della pagina: l'app sulla schermata Home tiene in memoria la versione vecchia.
   // Ogni volta che si riapre (e ogni 10 minuti) controllo se c'è una versione nuova e mi ricarico da solo.
   // numero di versione crescente (BUILD): mi ricarico solo se sul server ce n'è uno PIÙ ALTO, e al massimo una volta ogni 5 minuti
-  const BUILD = 2026111220;
+  const BUILD = 2026111221;
   async function checkNewVersion() {
     try {
       let last = 0; try { last = +sessionStorage.getItem("pr.reload") || 0; } catch (e) {}
