@@ -271,7 +271,7 @@ body[data-sec="lotto"] .ball{background:var(--chip);color:var(--ink)}
       <div style="display:grid;justify-items:end;gap:4px">
         <div class="stamp" id="stamp">In caricamento…</div>
         <a id="refresh" class="refresh" target="_blank" rel="noopener" href="https://angar72.github.io/pronostici/" style="text-decoration:none">Apri con risultati in diretta ↗</a>
-        <div class="stamp">Versione 12 nov · avvisi Lotto</div>
+        <div class="stamp">Versione 12 nov · numeri frequenti</div>
       </div>
     </div>
     <div class="seg" role="group" aria-label="Sezione">
@@ -1000,8 +1000,28 @@ if (typeof module !== "undefined") module.exports = Model;
     return { delay, freq, all, N: lists.length };
   }
   const dl = (st, n) => st.delay[n] === null ? st.N : st.delay[n];
+  // dal 13/11 (richiesta di Toni): sulla ruota dove i numeri si ripetono di più, i 3 numeri usciti più spesso
+  // nelle ultime 20 estrazioni. Le giocate fino al 12/11 restano quelle di allora (2 ritardatari + 1 frequente).
+  const LOTTO_FREQ_FROM = "2026-11-12";
   function lottoPlay(draws) {
     if (draws.length < 3) return null;
+    if (draws[0].date >= LOTTO_FREQ_FROM) return lottoPlayFreq(draws);
+    return lottoPlayOld(draws);
+  }
+  function lottoPlayFreq(draws) {
+    const seed = draws[0].date, R = 20;
+    let best = null;
+    WHEELS.filter(w => w !== "Nazionale").forEach(w => {
+      const st = stats(draws.map(d => numsOf(d.ruote?.[w])), R);
+      const top = Array.from({ length: 90 }, (_, i) => i + 1)
+        .sort((a, b) => st.freq[b] - st.freq[a] || st.all[b] - st.all[a] || dl(st, a) - dl(st, b) || tie(seed + w, a) - tie(seed + w, b)).slice(0, 3);
+      const score = top.reduce((x, n) => x + st.freq[n], 0) + tie(seed, w) * 0.01;
+      if (!best || score > best.score) best = { w, st, top, score };
+    });
+    const { w, st, top } = best;
+    return { w, nums: top, st, pair: top.slice(0, 2), hot: top[2], freq: true, recent: R };
+  }
+  function lottoPlayOld(draws) {
     const seed = draws[0].date;
     let best = null;
     WHEELS.filter(w => w !== "Nazionale").forEach(w => {
@@ -1188,7 +1208,7 @@ if (typeof module !== "undefined") module.exports = Model;
         <div><span>Vinti</span><b class="num">${eur(won)}</b></div>
         <div><span>Saldo</span><b class="num">${won - spent >= 0 ? "+" : "−"}${eur(Math.abs(won - spent))}</b></div>
       </div>`;
-    html += `<p class="note">I numeri vengono da ritardi e frequenze: è solo statistica, al Lotto ogni numero ha sempre la stessa probabilità (ambo 1 su 134, terno 1 su 11.748). In verde i numeri usciti.</p>`;
+    html += `<p class="note">${lo?.g.freq ? `Lotto: sulla ruota dove i numeri si ripetono di più, i 3 usciti più spesso nelle ultime 20 estrazioni (${lo.g.nums.map(n => n + ": " + lo.g.st.freq[n] + " volte").join(", ")}). ` : ""}I numeri vengono da ritardi e frequenze: è solo statistica, al Lotto ogni numero ha sempre la stessa probabilità (ambo 1 su 134, terno 1 su 11.748). In verde i numeri usciti.</p>`;
     return html;
   }
   function viewLottoDraws(draws) {
@@ -1220,6 +1240,12 @@ if (typeof module !== "undefined") module.exports = Model;
     return `<div class="day" style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span>Statistiche ${esc(w)}</span>
         <select id="wheel-sel">${WHEELS.map(r => `<option ${r === w ? "selected" : ""}>${r}</option>`).join("")}</select></div>
       <div class="board">${cells}</div>
+      <div class="day">Numeri che escono più spesso · ultime 20 estrazioni</div>
+      <div class="tbl-wrap"><table><thead><tr><th class="t">Ruota</th><th class="t">I 5 più frequenti (volte)</th></tr></thead><tbody>${WHEELS.map(r => {
+        const st = stats(draws.map(d => numsOf(d.ruote?.[r])), 20);
+        const top = Array.from({ length: 90 }, (_, i) => i + 1).sort((a, b) => st.freq[b] - st.freq[a] || st.all[b] - st.all[a]).slice(0, 5);
+        return `<tr><td class="t">${r}</td><td class="t num">${top.map(n => `<b>${n}</b> <span class="note">(${st.freq[n]})</span>`).join(" · ")}</td></tr>`;
+      }).join("")}</tbody></table></div>
       <p class="note">Su ${N} estrazioni raccolte. Colore più intenso = uscito più volte; il numero piccolo è il ritardo. Il Lotto è casuale: ritardi e frequenze non cambiano le probabilità.</p>`;
   }
 
@@ -2512,7 +2538,7 @@ if (typeof module !== "undefined") module.exports = Model;
   // aggiornamento della pagina: l'app sulla schermata Home tiene in memoria la versione vecchia.
   // Ogni volta che si riapre (e ogni 10 minuti) controllo se c'è una versione nuova e mi ricarico da solo.
   // numero di versione crescente (BUILD): mi ricarico solo se sul server ce n'è uno PIÙ ALTO, e al massimo una volta ogni 5 minuti
-  const BUILD = 2026111215;
+  const BUILD = 2026111219;
   async function checkNewVersion() {
     try {
       let last = 0; try { last = +sessionStorage.getItem("pr.reload") || 0; } catch (e) {}
