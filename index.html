@@ -271,7 +271,7 @@ body[data-sec="lotto"] .ball{background:var(--chip);color:var(--ink)}
       <div style="display:grid;justify-items:end;gap:4px">
         <div class="stamp" id="stamp">In caricamento…</div>
         <a id="refresh" class="refresh" target="_blank" rel="noopener" href="https://angar72.github.io/pronostici/" style="text-decoration:none">Apri con risultati in diretta ↗</a>
-        <div class="stamp">Versione 12 nov · numeri frequenti</div>
+        <div class="stamp">Versione 12 nov · ritardatari</div>
       </div>
     </div>
     <div class="seg" role="group" aria-label="Sezione">
@@ -1000,9 +1000,10 @@ if (typeof module !== "undefined") module.exports = Model;
     return { delay, freq, all, N: lists.length };
   }
   const dl = (st, n) => st.delay[n] === null ? st.N : st.delay[n];
-  // dal 13/11 (richiesta di Toni): sulla ruota dove i numeri si ripetono di più, i 3 numeri usciti più spesso
-  // nelle ultime 20 estrazioni. Le giocate fino al 12/11 restano quelle di allora (2 ritardatari + 1 frequente).
-  const LOTTO_FREQ_FROM = "2026-11-12";
+  // Prova sul passato (lug 2009 – feb 2026, 2.699 estrazioni, 2 € a giocata): ritardatari +6.019 € (25 vincite, 2 terni),
+  // frequenti −3.815 €, media dei due −3.731 €, numeri a caso −4.565 €. Si resta sui ritardatari (2 + 1 frequente).
+  // I "frequenti" restano scritti qui sotto ma non si usano.
+  const LOTTO_FREQ_FROM = "9999-12-31";
   function lottoPlay(draws) {
     if (draws.length < 3) return null;
     if (draws[0].date >= LOTTO_FREQ_FROM) return lottoPlayFreq(draws);
@@ -2538,7 +2539,7 @@ if (typeof module !== "undefined") module.exports = Model;
   // aggiornamento della pagina: l'app sulla schermata Home tiene in memoria la versione vecchia.
   // Ogni volta che si riapre (e ogni 10 minuti) controllo se c'è una versione nuova e mi ricarico da solo.
   // numero di versione crescente (BUILD): mi ricarico solo se sul server ce n'è uno PIÙ ALTO, e al massimo una volta ogni 5 minuti
-  const BUILD = 2026111219;
+  const BUILD = 2026111220;
   async function checkNewVersion() {
     try {
       let last = 0; try { last = +sessionStorage.getItem("pr.reload") || 0; } catch (e) {}
