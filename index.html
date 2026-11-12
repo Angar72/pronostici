@@ -271,7 +271,7 @@ body[data-sec="lotto"] .ball{background:var(--chip);color:var(--ink)}
       <div style="display:grid;justify-items:end;gap:4px">
         <div class="stamp" id="stamp">In caricamento…</div>
         <a id="refresh" class="refresh" target="_blank" rel="noopener" href="https://angar72.github.io/pronostici/" style="text-decoration:none">Apri con risultati in diretta ↗</a>
-        <div class="stamp">Versione 12 nov · aggiornamento automatico</div>
+        <div class="stamp">Versione 12 nov · nuovo Lotto</div>
       </div>
     </div>
     <div class="seg" role="group" aria-label="Sezione">
@@ -651,7 +651,7 @@ if (typeof module !== "undefined") module.exports = Model;
     sec: store.get("pr.sec", "calcio"), league: store.get("pr.league", "it_1"), view: store.get("pr.view", "partite"),
     wheel: store.get("pr.wheel", "Roma"), leagues: {}, raw: {}, manual: null, lotto: null, se: null, tracking: {}, odds: {}, news: {}, live: null, ready: false, day: null, stake: +store.get("pr.stake20", "20") || 20,
     mstake: +store.get("pr.mstake20", "20") || 20, mtarget: +store.get("pr.mtarget20", "100") || 100,
-    bf: "tutte", bl: "tutti", xday: null
+    bf: "tutte", bl: "tutti", xday: null, lv: "giocate", ld: null
   };
   // aperto da una notifica: vado sulla pagina e sul giorno della vincita
   try {
@@ -1110,40 +1110,108 @@ if (typeof module !== "undefined") module.exports = Model;
       <p class="note">Ritardi e frequenze sono calcolati sulle ${g.st.N} estrazioni raccolte finora: lo storico si allunga a ogni aggiornamento.</p>`;
   }
 
+  // ---- Lotto · SuperEnalotto: come il calcio, una pagina con le giocate e com'è andata ----
+  const LOTTO_STAKE = 2, SE_STAKE = 1;
+  // giocata proposta per un'estrazione e com'è andata (proposta ricalcolata con le sole estrazioni precedenti)
+  function lottoOutcome(draws, i) {
+    const g = lottoPlay(draws.slice(i + 1)); if (!g) return null;
+    const d = draws[i], out = d ? numsOf(d.ruote?.[g.w]) : null, hit = out ? g.nums.filter(n => out.includes(n)) : [];
+    const pay = !out ? null : hit.length === 3 ? 4750 : hit.length === 2 ? 250 / 3 : 0;
+    return { g, out, hit, pay };
+  }
+  function seOutcome(sd, i) {
+    const g = sePlay({ draws: sd.slice(i + 1) }); if (!g) return null;
+    const d = sd[i], out = d ? numsOf(d.numeri) : null, hit = out ? g.nums.filter(n => out.includes(n)) : [];
+    return { g, out, hit, won: out ? hit.length >= 2 : null };
+  }
+  const lballs = (ns, hit) => `<div class="balls">${ns.map(n => `<span class="ball"${hit && hit.includes(n) ? ' style="background:#12C25E;color:#03170B;border-color:#12C25E"' : ""}>${n}</span>`).join("")}</div>`;
   function viewLotto() {
-    const L = state.lotto;
-    const draws = (L?.draws || []).slice().sort((a, b) => a.date < b.date ? 1 : -1);
-    if (!draws.length) return `<div class="empty">Le estrazioni compaiono qui dopo il primo aggiornamento.</div>`;
-    const last = draws[0];
-    const nums = s => String(s || "").trim().split(/\s+/).map(Number).filter(Boolean);
-    const w = state.wheel;
-    // frequenza e ritardo sulla ruota scelta, nelle estrazioni raccolte
-    const freq = Array(91).fill(0), delay = Array(91).fill(null);
-    draws.forEach((d, i) => nums(d.ruote?.[w]).forEach(n => { freq[n]++; if (delay[n] === null) delay[n] = i; }));
-    const N = draws.length;
-    let cells = "";
+    const draws = (state.lotto?.draws || []).slice().sort((a, b) => a.date < b.date ? 1 : -1);
+    const sd = (state.se?.draws || []).slice().sort((a, b) => a.date < b.date ? 1 : -1);
+    const tabs = `<div class="tabs" role="group" aria-label="Lotto" style="margin-bottom:12px">${[["giocate", "Giocate"], ["estrazioni", "Estrazioni"], ["statistiche", "Statistiche"]]
+      .map(([k, l]) => `<button data-lv="${k}" aria-pressed="${state.lv === k}">${l}</button>`).join("")}</div>`;
+    if (!draws.length) return tabs + `<div class="empty">Le estrazioni compaiono qui dopo il primo aggiornamento.</div>`;
+    if (state.lv === "estrazioni") return tabs + viewLottoDraws(draws);
+    if (state.lv === "statistiche") return tabs + viewLottoStats(draws);
+    // giorni: le ultime 3 estrazioni a sinistra, la prossima a destra (si apre su quella)
+    const nd = nextDraw(), past = draws.slice(0, 3).map(d => d.date).reverse();
+    const days = nd && !past.includes(nd) ? [...past, nd] : past;
+    if (!days.includes(state.ld)) state.ld = days[days.length - 1];
+    const D = state.ld, i = draws.findIndex(d => d.date === D), j = sd.findIndex(d => d.date === D), future = i < 0;
+    const lo = future ? lottoOutcome([null, ...draws], 0) : lottoOutcome(draws, i);
+    const so = future ? seOutcome([null, ...sd], 0) : (j >= 0 ? seOutcome(sd, j) : null);
+    const chips = `<div class="chips" role="group" aria-label="Estrazione">${days.map(d => `<button class="chip" data-ld="${d}" aria-pressed="${d === D}">${d === nd ? "Prossima · " : ""}${esc(fmtShort(d))}</button>`).join("")}</div>`;
+    const row = (k, v) => `<div style="display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid var(--line)"><span>${k}</span><b style="text-align:right">${v}</b></div>`;
+    const res = (ok, txt) => ok == null ? `<span class="note">${txt}</span>` : ok ? `<b class="ok">✓ ${txt}</b>` : `<b class="ko">✗ ${txt}</b>`;
+    let html = tabs + chips + `<div class="day">${future ? "Da giocare per " : "Estrazione di "}${esc(fmtDay(D))}${future ? ", ore 20" : ""}</div>`;
+    if (lo) {
+      const g = lo.g;
+      html += `<div class="ticket">
+        <div class="sub">Lotto · ruota di ${esc(g.w)}</div>
+        ${lballs(g.nums, lo.hit)}
+        <div style="margin-top:6px">
+          ${row("Sorte", "Ambo e Terno")}
+          ${row("Puntata", "1 € ambo + 1 € terno = 2 €")}
+          ${future ? row("Se escono 2 numeri", "circa 83 €") + row("Se escono tutti e 3", "4.750 €") : row("Usciti su " + esc(g.w), lo.out.join(" · "))}
+          ${row("Esito", future ? res(null, "estrazione alle 20") : lo.pay ? res(true, (lo.hit.length === 3 ? "Terno" : "Ambo") + " · vinci " + eur(lo.pay)) : res(false, lo.hit.length ? "persa (1 numero)" : "persa"))}
+        </div>
+        ${future ? `<div class="note" style="margin-top:8px">In ricevitoria: <b>"${g.nums.join(", ")} sulla ruota di ${esc(g.w)}, 1 euro di ambo e 1 euro di terno"</b>.</div>` : ""}
+      </div>`;
+    }
+    if (so) {
+      const g = so.g;
+      html += `<div class="ticket">
+        <div class="sub">SuperEnalotto · sestina</div>
+        ${lballs(g.nums, so.hit)}
+        <div style="margin-top:6px">
+          ${row("Costo", "1 € (SuperStar facoltativo +0,50 €)")}
+          ${!future ? row("Sestina uscita", so.out.slice().sort((a, b) => a - b).join(" · ")) : ""}
+          ${row("Esito", future ? res(null, "estrazione alle 20") : so.won ? res(true, so.hit.length + " numeri · premio variabile") : res(false, "persa" + (so.hit.length ? ` (${so.hit.length} numero)` : "")))}
+        </div>
+      </div>`;
+    } else if (!future) html += `<div class="empty">Il SuperEnalotto di questa estrazione non è ancora nei dati.</div>`;
+    // conto delle ultime 10 estrazioni del Lotto
+    let spent = 0, won = 0, nW = 0, n = 0;
+    for (let k = 0; k < Math.min(10, draws.length - 3); k++) { const o = lottoOutcome(draws, k); if (!o) continue; n++; spent += LOTTO_STAKE; won += o.pay; if (o.pay) nW++; }
+    if (n) html += `<div class="money-box ${won >= spent ? "win" : "lose"}" style="margin-top:12px">
+        <div><span>Lotto · ultime ${n} estrazioni</span><b class="num">${nW} vinte su ${n}</b></div>
+        <div><span>Giocati</span><b class="num">${eur(spent)}</b></div>
+        <div><span>Vinti</span><b class="num">${eur(won)}</b></div>
+        <div><span>Saldo</span><b class="num">${won - spent >= 0 ? "+" : "−"}${eur(Math.abs(won - spent))}</b></div>
+      </div>`;
+    html += `<p class="note">I numeri vengono da ritardi e frequenze: è solo statistica, al Lotto ogni numero ha sempre la stessa probabilità (ambo 1 su 134, terno 1 su 11.748). In verde i numeri usciti.</p>`;
+    return html;
+  }
+  function viewLottoDraws(draws) {
+    const last = draws[0], w = state.wheel;
+    return `<div class="day">Estrazione di ${fmtDay(last.date)}</div>
+      <div class="draw" role="group" aria-label="Ruote">${WHEELS.map(r => `<div class="wheel" role="button" tabindex="0" data-w="${r}" aria-pressed="${r === w}">
+        <div class="wn">${r}</div><div class="balls">${numsOf(last.ruote?.[r]).map(n => `<span class="ball">${n}</span>`).join("")}</div></div>`).join("")}</div>
+      <div class="day" style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span>Estrazioni precedenti · ${esc(w)}</span>
+        <select id="wheel-sel">${WHEELS.map(r => `<option ${r === w ? "selected" : ""}>${r}</option>`).join("")}</select></div>
+      <div class="tbl-wrap"><table><thead><tr><th class="t">Data</th><th class="t">${esc(w)}</th></tr></thead>
+        <tbody>${draws.slice(1, 16).map(d => `<tr><td class="t">${fmtShort(d.date)}</td><td class="t num" style="font-size:16px;letter-spacing:.04em">${numsOf(d.ruote?.[w]).join(" · ")}</td></tr>`).join("")}</tbody></table></div>
+      ${viewSEDraws()}`;
+  }
+  function viewSEDraws() {
+    const sd = (state.se?.draws || []).slice().sort((a, b) => a.date < b.date ? 1 : -1);
+    if (!sd.length) return "";
+    return `<div class="day">SuperEnalotto</div>
+      <div class="tbl-wrap"><table><thead><tr><th class="t">Data</th><th class="t">Sestina</th><th>Jolly</th><th>SS</th></tr></thead>
+        <tbody>${sd.slice(0, 16).map(x => `<tr><td class="t">${fmtShort(x.date)}</td><td class="t num" style="font-size:16px;letter-spacing:.04em">${numsOf(x.numeri).sort((p, q) => p - q).join(" · ")}</td><td>${x.jolly}</td><td>${x.superstar}</td></tr>`).join("")}</tbody></table></div>`;
+  }
+  function viewLottoStats(draws) {
+    const w = state.wheel, freq = Array(91).fill(0), delay = Array(91).fill(null);
+    draws.forEach((d, i) => numsOf(d.ruote?.[w]).forEach(n => { freq[n]++; if (delay[n] === null) delay[n] = i; }));
+    const N = draws.length; let cells = "";
     for (let n = 1; n <= 90; n++) {
-      const f = freq[n], cls = f >= 3 ? "h3" : f === 2 ? "h2" : f === 1 ? "h1" : "";
-      const dl = delay[n] === null ? `>${N}` : delay[n];
+      const f = freq[n], cls = f >= 3 ? "h3" : f === 2 ? "h2" : f === 1 ? "h1" : "", dl = delay[n] === null ? `>${N}` : delay[n];
       cells += `<div class="cell ${cls}" title="${n}: uscito ${f} volte, ritardo ${dl}">${n}<small>${dl}</small></div>`;
     }
-    return `<div class="callout">Il Lotto è casuale: a ogni estrazione ogni numero ha la stessa probabilità, circa 1 su 18 di uscire su una ruota, qualunque cosa sia uscita prima. Frequenze e ritardi qui sotto sono solo statistiche, non pronostici: le giocate "sulla casistica" seguono i ritardi come chiesto, ma non aumentano le probabilità di vincere.</div>
-      ${lottoPlayHtml(draws)}
-      ${lottoHistHtml(draws)}
-      <div class="day">Estrazione di ${fmtDay(last.date)}</div>
-      <div class="draw" role="group" aria-label="Ruote">${WHEELS.map(r => `<div class="wheel" role="button" tabindex="0" data-w="${r}" aria-pressed="${r === w}">
-        <div class="wn">${r}</div><div class="balls">${nums(last.ruote?.[r]).map(n => `<span class="ball">${n}</span>`).join("")}</div></div>`).join("")}</div>
-      <div class="day" style="display:flex;justify-content:space-between;align-items:center;gap:8px">
-        <span>Statistiche ${esc(w)}</span>
-        <label class="note" for="wheel-sel" hidden>Ruota</label>
-        <select id="wheel-sel">${WHEELS.map(r => `<option ${r === w ? "selected" : ""}>${r}</option>`).join("")}</select>
-      </div>
+    return `<div class="day" style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span>Statistiche ${esc(w)}</span>
+        <select id="wheel-sel">${WHEELS.map(r => `<option ${r === w ? "selected" : ""}>${r}</option>`).join("")}</select></div>
       <div class="board">${cells}</div>
-      <p class="note">Su ${N} estrazioni raccolte finora. Colore più intenso = uscito più volte; il numero piccolo è il ritardo (estrazioni dall'ultima uscita). Lo storico cresce a ogni aggiornamento.</p>
-      <div class="day">Estrazioni precedenti</div>
-      <div class="tbl-wrap"><table><thead><tr><th class="t">Data</th><th class="t">${esc(w)}</th></tr></thead>
-        <tbody>${draws.slice(1, 16).map(d => `<tr><td class="t">${fmtShort(d.date)}</td><td class="t num" style="font-size:16px;letter-spacing:.04em">${nums(d.ruote?.[w]).join(" · ")}</td></tr>`).join("")}</tbody></table></div>
-      ${viewSE()}`;
+      <p class="note">Su ${N} estrazioni raccolte. Colore più intenso = uscito più volte; il numero piccolo è il ritardo. Il Lotto è casuale: ritardi e frequenze non cambiano le probabilità.</p>`;
   }
 
   // Bilancio: pronostici congelati prima della partita confrontati con i risultati
@@ -2332,9 +2400,20 @@ if (typeof module !== "undefined") module.exports = Model;
       if (ft.recovery?.legs?.length) list.push({ tk: ft.recovery.legs, stake: ft.recovery.stake || 20, name: "Recupero", key: day + "|r" });
       list.forEach(x => { if (x.tk.every(r => r.res && hit(r.s.k, r.res)) && store.get("pr.cel." + x.key, "") !== "1") won.push(x); });
     }
+    // Lotto e SuperEnalotto: festeggia se la giocata proposta per l'ultima estrazione (degli ultimi 2 giorni) ha vinto
+    const LD = (state.lotto?.draws || []).slice().sort((a, b) => a.date < b.date ? 1 : -1);
+    if (LD.length > 3 && LD[0].date >= addDays(today(), -2)) {
+      const o = lottoOutcome(LD, 0);
+      if (o && o.pay && store.get("pr.cel.lotto|" + LD[0].date, "") !== "1") won.push({ key: "lotto|" + LD[0].date, title: (o.hit.length === 3 ? "Terno" : "Ambo") + " al Lotto!", pay: o.pay, lotto: true });
+    }
+    const SD = (state.se?.draws || []).slice().sort((a, b) => a.date < b.date ? 1 : -1);
+    if (SD.length > 3 && SD[0].date >= addDays(today(), -2)) {
+      const o = seOutcome(SD, 0);
+      if (o && o.won && store.get("pr.cel.se|" + SD[0].date, "") !== "1") won.push({ key: "se|" + SD[0].date, title: "SuperEnalotto: " + o.hit.length + " numeri!", pay: 0, lotto: true });
+    }
     if (!won.length) return;
     won.forEach(x => store.set("pr.cel." + x.key, "1"));
-    const tot = won.reduce((a, x) => a + x.stake * x.tk.reduce((q, r) => q * r.s.odd, 1), 0);
+    const tot = won.reduce((a, x) => a + (x.pay != null ? x.pay : x.stake * x.tk.reduce((q, r) => q * r.s.odd, 1)), 0);
     // Giulia a turno (assets/giulia.json dice quanti video ci sono) e a tutto schermo
     let gn = 2; try { gn = +(JSON.parse(store.get("pr.gn", "{}")).n) || 2; } catch (e) {}
     fetch("assets/giulia.json", { cache: "no-store" }).then(r => r.json()).then(j => store.set("pr.gn", JSON.stringify(j))).catch(() => {});
@@ -2345,8 +2424,8 @@ if (typeof module !== "undefined") module.exports = Model;
         <video class="gb" autoplay muted playsinline aria-hidden="true"></video>
         <video class="gv" autoplay muted playsinline></video>
         <div style="position:absolute;left:0;right:0;bottom:0;padding:24px 16px calc(24px + env(safe-area-inset-bottom,0px));background:linear-gradient(transparent,rgba(0,0,0,.85));text-align:center;color:#fff;display:grid;gap:8px">
-          <div style="font-family:var(--font-display);font-style:italic;font-weight:800;font-size:32px;text-transform:uppercase;color:#12C25E;text-shadow:0 2px 12px rgba(0,0,0,.6)">${won.length > 1 ? won.length + " schedine vinte!" : esc(won[0].name) + " vinta!"}</div>
-          <div style="font-size:18px">Incassi <b>${euro(tot)}</b></div>
+          <div style="font-family:var(--font-display);font-style:italic;font-weight:800;font-size:32px;text-transform:uppercase;color:#12C25E;text-shadow:0 2px 12px rgba(0,0,0,.6)">${won.length > 1 ? won.length + " vincite!" : esc(won[0].title || won[0].name + " vinta!")}</div>
+          ${tot > 0 ? `<div style="font-size:18px">Incassi <b>${euro(tot)}</b>${won.some(x => x.title?.startsWith("SuperEnalotto")) ? " + premio SuperEnalotto" : ""}</div>` : `<div style="font-size:18px">Controlla il premio in ricevitoria</div>`}
           <button style="font:inherit;font-weight:600;padding:12px;border-radius:12px;border:0;background:#12C25E;color:#03170B;max-width:320px;width:100%;justify-self:center">Grazie Giulia!</button>
         </div></div>`;
     document.body.appendChild(box);
@@ -2370,6 +2449,7 @@ if (typeof module !== "undefined") module.exports = Model;
     if (state.sec === "calcio") renderChips();
     applyTheme();
     if (!state.ready) return;
+    setTimeout(() => { try { maybeCelebrate(); } catch (e) {} }, 400);
     if (state.sec === "lotto") {
       main.innerHTML = viewLotto();
       $("#stamp").textContent = state.lotto?.updated ? "Aggiornato " + fmtStamp(state.lotto.updated) : "";
@@ -2386,7 +2466,6 @@ if (typeof module !== "undefined") module.exports = Model;
     const L = league(state.league);
     if (!L) { main.innerHTML = `<div class="empty">I campionati compaiono qui dopo il primo aggiornamento.</div>`; return; }
     $("#stamp").textContent = "Aggiornato " + fmtStamp(L.d.updated);
-    setTimeout(() => { try { maybeCelebrate(); } catch (e) {} }, 400);
     main.innerHTML = state.view === "scommesse" ? viewScommesse() : state.view === "conto" ? viewConto() : state.view === "extra" ? viewExtra() : state.view === "classifica" ? viewClassifica(L) : state.view === "verifica" ? viewVerifica(L) : viewPartite(L);
   }
 
@@ -2479,6 +2558,8 @@ if (typeof module !== "undefined") module.exports = Model;
     else if (t.dataset.bf) { state.bf = t.dataset.bf; }
     else if (t.dataset.day) { state.day = t.dataset.day; state.dayPicked = true; }
     else if (t.dataset.xday) { state.xday = t.dataset.xday; }
+    else if (t.dataset.lv) { state.lv = t.dataset.lv; }
+    else if (t.dataset.ld) { state.ld = t.dataset.ld; }
     else if (t.dataset.l) { state.league = t.dataset.l; store.set("pr.league", state.league); keepTop = true; }
     else if (t.dataset.v) { state.view = t.dataset.v; store.set("pr.view", state.view); keepTop = true; }
     else if (t.dataset.w) { state.wheel = t.dataset.w; store.set("pr.wheel", state.wheel); }
