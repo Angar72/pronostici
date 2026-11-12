@@ -31,18 +31,18 @@ jobs:
           end=$((SECONDS + 340*60)); lotto=0
           while [ $SECONDS -lt $end ]; do
             git fetch -q origin main && git reset -q --hard origin/main
-            ONLY_IF_MISSING=true node tools/auto.mjs || true
-            node tools/avvisi.mjs || true
+            ONLY_IF_MISSING=true timeout 300 node tools/auto.mjs || true
+            timeout 240 node tools/avvisi.mjs || true
             d=$(TZ=Europe/Rome date +%u); hm=$(TZ=Europe/Rome date +%H%M)
-            if [[ "$d" =~ ^(2|4|5|6)$ ]] && [ "$hm" -ge 2015 ] && [ "$hm" -le 2330 ] && [ $SECONDS -ge $lotto ]; then
-              LOTTO_ONLY=true node tools/auto.mjs || true; lotto=$((SECONDS + 20*60))
+            if [[ "$d" =~ ^(2|4|5|6)$ ]] && [ "$hm" -ge 2005 ] && [ "$hm" -le 2330 ] && [ $SECONDS -ge $lotto ]; then
+              LOTTO_ONLY=true timeout 120 node tools/auto.mjs || true; lotto=$((SECONDS + 10*60))
             fi
             if [ -n "$(git status --porcelain data tools/avvisi-stato.json tools/op-nomi.json)" ]; then
               git add data tools/avvisi-stato.json tools/op-nomi.json
               git commit -qm "Aggiornamento automatico $(TZ=Europe/Rome date '+%d/%m %H:%M')"
               git push -q origin HEAD:main || { git fetch -q origin main; git rebase -q origin/main && git push -q origin HEAD:main; } || echo "push non riuscito, riprovo al prossimo giro"
             fi
-            sleep 300
+            sleep 240
           done
       - name: Riavvio
         if: always()
