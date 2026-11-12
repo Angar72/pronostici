@@ -271,7 +271,7 @@ body[data-sec="lotto"] .ball{background:var(--chip);color:var(--ink)}
       <div style="display:grid;justify-items:end;gap:4px">
         <div class="stamp" id="stamp">In caricamento…</div>
         <a id="refresh" class="refresh" target="_blank" rel="noopener" href="https://angar72.github.io/pronostici/" style="text-decoration:none">Apri con risultati in diretta ↗</a>
-        <div class="stamp">Versione 12 nov · extra mix</div>
+        <div class="stamp">Versione 12 nov · giocato e uscito</div>
       </div>
     </div>
     <div class="seg" role="group" aria-label="Sezione">
@@ -1170,6 +1170,11 @@ if (typeof module !== "undefined") module.exports = Model;
     const ssHit = d ? g.ss === +d.superstar : false;
     return { g, out, hit, jolly, superstar: d ? +d.superstar : null, j51, ssHit, won: out ? hit.length >= 2 || ssHit : null };
   }
+  // giocato e uscito uno sopra l'altro: i numeri in comune sono verdi in tutte e due le righe
+  const vsRows = (played, out, extra) => `<div style="display:grid;grid-template-columns:auto 1fr;gap:8px 12px;align-items:center;margin:4px 0 8px">
+      <span class="note" style="margin:0">Giocato</span>${lballs(played, out ? played.filter(n => out.includes(n)) : [])}
+      ${out ? `<span class="note" style="margin:0">Uscito</span><div class="balls">${out.map(n => `<span class="ball"${played.includes(n) ? ' style="background:#12C25E;color:#03170B;border-color:#12C25E"' : ' style="opacity:.75"'}>${n}</span>`).join("")}${extra || ""}</div>` : ""}
+    </div>`;
   const lballs = (ns, hit) => `<div class="balls">${ns.map(n => `<span class="ball"${hit && hit.includes(n) ? ' style="background:#12C25E;color:#03170B;border-color:#12C25E"' : ""}>${n}</span>`).join("")}</div>`;
   function viewLotto() {
     const draws = (state.lotto?.draws || []).slice().sort((a, b) => a.date < b.date ? 1 : -1);
@@ -1194,11 +1199,11 @@ if (typeof module !== "undefined") module.exports = Model;
       const g = lo.g;
       html += `<div class="ticket">
         <div class="sub">Lotto · ruota di ${esc(g.w)}</div>
-        ${lballs(g.nums, lo.hit)}
+        ${vsRows(g.nums, lo.out)}
         <div style="margin-top:6px">
           ${row("Sorte", "Ambo e Terno")}
           ${row("Puntata", "1 € ambo + 1 € terno = 2 €")}
-          ${future ? row("Se escono 2 numeri", "circa 83 €") + row("Se escono tutti e 3", "4.750 €") : row("Usciti su " + esc(g.w), lo.out.join(" · "))}
+          ${future ? row("Se escono 2 numeri", "circa 83 €") + row("Se escono tutti e 3", "4.750 €") : ""}
           ${row("Esito", future ? res(null, "estrazione alle 20") : lo.pay ? res(true, (lo.hit.length === 3 ? "Terno" : "Ambo") + " · vinci " + eur(lo.pay)) : res(false, lo.hit.length ? "persa (1 numero)" : "persa"))}
         </div>
         ${future ? `<div class="note" style="margin-top:8px">In ricevitoria: <b>"${g.nums.join(", ")} sulla ruota di ${esc(g.w)}, 1 euro di ambo e 1 euro di terno"</b>.</div>` : ""}
@@ -1212,9 +1217,8 @@ if (typeof module !== "undefined") module.exports = Model;
         const pay = !out ? null : hit.length === 3 ? 4750 : hit.length === 2 ? 250 / 3 : 0;
         html += `<div class="ticket" style="opacity:.92">
           <div class="sub">Extra · mix ritardatari + frequenti · ruota di ${esc(mg.w)}</div>
-          ${lballs(mg.nums, hit)}
+          ${vsRows(mg.nums, out)}
           <div style="margin-top:6px">
-            ${!future ? row("Usciti su " + esc(mg.w), out.join(" · ")) : ""}
             ${row("Esito", future ? res(null, "solo da seguire · estrazione alle 20") : pay ? res(true, (hit.length === 3 ? "Terno" : "Ambo") + " · avresti vinto " + eur(pay)) : res(false, "persa"))}
           </div>
           <div class="note" style="margin-top:6px">Solo da seguire, non entra nel conto. Punteggio di ogni numero = quanto è in ritardo + quanto è uscito nelle ultime 20 estrazioni.</div>
@@ -1225,11 +1229,11 @@ if (typeof module !== "undefined") module.exports = Model;
       const g = so.g;
       html += `<div class="ticket">
         <div class="sub">SuperEnalotto · sestina</div>
-        ${lballs(g.nums, so.j51 ? [...so.hit, so.jolly] : so.hit)}
+        ${vsRows(g.nums, so.out ? so.out.slice().sort((a, b) => a - b) : null, so.out ? `<span class="ball" title="Jolly" style="border-style:dashed${g.nums.includes(so.jolly) ? ";background:#12C25E;color:#03170B" : ""}">J ${so.jolly}</span>` : "")}
         <div style="margin-top:6px">
-          ${row("SuperStar da giocare", `<span class="ball" style="display:inline-grid;width:30px;height:30px;font-size:14px${!future && g.ss === so.superstar ? ";background:#12C25E;color:#03170B" : ""}">${g.ss}</span>`)}
+          ${row(future ? "SuperStar da giocare" : "SuperStar giocato", `<span class="ball" style="display:inline-grid;width:30px;height:30px;font-size:14px${!future && g.ss === so.superstar ? ";background:#12C25E;color:#03170B" : ""}">${g.ss}</span>`)}
           ${row("Costo", "1 € sestina + 0,50 € SuperStar = 1,50 €")}
-          ${future ? row("Jolly", "estratto stasera, non si gioca") : row("Sestina uscita", so.out.slice().sort((a, b) => a - b).join(" · ")) + row("Jolly uscito", so.jolly + (g.nums.includes(so.jolly) ? " (nella tua sestina)" : "")) + row("SuperStar uscito", so.superstar + (g.ss === so.superstar ? " ✓ preso!" : ""))}
+          ${future ? row("Jolly", "estratto stasera, non si gioca") : row("SuperStar uscito", so.superstar + (g.ss === so.superstar ? " ✓ preso!" : ""))}
           ${row("Esito", future ? res(null, "estrazione alle 20") : so.won ? res(true, (so.j51 ? "5+1" : so.hit.length + " numeri") + (so.ssHit ? " + SuperStar" : "") + " · premio variabile") : res(false, "persa" + (so.hit.length ? ` (${so.hit.length} numero)` : "")))}
         </div>
         <div class="note" style="margin-top:6px">In ricevitoria: <b>"${g.nums.join(", ")} al SuperEnalotto, con SuperStar ${g.ss}"</b>. Il Jolly non si gioca: è un settimo numero estratto che conta solo se indovini 5 numeri (diventa "5+1"). Il SuperStar lo scegli tu e fa vincere anche con pochi numeri presi.</div>
@@ -2574,7 +2578,7 @@ if (typeof module !== "undefined") module.exports = Model;
   // aggiornamento della pagina: l'app sulla schermata Home tiene in memoria la versione vecchia.
   // Ogni volta che si riapre (e ogni 10 minuti) controllo se c'è una versione nuova e mi ricarico da solo.
   // numero di versione crescente (BUILD): mi ricarico solo se sul server ce n'è uno PIÙ ALTO, e al massimo una volta ogni 5 minuti
-  const BUILD = 2026111221;
+  const BUILD = 2026111222;
   async function checkNewVersion() {
     try {
       let last = 0; try { last = +sessionStorage.getItem("pr.reload") || 0; } catch (e) {}
