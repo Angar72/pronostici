@@ -271,7 +271,7 @@ body[data-sec="lotto"] .ball{background:var(--chip);color:var(--ink)}
       <div style="display:grid;justify-items:end;gap:4px">
         <div class="stamp" id="stamp">In caricamento…</div>
         <a id="refresh" class="refresh" target="_blank" rel="noopener" href="https://angar72.github.io/pronostici/" style="text-decoration:none">Apri con risultati in diretta ↗</a>
-        <div class="stamp">Versione 12 nov · nuovo Lotto</div>
+        <div class="stamp">Versione 12 nov · Jolly</div>
       </div>
     </div>
     <div class="seg" role="group" aria-label="Sezione">
@@ -1122,7 +1122,9 @@ if (typeof module !== "undefined") module.exports = Model;
   function seOutcome(sd, i) {
     const g = sePlay({ draws: sd.slice(i + 1) }); if (!g) return null;
     const d = sd[i], out = d ? numsOf(d.numeri) : null, hit = out ? g.nums.filter(n => out.includes(n)) : [];
-    return { g, out, hit, won: out ? hit.length >= 2 : null };
+    // il Jolly conta solo con 5 numeri presi: diventa "5+1"
+    const jolly = d ? +d.jolly : null, j51 = hit.length === 5 && jolly && g.nums.includes(jolly);
+    return { g, out, hit, jolly, superstar: d ? +d.superstar : null, j51, won: out ? hit.length >= 2 : null };
   }
   const lballs = (ns, hit) => `<div class="balls">${ns.map(n => `<span class="ball"${hit && hit.includes(n) ? ' style="background:#12C25E;color:#03170B;border-color:#12C25E"' : ""}>${n}</span>`).join("")}</div>`;
   function viewLotto() {
@@ -1162,12 +1164,13 @@ if (typeof module !== "undefined") module.exports = Model;
       const g = so.g;
       html += `<div class="ticket">
         <div class="sub">SuperEnalotto · sestina</div>
-        ${lballs(g.nums, so.hit)}
+        ${lballs(g.nums, so.j51 ? [...so.hit, so.jolly] : so.hit)}
         <div style="margin-top:6px">
           ${row("Costo", "1 € (SuperStar facoltativo +0,50 €)")}
-          ${!future ? row("Sestina uscita", so.out.slice().sort((a, b) => a - b).join(" · ")) : ""}
-          ${row("Esito", future ? res(null, "estrazione alle 20") : so.won ? res(true, so.hit.length + " numeri · premio variabile") : res(false, "persa" + (so.hit.length ? ` (${so.hit.length} numero)` : "")))}
+          ${!future ? row("Sestina uscita", so.out.slice().sort((a, b) => a - b).join(" · ")) + row("Jolly", so.jolly + (g.nums.includes(so.jolly) ? " (nella tua sestina)" : "")) + row("SuperStar", so.superstar) : ""}
+          ${row("Esito", future ? res(null, "estrazione alle 20") : so.won ? res(true, (so.j51 ? "5+1" : so.hit.length + " numeri") + " · premio variabile") : res(false, "persa" + (so.hit.length ? ` (${so.hit.length} numero)` : "")))}
         </div>
+        <div class="note" style="margin-top:6px">Il Jolly non si gioca: è un settimo numero estratto che conta solo se indovini 5 numeri, e allora diventa "5+1".</div>
       </div>`;
     } else if (!future) html += `<div class="empty">Il SuperEnalotto di questa estrazione non è ancora nei dati.</div>`;
     // conto delle ultime 10 estrazioni del Lotto
