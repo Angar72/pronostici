@@ -271,7 +271,7 @@ body[data-sec="lotto"] .ball{background:var(--chip);color:var(--ink)}
       <div style="display:grid;justify-items:end;gap:4px">
         <div class="stamp" id="stamp">In caricamento…</div>
         <a id="refresh" class="refresh" target="_blank" rel="noopener" href="https://angar72.github.io/pronostici/" style="text-decoration:none">Apri con risultati in diretta ↗</a>
-        <div class="stamp">Versione 12 nov · Jolly</div>
+        <div class="stamp">Versione 12 nov · 07:10</div>
       </div>
     </div>
     <div class="seg" role="group" aria-label="Sezione">
@@ -2505,12 +2505,18 @@ if (typeof module !== "undefined") module.exports = Model;
   }
   // aggiornamento della pagina: l'app sulla schermata Home tiene in memoria la versione vecchia.
   // Ogni volta che si riapre (e ogni 10 minuti) controllo se c'è una versione nuova e mi ricarico da solo.
-  const MY_VER = (document.querySelector(".stamp")?.textContent || "").trim();
+  // numero di versione crescente (BUILD): mi ricarico solo se sul server ce n'è uno PIÙ ALTO, e al massimo una volta ogni 5 minuti
+  const BUILD = 2026111207;
   async function checkNewVersion() {
     try {
+      let last = 0; try { last = +sessionStorage.getItem("pr.reload") || 0; } catch (e) {}
+      if (Date.now() - last < 5 * 60000) return;
       const r = await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" });
-      const m = /<div class="stamp">([^<]*)<\/div>/.exec(await r.text());
-      if (m && m[1].trim() && m[1].trim() !== MY_VER) location.replace(location.pathname + "?v=" + Date.now() + location.hash);
+      const m = /const BUILD = (\d+);/.exec(await r.text());
+      if (m && +m[1] > BUILD) {
+        try { sessionStorage.setItem("pr.reload", String(Date.now())); } catch (e) {}
+        location.replace(location.pathname + "?v=" + m[1] + location.hash);
+      }
     } catch (e) {}
   }
   setTimeout(checkNewVersion, 3000); setInterval(checkNewVersion, 10 * 60000);
