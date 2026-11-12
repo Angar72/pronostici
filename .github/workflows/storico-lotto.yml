@@ -1,0 +1,21 @@
+name: Scarica storico Lotto
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  scarica:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          mkdir -p tools/storico /tmp/z
+          for u in https://www.igt.it/STORICO_ESTRAZIONI_LOTTO/storico.zip https://www.igt.it/STORICO_ESTRAZIONI_LOTTO/storico01-oggi.zip; do
+            curl -sfL -A "Mozilla/5.0" -o /tmp/z/s.zip "$u" && unzip -o -q /tmp/z/s.zip -d /tmp/z && break || echo "non trovato $u"
+          done
+          ls -la /tmp/z
+          f=$(ls /tmp/z/*.txt 2>/dev/null | head -1)
+          if [ -n "$f" ]; then tail -n 30000 "$f" > tools/storico/lotto.txt; head -3 tools/storico/lotto.txt; wc -l tools/storico/lotto.txt; else echo "NESSUN FILE" > tools/storico/lotto-errore.txt; fi
+          git config user.name "pronostici-bot"; git config user.email "pronostici-bot@users.noreply.github.com"
+          git add tools/storico; git commit -m "Storico Lotto per le prove" || exit 0
+          for i in 1 2 3; do git pull --rebase -q && git push -q && break; sleep 5; done
