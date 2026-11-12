@@ -271,7 +271,7 @@ body[data-sec="lotto"] .ball{background:var(--chip);color:var(--ink)}
       <div style="display:grid;justify-items:end;gap:4px">
         <div class="stamp" id="stamp">In caricamento…</div>
         <a id="refresh" class="refresh" target="_blank" rel="noopener" href="https://angar72.github.io/pronostici/" style="text-decoration:none">Apri con risultati in diretta ↗</a>
-        <div class="stamp">Versione 12 nov · 07:10</div>
+        <div class="stamp">Versione 12 nov · SuperStar</div>
       </div>
     </div>
     <div class="seg" role="group" aria-label="Sezione">
@@ -1026,7 +1026,10 @@ if (typeof module !== "undefined") module.exports = Model;
     const late = all.slice().sort((a, b) => dl(st, b) - dl(st, a) || tie(seed, a) - tie(seed, b)).slice(0, 4);
     const hot = all.filter(n => !late.includes(n))
       .sort((a, b) => st.freq[b] - st.freq[a] || tie(seed + "h", a) - tie(seed + "h", b)).slice(0, 2);
-    return { draws, st, late, hot, nums: [...late, ...hot].sort((a, b) => a - b) };
+    // numero SuperStar (lo sceglie il giocatore, 1-90): il più in ritardo tra i SuperStar estratti
+    const ssSeen = new Map(); draws.forEach((d, i) => { const v = +d.superstar; if (v && !ssSeen.has(v)) ssSeen.set(v, i); });
+    const ss = all.slice().sort((a, b) => (ssSeen.has(a) ? ssSeen.get(a) : 999) - (ssSeen.has(b) ? ssSeen.get(b) : 999) || tie(seed + "ss", a) - tie(seed + "ss", b)).pop();
+    return { draws, st, late, hot, ss, nums: [...late, ...hot].sort((a, b) => a - b) };
   }
   const ballRow = (ns, mark) => `<div class="balls">${ns.map(n => `<span class="ball"${mark && mark.includes(n) ? ' style="background:var(--accent);color:var(--accent-ink)"' : ""}>${n}</span>`).join("")}</div>`;
   function lottoPlayHtml(draws) {
@@ -1124,7 +1127,8 @@ if (typeof module !== "undefined") module.exports = Model;
     const d = sd[i], out = d ? numsOf(d.numeri) : null, hit = out ? g.nums.filter(n => out.includes(n)) : [];
     // il Jolly conta solo con 5 numeri presi: diventa "5+1"
     const jolly = d ? +d.jolly : null, j51 = hit.length === 5 && jolly && g.nums.includes(jolly);
-    return { g, out, hit, jolly, superstar: d ? +d.superstar : null, j51, won: out ? hit.length >= 2 : null };
+    const ssHit = d ? g.ss === +d.superstar : false;
+    return { g, out, hit, jolly, superstar: d ? +d.superstar : null, j51, ssHit, won: out ? hit.length >= 2 || ssHit : null };
   }
   const lballs = (ns, hit) => `<div class="balls">${ns.map(n => `<span class="ball"${hit && hit.includes(n) ? ' style="background:#12C25E;color:#03170B;border-color:#12C25E"' : ""}>${n}</span>`).join("")}</div>`;
   function viewLotto() {
@@ -1166,11 +1170,12 @@ if (typeof module !== "undefined") module.exports = Model;
         <div class="sub">SuperEnalotto · sestina</div>
         ${lballs(g.nums, so.j51 ? [...so.hit, so.jolly] : so.hit)}
         <div style="margin-top:6px">
-          ${row("Costo", "1 € (SuperStar facoltativo +0,50 €)")}
-          ${!future ? row("Sestina uscita", so.out.slice().sort((a, b) => a - b).join(" · ")) + row("Jolly", so.jolly + (g.nums.includes(so.jolly) ? " (nella tua sestina)" : "")) + row("SuperStar", so.superstar) : ""}
-          ${row("Esito", future ? res(null, "estrazione alle 20") : so.won ? res(true, (so.j51 ? "5+1" : so.hit.length + " numeri") + " · premio variabile") : res(false, "persa" + (so.hit.length ? ` (${so.hit.length} numero)` : "")))}
+          ${row("SuperStar da giocare", `<span class="ball" style="display:inline-grid;width:30px;height:30px;font-size:14px${!future && g.ss === so.superstar ? ";background:#12C25E;color:#03170B" : ""}">${g.ss}</span>`)}
+          ${row("Costo", "1 € sestina + 0,50 € SuperStar = 1,50 €")}
+          ${future ? row("Jolly", "estratto stasera, non si gioca") : row("Sestina uscita", so.out.slice().sort((a, b) => a - b).join(" · ")) + row("Jolly uscito", so.jolly + (g.nums.includes(so.jolly) ? " (nella tua sestina)" : "")) + row("SuperStar uscito", so.superstar + (g.ss === so.superstar ? " ✓ preso!" : ""))}
+          ${row("Esito", future ? res(null, "estrazione alle 20") : so.won ? res(true, (so.j51 ? "5+1" : so.hit.length + " numeri") + (so.ssHit ? " + SuperStar" : "") + " · premio variabile") : res(false, "persa" + (so.hit.length ? ` (${so.hit.length} numero)` : "")))}
         </div>
-        <div class="note" style="margin-top:6px">Il Jolly non si gioca: è un settimo numero estratto che conta solo se indovini 5 numeri, e allora diventa "5+1".</div>
+        <div class="note" style="margin-top:6px">In ricevitoria: <b>"${g.nums.join(", ")} al SuperEnalotto, con SuperStar ${g.ss}"</b>. Il Jolly non si gioca: è un settimo numero estratto che conta solo se indovini 5 numeri (diventa "5+1"). Il SuperStar lo scegli tu e fa vincere anche con pochi numeri presi.</div>
       </div>`;
     } else if (!future) html += `<div class="empty">Il SuperEnalotto di questa estrazione non è ancora nei dati.</div>`;
     // conto delle ultime 10 estrazioni del Lotto
@@ -2412,7 +2417,7 @@ if (typeof module !== "undefined") module.exports = Model;
     const SD = (state.se?.draws || []).slice().sort((a, b) => a.date < b.date ? 1 : -1);
     if (SD.length > 3 && SD[0].date >= addDays(today(), -2)) {
       const o = seOutcome(SD, 0);
-      if (o && o.won && store.get("pr.cel.se|" + SD[0].date, "") !== "1") won.push({ key: "se|" + SD[0].date, title: "SuperEnalotto: " + o.hit.length + " numeri!", pay: 0, lotto: true });
+      if (o && o.won && store.get("pr.cel.se|" + SD[0].date, "") !== "1") won.push({ key: "se|" + SD[0].date, title: "SuperEnalotto: " + o.hit.length + " numeri" + (o.ssHit ? " + SuperStar" : "") + "!", pay: 0, lotto: true });
     }
     if (!won.length) return;
     won.forEach(x => store.set("pr.cel." + x.key, "1"));
@@ -2506,7 +2511,7 @@ if (typeof module !== "undefined") module.exports = Model;
   // aggiornamento della pagina: l'app sulla schermata Home tiene in memoria la versione vecchia.
   // Ogni volta che si riapre (e ogni 10 minuti) controllo se c'è una versione nuova e mi ricarico da solo.
   // numero di versione crescente (BUILD): mi ricarico solo se sul server ce n'è uno PIÙ ALTO, e al massimo una volta ogni 5 minuti
-  const BUILD = 2026111207;
+  const BUILD = 2026111208;
   async function checkNewVersion() {
     try {
       let last = 0; try { last = +sessionStorage.getItem("pr.reload") || 0; } catch (e) {}
