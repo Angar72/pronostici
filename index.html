@@ -271,7 +271,7 @@ body[data-sec="lotto"] .ball{background:var(--chip);color:var(--ink)}
       <div style="display:grid;justify-items:end;gap:4px">
         <div class="stamp" id="stamp">In caricamento…</div>
         <a id="refresh" class="refresh" target="_blank" rel="noopener" href="https://angar72.github.io/pronostici/" style="text-decoration:none">Apri con risultati in diretta ↗</a>
-        <div class="stamp">Versione 12 nov · giocato e uscito</div>
+        <div class="stamp">Versione 14 nov · estratto</div>
       </div>
     </div>
     <div class="seg" role="group" aria-label="Sezione">
@@ -1207,6 +1207,16 @@ if (typeof module !== "undefined") module.exports = Model;
           ${row("Esito", future ? res(null, "estrazione alle 20") : lo.pay ? res(true, (lo.hit.length === 3 ? "Terno" : "Ambo") + " · vinci " + eur(lo.pay)) : res(false, lo.hit.length ? "persa (1 numero)" : "persa"))}
         </div>
         ${future ? `<div class="note" style="margin-top:8px">In ricevitoria: <b>"${g.nums.join(", ")} sulla ruota di ${esc(g.w)}, 1 euro di ambo e 1 euro di terno"</b>.</div>` : ""}
+        ${(() => {
+          // sorti facoltative, fuori dal conto: estratto sui 3 numeri e estratto determinato (primo estratto) sul numero "caldo"
+          const det = g.hot || g.nums[0], eHit = lo.out ? lo.hit.length : null, dHit = lo.out ? lo.out[0] === det : null;
+          return `<div style="margin-top:10px;padding-top:8px;border-top:1px dashed var(--line)">
+            <div class="note" style="margin:0 0 4px"><b>Puoi aggiungere</b> (facoltativo, non entra nel conto)</div>
+            ${row("Estratto · 1 € sui 3 numeri", future ? "3,74 € per ogni numero che esce" : eHit ? res(true, eHit + (eHit === 1 ? " numero" : " numeri") + " · vinci " + eur(11.23 / 3 * eHit)) : res(false, "persa"))}
+            ${row(`Estratto determinato · 1 € sul ${det} come primo estratto`, future ? "55 € se il primo estratto è il " + det : dHit ? res(true, "vinci 55,00 €") : res(false, "persa (primo estratto " + lo.out[0] + ")"))}
+            ${future ? `<div class="note" style="margin-top:6px">In ricevitoria aggiungi: <b>"estratto 1 euro sui tre numeri; ${det} estratto determinato primo, 1 euro"</b>. Probabilità: estratto con almeno uno dei 3 numeri circa 1 su 6, determinato 1 su 90.</div>` : ""}
+          </div>`;
+        })()}
       </div>`;
     }
     // extra: il mix ritardatari + frequenti, solo da seguire
@@ -2578,7 +2588,7 @@ if (typeof module !== "undefined") module.exports = Model;
   // aggiornamento della pagina: l'app sulla schermata Home tiene in memoria la versione vecchia.
   // Ogni volta che si riapre (e ogni 10 minuti) controllo se c'è una versione nuova e mi ricarico da solo.
   // numero di versione crescente (BUILD): mi ricarico solo se sul server ce n'è uno PIÙ ALTO, e al massimo una volta ogni 5 minuti
-  const BUILD = 2026111222;
+  const BUILD = 2026111417;
   async function checkNewVersion() {
     try {
       let last = 0; try { last = +sessionStorage.getItem("pr.reload") || 0; } catch (e) {}
