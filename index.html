@@ -271,7 +271,7 @@ body[data-sec="lotto"] .ball{background:var(--chip);color:var(--ink)}
       <div style="display:grid;justify-items:end;gap:4px">
         <div class="stamp" id="stamp">In caricamento…</div>
         <a id="refresh" class="refresh" target="_blank" rel="noopener" href="https://angar72.github.io/pronostici/" style="text-decoration:none">Apri con risultati in diretta ↗</a>
-        <div class="stamp">Versione 14 nov · estratto</div>
+        <div class="stamp">Versione 15 nov · esiti extra</div>
       </div>
     </div>
     <div class="seg" role="group" aria-label="Sezione">
@@ -2334,8 +2334,16 @@ if (typeof module !== "undefined") module.exports = Model;
 
   // ---- giocate extra (multiple prese da fuori): controllo automatico quando i dati ci sono, altrimenti a mano ----
   const extraMan = () => { try { return JSON.parse(store.get("pr.xres", "{}")) || {}; } catch (e) { return {}; } };
-  function extraEval(l, prov) {
+  // risultato di una giocata extra: quello in diretta, oppure (se non si trova, es. squadre minori di coppa)
+  // quello già salvato dall'aggiornamento
+  function extraEvOf(l) {
     const x = EXTRA_EV[l.id + "|" + l.h + "|" + l.a];
+    if (x && (x.done || x.live)) return x;
+    const row = (state.raw[l.id]?.played || []).map(r => r.split("|")).find(q => q[1] === l.h && q[2] === l.a && q[0] >= addDays(l.d, -1));
+    return row ? { done: true, hg: +row[3], ag: +row[4], hl: [], al: [], hs: {}, as: {}, cards: 0, hasDet: false, min: "", fromSaved: true } : x;
+  }
+  function extraEval(l, prov) {
+    const x = extraEvOf(l);
     if (!x || !(x.done || (prov && x.live))) return null;
     const [r, arg] = String(l.r || "manual").split(":"), [lo, hi] = String(arg || "").split("-").map(Number);
     const tot = x.hg + x.ag, ht = x.hl.length >= 2 && x.al.length >= 2;
@@ -2452,7 +2460,7 @@ if (typeof module !== "undefined") module.exports = Model;
       const head = r.win ? `<span class="ok">✓ vinta</span>` : r.lost ? `<span class="ko">✗ persa</span>` : "in gioco";
       html += `<div class="day">${esc(r.sl.name)} · quota ${r.q.toFixed(2).replace(".", ",")} · ${head}</div><div class="card">`;
       r.sl.legs.forEach((l, li) => {
-        const s = r.st[li], ev = EXTRA_EV[l.id + "|" + l.h + "|" + l.a], k = si + "-" + li;
+        const s = r.st[li], ev = extraEvOf(l), k = si + "-" + li;
         const score = ev ? (ev.live ? `<b class="num">${ev.hg}-${ev.ag}</b> · <b class="min">${esc(ev.min)}</b>` : ev.done ? `finale <b class="num">${ev.hg}-${ev.ag}</b>${ev.hl.length >= 2 ? ` (1° t. ${ev.hl[0]}-${ev.al[0]})` : ""}` : ev.off ? "rinviata" : "") : "";
         const pv = s.v == null && ev && ev.live ? extraEval(l, true) : null;
         const mark = s.v === true || pv === true ? `<span class="ok">✓</span>` : s.v === false || pv === false ? `<span class="ko">✗</span>` : "·";
@@ -2588,7 +2596,7 @@ if (typeof module !== "undefined") module.exports = Model;
   // aggiornamento della pagina: l'app sulla schermata Home tiene in memoria la versione vecchia.
   // Ogni volta che si riapre (e ogni 10 minuti) controllo se c'è una versione nuova e mi ricarico da solo.
   // numero di versione crescente (BUILD): mi ricarico solo se sul server ce n'è uno PIÙ ALTO, e al massimo una volta ogni 5 minuti
-  const BUILD = 2026111417;
+  const BUILD = 2026111508;
   async function checkNewVersion() {
     try {
       let last = 0; try { last = +sessionStorage.getItem("pr.reload") || 0; } catch (e) {}
