@@ -1,0 +1,21 @@
+name: Recupera nome argomento avvisi (cifrato)
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  nome:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - env:
+          SITE_CODE: ${{ secrets.SITE_CODE }}
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+        run: |
+          printf '%s' "$NTFY_TOPIC" > tools/ntfy-topic.txt
+          node tools/seal-file.mjs tools/ntfy-topic.txt
+          git config user.name "avvisi"; git config user.email "avvisi@users.noreply.github.com"
+          git add tools/ntfy-topic.txt.enc && git commit -m "Nome argomento avvisi (cifrato)" && git pull --rebase -q && git push -q
