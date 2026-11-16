@@ -271,7 +271,7 @@ body[data-sec="lotto"] .ball{background:var(--chip);color:var(--ink)}
       <div style="display:grid;justify-items:end;gap:4px">
         <div class="stamp" id="stamp">In caricamento…</div>
         <a id="refresh" class="refresh" target="_blank" rel="noopener" href="https://angar72.github.io/pronostici/" style="text-decoration:none">Apri con risultati in diretta ↗</a>
-        <div class="stamp">Versione 15 nov · esiti extra</div>
+        <div class="stamp">Versione 16 nov · Giulia con voce</div>
       </div>
     </div>
     <div class="seg" role="group" aria-label="Sezione">
@@ -2508,14 +2508,16 @@ if (typeof module !== "undefined") module.exports = Model;
     won.forEach(x => store.set("pr.cel." + x.key, "1"));
     const tot = won.reduce((a, x) => a + (x.pay != null ? x.pay : x.stake * x.tk.reduce((q, r) => q * r.s.odd, 1)), 0);
     // Giulia a turno (assets/giulia.json dice quanti video ci sono) e a tutto schermo
-    let gn = 2; try { gn = +(JSON.parse(store.get("pr.gn", "{}")).n) || 2; } catch (e) {}
+    let gn = 2, gonly = []; try { const gj = JSON.parse(store.get("pr.gn", "{}")); gn = +gj.n || 2; gonly = (gj.only || []).filter(x => x >= 1 && x <= gn); } catch (e) {}
     fetch("assets/giulia.json", { cache: "no-store" }).then(r => r.json()).then(j => store.set("pr.gn", JSON.stringify(j))).catch(() => {});
-    const gi = ((+store.get("pr.gidx", "0") || 0) % gn) + 1; store.set("pr.gidx", String(gi));
+    const gk = +store.get("pr.gidx", "0") || 0; store.set("pr.gidx", String(gk + 1));
+    const gi = gonly.length ? gonly[gk % gonly.length] : (gk % gn) + 1;
     const box = document.createElement("div"); box.id = "giulia";
     box.innerHTML = `<div style="position:fixed;inset:0;z-index:60;background:#000" role="dialog" aria-label="Schedina vinta">
         <style>.gv,.gb{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.gb{display:none;filter:blur(28px) brightness(.55);transform:scale(1.15)}@media (min-aspect-ratio:4/5){.gv{object-fit:contain}.gb{display:block}}</style>
         <video class="gb" autoplay muted playsinline aria-hidden="true"></video>
         <video class="gv" autoplay muted playsinline></video>
+        <button class="gs" style="position:absolute;top:calc(16px + env(safe-area-inset-top,0px));right:16px;font:inherit;font-weight:600;padding:10px 14px;border-radius:999px;border:0;background:rgba(0,0,0,.6);color:#fff">🔊 Tocca per sentire Giulia</button>
         <div style="position:absolute;left:0;right:0;bottom:0;padding:24px 16px calc(24px + env(safe-area-inset-bottom,0px));background:linear-gradient(transparent,rgba(0,0,0,.85));text-align:center;color:#fff;display:grid;gap:8px">
           <div style="font-family:var(--font-display);font-style:italic;font-weight:800;font-size:32px;text-transform:uppercase;color:#12C25E;text-shadow:0 2px 12px rgba(0,0,0,.6)">${won.length > 1 ? won.length + " vincite!" : esc(won[0].title || won[0].name + " vinta!")}</div>
           ${tot > 0 ? `<div style="font-size:18px">Incassi <b>${euro(tot)}</b>${won.some(x => x.title?.startsWith("SuperEnalotto")) ? " + premio SuperEnalotto" : ""}</div>` : `<div style="font-size:18px">Controlla il premio in ricevitoria</div>`}
@@ -2523,12 +2525,14 @@ if (typeof module !== "undefined") module.exports = Model;
         </div></div>`;
     document.body.appendChild(box);
     const close = () => box.remove();
-    box.querySelector("button").onclick = close;
+    box.querySelector("button:not(.gs)").onclick = close;
+    const sBtn = box.querySelector(".gs");
+    sBtn.onclick = (e) => { e.stopPropagation(); const vv = box.querySelector(".gv"); vv.muted = false; vv.currentTime = 0; vv.play().catch(() => {}); sBtn.remove(); };
     box.querySelectorAll("video").forEach(v => v.addEventListener("click", close));
     // i video sono cifrati con il codice: li apro qui sul telefono
     const vEl = box.querySelector(".gv"), bEl = box.querySelector(".gb");
     window.claude?.blob?.(`assets/giulia-${gi}.jpg.enc`, "image/jpeg").then(u => { vEl.poster = u; }).catch(() => {});
-    window.claude?.blob?.(`assets/giulia-${gi}.mp4.enc`, "video/mp4").then(u => { vEl.src = u; vEl.play().catch(() => {}); if (getComputedStyle(bEl).display !== "none") { bEl.src = u; bEl.play().catch(() => {}); } }).catch(() => {});
+    window.claude?.blob?.(`assets/giulia-${gi}.mp4.enc`, "video/mp4").then(u => { vEl.src = u; vEl.muted = false; vEl.play().then(() => sBtn.remove()).catch(() => { vEl.muted = true; vEl.play().catch(() => {}); }); if (getComputedStyle(bEl).display !== "none") { bEl.src = u; bEl.play().catch(() => {}); } }).catch(() => {});
     const v = box.querySelector(".gv"); v.onended = () => setTimeout(close, 2500); v.onerror = () => {};
   }
 
@@ -2596,7 +2600,7 @@ if (typeof module !== "undefined") module.exports = Model;
   // aggiornamento della pagina: l'app sulla schermata Home tiene in memoria la versione vecchia.
   // Ogni volta che si riapre (e ogni 10 minuti) controllo se c'è una versione nuova e mi ricarico da solo.
   // numero di versione crescente (BUILD): mi ricarico solo se sul server ce n'è uno PIÙ ALTO, e al massimo una volta ogni 5 minuti
-  const BUILD = 2026111508;
+  const BUILD = 2026111601;
   async function checkNewVersion() {
     try {
       let last = 0; try { last = +sessionStorage.getItem("pr.reload") || 0; } catch (e) {}

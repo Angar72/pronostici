@@ -59,7 +59,7 @@ const today = rome.slice(0, 10), hour = +rome.slice(11, 13);
 const days = hour < 3 ? [addDays(today, -1), today] : [today];
 const live = await open("live"), byDay = live.schedine?.byDay || {};
 // Giulia a turno: un video diverso a ogni avviso
-let GN = 1; try { GN = JSON.parse(fs.readFileSync("assets/giulia.json", "utf8")).n || 1; } catch {}
+let GN = 1, GONLY = []; try { const gj = JSON.parse(fs.readFileSync("assets/giulia.json", "utf8")); GN = gj.n || 1; GONLY = (gj.only || []).filter(x => x >= 1 && x <= GN); } catch {}
 let stateG = 0; try { stateG = JSON.parse(fs.readFileSync(STATE, "utf8"))._giulia || 0; } catch {}
 // manda l'avviso con la GIF di Giulia (decifrata qui e caricata su ntfy, che la tiene solo per poche ore)
 // go: "scommesse|GIORNO" o "extra|GIORNO" per aprire il sito sulla pagina e sul giorno giusti
@@ -67,7 +67,7 @@ async function send(title, msg, tags, go, noGif) {
   const [gv, gd] = String(go || "").split("|");
   const q = new URLSearchParams({ title, message: msg, tags, priority: "high", click: "https://angar72.github.io/pronostici/#c=" + encodeURIComponent(code) + (gv ? "&v=" + gv + "&d=" + gd : "") });
   if (!noGif) try {
-    stateG++; const n = ((stateG - 1) % GN) + 1;
+    stateG++; const n = GONLY.length ? GONLY[(stateG - 1) % GONLY.length] : ((stateG - 1) % GN) + 1;
     const { iv, ct } = JSON.parse(fs.readFileSync(`assets/giulia-${n}.gif.enc`, "utf8"));
     const S = w.subtle, salt = Buffer.from(fs.readFileSync("data/salt.txt", "utf8").trim(), "base64");
     const base = await S.importKey("raw", new TextEncoder().encode(code), "PBKDF2", false, ["deriveKey"]);
