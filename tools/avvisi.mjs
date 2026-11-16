@@ -68,12 +68,13 @@ async function send(title, msg, tags, go, noGif) {
   const q = new URLSearchParams({ title, message: msg, tags, priority: "high", click: "https://angar72.github.io/pronostici/#c=" + encodeURIComponent(code) + (gv ? "&v=" + gv + "&d=" + gd : "") });
   if (!noGif) try {
     stateG++; const n = GONLY.length ? GONLY[(stateG - 1) % GONLY.length] : ((stateG - 1) % GN) + 1;
-    const { iv, ct } = JSON.parse(fs.readFileSync(`assets/giulia-${n}.gif.enc`, "utf8"));
+    const ext = process.env.FORMATO === "jpg" ? "jpg" : "gif";
+    const { iv, ct } = JSON.parse(fs.readFileSync(`assets/giulia-${n}.${ext}.enc`, "utf8"));
     const S = w.subtle, salt = Buffer.from(fs.readFileSync("data/salt.txt", "utf8").trim(), "base64");
     const base = await S.importKey("raw", new TextEncoder().encode(code), "PBKDF2", false, ["deriveKey"]);
     const k = await S.deriveKey({ name: "PBKDF2", hash: "SHA-256", salt, iterations: 200000 }, base, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
     const gif = Buffer.from(await S.decrypt({ name: "AES-GCM", iv: Buffer.from(iv, "base64") }, k, Buffer.from(ct, "base64")));
-    q.set("filename", "giulia.gif");
+    q.set("filename", "giulia." + ext);
     const r = await fetch("https://ntfy.sh/" + encodeURIComponent(topic) + "?" + q, { method: "PUT", body: gif });
     if (r.ok) return r;
   } catch (e) { console.log("Giulia non allegata:", String(e).slice(0, 80)); }

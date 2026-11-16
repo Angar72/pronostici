@@ -6,6 +6,10 @@ on:
         description: "Manda una notifica di prova"
         type: boolean
         default: true
+      formato:
+        description: "Allegato di Giulia: gif o jpg"
+        type: string
+        default: "gif"
 permissions:
   contents: write
 concurrency: dati
@@ -29,6 +33,7 @@ jobs:
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
           ODDSPAPI_KEY: ${{ secrets.ODDSPAPI_KEY }}
           PROVA: ${{ inputs.prova }}
+          FORMATO: ${{ inputs.formato }}
       - name: Salva lo stato degli avvisi
         run: |
           git config user.name "avvisi"
