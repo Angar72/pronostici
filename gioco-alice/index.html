@@ -89,6 +89,11 @@
   .from-g .ivideo{border-color:var(--a)}
   #cap{font-weight:900;font-size:1.2rem}
   .skip{background:none;border:none;color:var(--muted);font:inherit;font-weight:700;font-size:.85rem;cursor:pointer}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:6px 0 16px}
+  .stats div{background:#f5f0ff;border-radius:14px;padding:8px 4px;text-align:center}
+  .stats b{display:block;font-size:1.5rem;font-weight:900;color:var(--pri)}
+  .stats span{font-size:.75rem;color:var(--muted);font-weight:700}
+  .tottitle{text-align:center;font-weight:900;margin-top:18px;color:var(--muted);font-size:.9rem;text-transform:uppercase;letter-spacing:.05em}
   .big{font-size:3.5rem;text-align:center;margin:6px 0}
   .score{font-size:1.5rem;text-align:center;font-weight:900}
   .msg{text-align:center;color:var(--muted);margin:8px 0 18px}
@@ -183,6 +188,14 @@ function toggleSuono(){
   document.querySelectorAll('.sbtn').forEach(b=>b.textContent = suonoOn?'🔊':'🔇');
   if(suonoOn) suona('ok');
 }
+function num(k){ return parseInt(leggi(k)||'0')||0 }
+function stats(){ return {tot:num('tot_esercizi'), ok:num('tot_giuste'), partite:num('tot_partite')} }
+function statBox(){ const s=stats(); return `<div class="stats"><div><b>${s.tot}</b><span>esercizi fatti</span></div><div><b>${s.ok}</b><span>risposte giuste</span></div><div><b>${s.partite}</b><span>partite finite</span></div></div>`; }
+function traguardo(){
+  const t=num('tot_esercizi'); const mete=[10,50,100,200,300,500,1000];
+  const prossima=mete.find(m=>m>t);
+  return prossima?`<div class="best">Prossimo traguardo: <b>${prossima}</b> esercizi (ne mancano ${prossima-t}) 🎯</div>`:`<div class="best">Oltre 1000 esercizi: sei una leggenda! 👑</div>`;
+}
 function pick(a){return a[Math.floor(Math.random()*a.length)]}
 function guida(tipo, img, testo, anim){
   const g = GUIDE[tipo];
@@ -201,7 +214,8 @@ function splash(){
   app.innerHTML = `
     <img class="hero" src="${IMG.amici}" alt="Alice e Giulia">
     <div class="herotxt">Ciao! Siamo <span style="color:var(--e)">Alice</span> e <span style="color:var(--a)">Giulia</span> 💖</div>
-    <button class="play" onclick="audio(); home(true)">▶ Gioca</button>`;
+    <button class="play" onclick="audio(); home(true)">▶ Gioca</button>
+    <div class="tottitle">Il tuo allenamento</div>${statBox()}`;
 }
 
 function parla(testo, chi){
@@ -238,6 +252,7 @@ async function home(intro){
   clearInterval(countdown); clearTimeout(timer);
   app.innerHTML = `
     <div class="sbtop"><button class="sbtn" onclick="toggleSuono()">${suonoOn?'🔊':'🔇'}</button></div>
+    ${statBox()}
     <div class="stage">
       <div class="side left" id="sideA"><img id="imgA" src="${IMG.a1}" alt="Alice" style="--gc:var(--e)"><span>Alice</span></div>
       <div class="center">
@@ -304,10 +319,9 @@ function domanda(){
   const scelte = tipo==='e' ? ['e','è'] : ['a','ha'];
   const parti = frase.split('___');
   app.innerHTML = `
-    <div class="top"><span>Domanda ${idx+1} di ${giro.length}</span><span>⭐ ${punti} <button class="sbtn" onclick="toggleSuono()">${suonoOn?'🔊':'🔇'}</button></span></div>
+    <div class="top"><span>Domanda ${idx+1} di ${giro.length}</span><span>📚 <span id="totq">${num('tot_esercizi')}</span> &nbsp;⭐ ${punti} <button class="sbtn" onclick="toggleSuono()">${suonoOn?'🔊':'🔇'}</button></span></div>
     <div class="bar"><i style="width:${idx/giro.length*100}%"></i></div>
     <div id="guida">${guida(tipo, GUIDE[tipo].pensa, pick(GUIDE[tipo].domande))}</div>
-    <div class="clock" id="clock"><span id="secs">${TEMPO}</span><div class="cbar"><i id="cbar"></i></div></div>
     <div class="sentence">${parti[0]}<span class="blank" id="blank">?</span>${parti[1]}</div>
     <div class="choices">${scelte.map(s=>`<button class="ch" onclick="rispondi(this,'${s}')">${s}</button>`).join('')}</div>
     <button class="hintbtn" id="hb" onclick="document.getElementById('hint').style.display='block';this.style.display='none'">💡 Aiutino</button>
@@ -317,19 +331,7 @@ function domanda(){
   avviaTempo();
 }
 
-function avviaTempo(){
-  clearInterval(countdown);
-  let resta = TEMPO;
-  const bar = document.getElementById('cbar');
-  requestAnimationFrame(()=>{ bar.style.transition = `width ${TEMPO}s linear`; bar.style.width = '0%'; });
-  countdown = setInterval(()=>{
-    resta--;
-    const s = document.getElementById('secs'); if(!s){clearInterval(countdown);return}
-    s.textContent = resta;
-    if(resta<=3){ document.getElementById('clock').classList.add('hurry'); if(resta>0 && suonoOn) nota(880,0,0.08,'square',0.06); }
-    if(resta<=0){ clearInterval(countdown); rispondi(null, null); }
-  },1000);
-}
+function avviaTempo(){}
 
 function rispondi(btn, scelta){
   const [frase, giusta, tipo] = giro[idx];
@@ -338,7 +340,6 @@ function rispondi(btn, scelta){
   const ok = scelta===giusta;
   document.querySelectorAll('.ch').forEach(b=>{b.disabled=true; if(b.textContent===giusta) b.classList.add('right')});
   if(btn && !ok) btn.classList.add('wrong');
-  const cb = document.getElementById('cbar'); const w = getComputedStyle(cb).width; cb.style.transition='none'; cb.style.width = w;
   const bl = document.getElementById('blank');
   bl.textContent = giusta; bl.classList.add(ok?'ok':'ko');
   document.getElementById('hb').style.display='none';
@@ -358,6 +359,8 @@ function rispondi(btn, scelta){
   fb.innerHTML = `<b>${ok ? 'Risposta giusta: "'+giusta+'"' : (scaduto?'⏰ Tempo scaduto! ':'')+'Ci voleva "'+giusta+'" 🙂'}</b><br>${spieg}
     <div class="trick">Prova con "${prova}": «${fraseProva}» → ${haSenso?'ha senso ✅':'non ha senso ❌'}</div>`;
   if(ok) punti++; else errori.push([frase,giusta,scaduto?'tempo scaduto':scelta]);
+  salva('tot_esercizi', num('tot_esercizi')+1); if(ok) salva('tot_giuste', num('tot_giuste')+1);
+  const tt=document.getElementById('totq'); if(tt) tt.textContent=num('tot_esercizi');
   suona(ok?'ok':'ko');
   const attesa = ok ? 2500 : 5000;
   const auto = document.getElementById('auto'), bar = document.getElementById('autobar');
@@ -371,6 +374,7 @@ function avanti(){ clearTimeout(timer); idx++; idx<giro.length ? domanda() : fin
 function fine(){
   const k = 'record_'+modo, rec = parseInt(leggi(k)||'0');
   const nuovo = punti>rec; if(nuovo) salva(k,punti);
+  salva('tot_partite', num('tot_partite')+1);
   suona('fine');
   const perc = punti/giro.length;
   const emoji = perc===1?'🏆':perc>=.8?'🌟':perc>=.6?'😊':'💪';
@@ -385,7 +389,8 @@ function fine(){
       <button class="btn" onclick="inizia(modo)">Gioca ancora</button>
       <button class="btn sec" onclick="home()">Cambia esercizio</button>
     </div>
-    <div class="best">Record in questo esercizio: ${Math.max(rec,punti)} su ${giro.length}</div>`;
+    <div class="best">Record in questo esercizio: ${Math.max(rec,punti)} su ${giro.length}</div>
+    <div class="tottitle">Il tuo allenamento in tutto</div>${statBox()}${traguardo()}`;
 }
 
 splash();
