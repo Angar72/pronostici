@@ -1,0 +1,13 @@
+{
+  "name": "Pronostici",
+  "short_name": "Pronostici",
+  "start_url": "/pronostici/",
+  "scope": "/pronostici/",
+  "display": "standalone",
+  "background_color": "#070b16",
+  "theme_color": "#070b16",
+  "icons": [
+    { "src": "/pronostici/assets/icona-180.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "/pronostici/assets/icona-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}
