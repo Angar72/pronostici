@@ -1,0 +1,200 @@
+106|Over Under Full Time|0.5|fulltime|106=Over;107=Under
+108|Over Under Full Time|1.5|fulltime|109=Under;108=Over
+1010|Over Under Full Time|2.5|fulltime|1010=Over;1011=Under
+1012|Over Under Full Time|3.5|fulltime|1013=Under;1012=Over
+1014|Over Under Full Time|4.5|fulltime|1015=Under;1014=Over
+1016|Over Under Full Time|5.5|fulltime|1016=Over;1017=Under
+1018|Over Under Full Time|6.5|fulltime|1019=Under;1018=Over
+1020|Over Under Full Time|7.5|fulltime|1021=Under;1020=Over
+1022|Over Under Full Time|8.5|fulltime|1023=Under;1022=Over
+10158|Over Under Full Time|0.25|fulltime|10158=Over;10159=Under
+10160|Over Under Full Time|0.75|fulltime|10160=Over;10161=Under
+10162|Over Under Full Time|1.0|fulltime|10162=Over;10163=Under
+10164|Over Under Full Time|1.25|fulltime|10165=Under;10164=Over
+10166|Over Under Full Time|1.75|fulltime|10166=Over;10167=Under
+10168|Over Under Full Time|2.0|fulltime|10168=Over;10169=Under
+10170|Over Under Full Time|2.25|fulltime|10171=Under;10170=Over
+10172|Over Under Full Time|2.75|fulltime|10172=Over;10173=Under
+10174|Over Under Full Time|3.0|fulltime|10175=Under;10174=Over
+10176|Over Under Full Time|3.25|fulltime|10176=Over;10177=Under
+10178|Over Under Full Time|3.75|fulltime|10179=Under;10178=Over
+10180|Over Under Full Time|4.0|fulltime|10181=Under;10180=Over
+10182|Over Under Full Time|4.25|fulltime|10182=Over;10183=Under
+10184|Over Under Full Time|4.75|fulltime|10184=Over;10185=Under
+10186|Over Under Full Time|5.0|fulltime|10186=Over;10187=Under
+10188|Over Under Full Time|5.25|fulltime|10189=Under;10188=Over
+10190|Over Under Full Time|5.75|fulltime|10191=Under;10190=Over
+10192|Over Under Full Time|6.0|fulltime|10192=Over;10193=Under
+10194|Over Under Full Time|6.25|fulltime|10195=Under;10194=Over
+10196|Over Under Full Time|6.75|fulltime|10197=Under;10196=Over
+10198|Over Under Full Time|7.0|fulltime|10198=Over;10199=Under
+10200|Over Under Full Time|7.25|fulltime|10200=Over;10201=Under
+10202|Over Under Full Time|7.75|fulltime|10202=Over;10203=Under
+10204|Over Under Full Time|8.0|fulltime|10205=Under;10204=Over
+10206|Over Under Full Time|8.25|fulltime|10207=Under;10206=Over
+10224|Over Under Team 1|0.5|fulltime|10225=Under;10224=Over
+10226|Over Under Team 1|1.5|fulltime|10227=Under;10226=Over
+10228|Over Under Team 1|2.5|fulltime|10228=Over;10229=Under
+10230|Over Under Team 1|3.5|fulltime|10231=Under;10230=Over
+10232|Over Under Team 1|4.5|fulltime|10233=Under;10232=Over
+10234|Over Under Team 1|5.5|fulltime|10234=Over;10235=Under
+10236|Over Under Team 1|6.5|fulltime|10237=Under;10236=Over
+10238|Over Under Team 1|7.5|fulltime|10239=Under;10238=Over
+10240|Over Under Team 2|0.5|fulltime|10240=Over;10241=Under
+10242|Over Under Team 2|1.5|fulltime|10242=Over;10243=Under
+10244|Over Under Team 2|2.5|fulltime|10244=Over;10245=Under
+10246|Over Under Team 2|3.5|fulltime|10246=Over;10247=Under
+10248|Over Under Team 2|4.5|fulltime|10248=Over;10249=Under
+10250|Over Under Team 2|5.5|fulltime|10251=Under;10250=Over
+10252|Over Under Team 2|6.5|fulltime|10252=Over;10253=Under
+10254|Over Under Team 2|7.5|fulltime|10254=Over;10255=Under
+10256|Over Under First Half|0.5|p1|10257=Under;10256=Over
+10258|Over Under First Half|1.5|p1|10258=Over;10259=Under
+10260|Over Under First Half|2.5|p1|10260=Over;10261=Under
+10262|Over Under First Half|3.5|p1|10263=Under;10262=Over
+10264|Over Under First Half|4.5|p1|10265=Under;10264=Over
+10266|Over Under First Half|5.5|p1|10267=Under;10266=Over
+10268|Over Under First Half|6.5|p1|10268=Over;10269=Under
+10270|Over Under Second Half|0.5|p2|10271=Under;10270=Over
+10272|Over Under Second Half|1.5|p2|10272=Over;10273=Under
+10274|Over Under Second Half|2.5|p2|10274=Over;10275=Under
+10276|Over Under Second Half|3.5|p2|10277=Under;10276=Over
+10278|Over Under Second Half|4.5|p2|10279=Under;10278=Over
+10280|Over Under Second Half|5.5|p2|10280=Over;10281=Under
+10282|Over Under Second Half|6.5|p2|10283=Under;10282=Over
+10400|Over Under Team 1|0.25|fulltime|10400=Over;10401=Under
+10402|Over Under Team 1|0.75|fulltime|10402=Over;10403=Under
+10404|Over Under Team 1|1.0|fulltime|10404=Over;10405=Under
+10406|Over Under Team 1|1.25|fulltime|10407=Under;10406=Over
+10408|Over Under Team 1|1.75|fulltime|10408=Over;10409=Under
+10410|Over Under Team 1|2.0|fulltime|10411=Under;10410=Over
+10412|Over Under Team 1|2.25|fulltime|10412=Over;10413=Under
+10414|Over Under Team 1|2.75|fulltime|10415=Under;10414=Over
+10416|Over Under Team 1|3.0|fulltime|10416=Over;10417=Under
+10418|Over Under Team 1|3.25|fulltime|10418=Over;10419=Under
+10420|Over Under Team 1|3.75|fulltime|10421=Under;10420=Over
+10422|Over Under Team 1|4.0|fulltime|10422=Over;10423=Under
+10424|Over Under Team 1|4.25|fulltime|10425=Under;10424=Over
+10426|Over Under Team 1|4.75|fulltime|10426=Over;10427=Under
+10428|Over Under Team 1|5.0|fulltime|10428=Over;10429=Under
+10430|Over Under Team 1|5.25|fulltime|10430=Over;10431=Under
+10432|Over Under Team 1|5.75|fulltime|10433=Under;10432=Over
+10434|Over Under Team 1|6.0|fulltime|10435=Under;10434=Over
+10436|Over Under Team 1|6.25|fulltime|10437=Under;10436=Over
+10438|Over Under Team 1|6.75|fulltime|10438=Over;10439=Under
+10440|Over Under Team 1|7.0|fulltime|10440=Over;10441=Under
+10442|Over Under Team 1|7.25|fulltime|10442=Over;10443=Under
+10444|Over Under Team 2|0.25|fulltime|10444=Over;10445=Under
+10446|Over Under Team 2|0.75|fulltime|10446=Over;10447=Under
+10448|Over Under Team 2|1.0|fulltime|10448=Over;10449=Under
+10450|Over Under Team 2|1.25|fulltime|10451=Under;10450=Over
+10452|Over Under Team 2|1.75|fulltime|10453=Under;10452=Over
+10454|Over Under Team 2|2.0|fulltime|10455=Under;10454=Over
+10456|Over Under Team 2|2.25|fulltime|10456=Over;10457=Under
+10458|Over Under Team 2|2.75|fulltime|10458=Over;10459=Under
+10460|Over Under Team 2|3.0|fulltime|10461=Under;10460=Over
+10462|Over Under Team 2|3.25|fulltime|10463=Under;10462=Over
+10464|Over Under Team 2|3.75|fulltime|10465=Under;10464=Over
+10466|Over Under Team 2|4.0|fulltime|10467=Under;10466=Over
+10468|Over Under Team 2|4.25|fulltime|10468=Over;10469=Under
+10470|Over Under Team 2|4.75|fulltime|10471=Under;10470=Over
+10472|Over Under Team 2|5.0|fulltime|10473=Under;10472=Over
+10474|Over Under Team 2|5.25|fulltime|10475=Under;10474=Over
+10476|Over Under Team 2|5.75|fulltime|10477=Under;10476=Over
+10478|Over Under Team 2|6.0|fulltime|10479=Under;10478=Over
+10480|Over Under Team 2|6.25|fulltime|10480=Over;10481=Under
+10482|Over Under Team 2|6.75|fulltime|10482=Over;10483=Under
+10484|Over Under Team 2|7.0|fulltime|10485=Under;10484=Over
+10486|Over Under Team 2|7.25|fulltime|10486=Over;10487=Under
+10488|Over Under First Half|0.25|p1|10489=Under;10488=Over
+10490|Over Under First Half|0.75|p1|10491=Under;10490=Over
+10492|Over Under First Half|1.0|p1|10493=Under;10492=Over
+10494|Over Under First Half|1.25|p1|10494=Over;10495=Under
+10496|Over Under First Half|1.75|p1|10496=Over;10497=Under
+10498|Over Under First Half|2.0|p1|10498=Over;10499=Under
+10500|Over Under First Half|2.25|p1|10501=Under;10500=Over
+10502|Over Under First Half|2.75|p1|10502=Over;10503=Under
+10504|Over Under First Half|3.0|p1|10504=Over;10505=Under
+10506|Over Under First Half|3.25|p1|10507=Under;10506=Over
+10508|Over Under First Half|3.75|p1|10508=Over;10509=Under
+10510|Over Under First Half|4.0|p1|10511=Under;10510=Over
+10512|Over Under First Half|4.25|p1|10513=Under;10512=Over
+10514|Over Under First Half|4.75|p1|10515=Under;10514=Over
+10516|Over Under First Half|5.0|p1|10516=Over;10517=Under
+10518|Over Under First Half|5.25|p1|10518=Over;10519=Under
+10520|Over Under First Half|5.75|p1|10520=Over;10521=Under
+10522|Over Under First Half|6.0|p1|10522=Over;10523=Under
+10524|Over Under First Half|6.25|p1|10524=Over;10525=Under
+10526|Over Under Second Half|0.25|p2|10526=Over;10527=Under
+10528|Over Under Second Half|0.75|p2|10528=Over;10529=Under
+10530|Over Under Second Half|1.0|p2|10531=Under;10530=Over
+10532|Over Under Second Half|1.25|p2|10533=Under;10532=Over
+10534|Over Under Second Half|1.75|p2|10534=Over;10535=Under
+10536|Over Under Second Half|2.0|p2|10536=Over;10537=Under
+10538|Over Under Second Half|2.25|p2|10539=Under;10538=Over
+10540|Over Under Second Half|2.75|p2|10541=Under;10540=Over
+10542|Over Under Second Half|3.0|p2|10543=Under;10542=Over
+10544|Over Under Second Half|3.25|p2|10545=Under;10544=Over
+10546|Over Under Second Half|3.75|p2|10546=Over;10547=Under
+10548|Over Under Second Half|4.0|p2|10549=Under;10548=Over
+10550|Over Under Second Half|4.25|p2|10551=Under;10550=Over
+10552|Over Under Second Half|4.75|p2|10552=Over;10553=Under
+10554|Over Under Second Half|5.0|p2|10554=Over;10555=Under
+10556|Over Under Second Half|5.25|p2|10557=Under;10556=Over
+10558|Over Under Second Half|5.75|p2|10558=Over;10559=Under
+10560|Over Under Second Half|6.0|p2|10561=Under;10560=Over
+10562|Over Under Second Half|6.25|p2|10563=Under;10562=Over
+10733|Player Goals (incl. overtime)|0.0|result|10737=4+;10733=0;10734=1+;10735=2+;10736=3+
+10738|Player Assists (incl. overtime)|0.0|result|10742=4+;10741=3+;10740=2+;10738=0;10739=1+
+10743|Player Shots (incl. overtime)|0.0|result|10743=0;10746=3+;10747=4+;10745=2+;10749=6+;10744=1+;10751=8+;10750=7+;10748=5+;10752=9+
+10753|Player Shots On Goal (incl. overtime)|0.0|result|10757=4+;10754=1+;10760=7+;10755=2+;10759=6+;10756=3+;10758=5+;10753=0
+10767|Corners - Over Under Full Time|0.5|fulltime|10768=Under;10767=Over
+10769|Corners - Over Under Full Time|1.0|fulltime|10769=Over;10770=Under
+10771|Corners - Over Under Full Time|1.5|fulltime|10771=Over;10772=Under
+10773|Corners - Over Under Full Time|2.0|fulltime|10773=Over;10774=Under
+10775|Corners - Over Under Full Time|2.5|fulltime|10775=Over;10776=Under
+10777|Corners - Over Under Full Time|3.0|fulltime|10777=Over;10778=Under
+10779|Corners - Over Under Full Time|3.5|fulltime|10779=Over;10780=Under
+10781|Corners - Over Under Full Time|4.0|fulltime|10781=Over;10782=Under
+10783|Corners - Over Under Full Time|4.5|fulltime|10783=Over;10784=Under
+10785|Corners - Over Under Full Time|5.0|fulltime|10785=Over;10786=Under
+10787|Corners - Over Under Full Time|5.5|fulltime|10788=Under;10787=Over
+10789|Corners - Over Under Full Time|6.0|fulltime|10789=Over;10790=Under
+10791|Corners - Over Under Full Time|6.5|fulltime|10791=Over;10792=Under
+10793|Corners - Over Under Full Time|7.0|fulltime|10794=Under;10793=Over
+10795|Corners - Over Under Full Time|7.5|fulltime|10796=Under;10795=Over
+10797|Corners - Over Under Full Time|8.0|fulltime|10797=Over;10798=Under
+10799|Corners - Over Under Full Time|8.5|fulltime|10800=Under;10799=Over
+10801|Corners - Over Under Full Time|9.0|fulltime|10802=Under;10801=Over
+10803|Corners - Over Under Full Time|9.5|fulltime|10804=Under;10803=Over
+10805|Corners - Over Under Full Time|10.0|fulltime|10806=Under;10805=Over
+10807|Corners - Over Under Full Time|10.5|fulltime|10808=Under;10807=Over
+10809|Corners - Over Under Full Time|11.0|fulltime|10810=Under;10809=Over
+10811|Corners - Over Under Full Time|11.5|fulltime|10812=Under;10811=Over
+10813|Corners - Over Under Full Time|12.0|fulltime|10813=Over;10814=Under
+10815|Corners - Over Under Full Time|12.5|fulltime|10816=Under;10815=Over
+10817|Corners - Over Under Full Time|13.0|fulltime|10818=Under;10817=Over
+10819|Corners - Over Under Full Time|13.5|fulltime|10819=Over;10820=Under
+10821|Corners - Over Under Full Time|14.0|fulltime|10821=Over;10822=Under
+10823|Corners - Over Under Full Time|14.5|fulltime|10824=Under;10823=Over
+10825|Corners - Over Under Full Time|15.0|fulltime|10825=Over;10826=Under
+10827|Corners - Over Under Full Time|15.5|fulltime|10827=Over;10828=Under
+10829|Corners - Over Under Full Time|16.0|fulltime|10829=Over;10830=Under
+10831|Corners - Over Under Full Time|16.5|fulltime|10832=Under;10831=Over
+10833|Corners - Over Under Full Time|17.0|fulltime|10834=Under;10833=Over
+10835|Corners - Over Under Full Time|17.5|fulltime|10836=Under;10835=Over
+10837|Corners - Over Under Full Time|18.0|fulltime|10837=Over;10838=Under
+10839|Corners - Over Under Full Time|18.5|fulltime|10840=Under;10839=Over
+10841|Corners - Over Under Full Time|19.0|fulltime|10841=Over;10842=Under
+10843|Corners - Over Under Full Time|19.5|fulltime|10844=Under;10843=Over
+10914|Bookings - Over Under Full Time|0.5|fulltime|10914=Over;10915=Under
+10916|Bookings - Over Under Full Time|1.0|fulltime|10917=Under;10916=Over
+10918|Bookings - Over Under Full Time|1.5|fulltime|10919=Under;10918=Over
+10920|Bookings - Over Under Full Time|2.0|fulltime|10921=Under;10920=Over
+10922|Bookings - Over Under Full Time|2.5|fulltime|10923=Under;10922=Over
+10924|Bookings - Over Under Full Time|3.0|fulltime|10924=Over;10925=Under
+10926|Bookings - Over Under Full Time|3.5|fulltime|10927=Under;10926=Over
+10928|Bookings - Over Under Full Time|4.0|fulltime|10929=Under;10928=Over
+10930|Bookings - Over Under Full Time|4.5|fulltime|10930=Over;10931=Under
+10932|Bookings - Over Under Full Time|5.0|fulltime|10932=Over;10933=Under
+10934|Bookings - Over Under Full Time|5.5|fulltime|10935=Under;10934=Over
