@@ -1,0 +1,26 @@
+name: Trova mercati quote
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  trova:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          curl -sf "https://api.oddspapi.io/v4/markets?sportId=10&apiKey=${{ secrets.ODDSPAPI_KEY }}" -o /tmp/m.json || echo "errore"
+          python3 -c "
+          import json
+          d=json.load(open('/tmp/m.json'))
+          out=[]
+          for m in d:
+              n=str(m.get('marketName'))+' '+str(m.get('handicap',''))
+              if any(x in n.lower() for x in ('over','under','total')):
+                  outs=';'.join(f\"{o.get('outcomeId')}={o.get('outcomeName')}\" for o in m.get('outcomes',[]))
+                  out.append(f\"{m.get('marketId')}|{m.get('marketName')}|{m.get('handicap')}|{m.get('period')}|{outs}\")
+          open('tools/op-mercati.txt','w').write('\n'.join(out[:200])+'\n')
+          print(len(d),len(out))"
+          git config user.name "pronostici-bot"; git config user.email "pronostici-bot@users.noreply.github.com"
+          git add tools/op-mercati.txt; git commit -m "Mercati trovati" || exit 0
+          for i in 1 2 3; do git pull --rebase -q && git push -q && break; sleep 5; done
