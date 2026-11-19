@@ -227,7 +227,7 @@ for (const f of opFix) {
   O.rows.push(row); O.rows.sort(); O.updated = NOW.toISOString().slice(0, 16) + "Z"; O.source = "Planetwin365 (OddsPapi)";
   // id della partita su OddsPapi: serve al last minute per leggere la quota live
   if (f.fixtureId) { O.fx = O.fx || {}; O.fx[h + "|" + a] = f.fixtureId; }
-  DC[id + "|" + h + "|" + a] = { "1X": pr("101902", "101902"), "12": pr("101902", "101903"), "X2": pr("101902", "101904") };
+  DC[id + "|" + h + "|" + a] = { "1X": pr("101902", "101902"), "12": pr("101902", "101903"), "X2": pr("101902", "101904"), "Over 1,5": pr("108", "108") };
   // la data della partita dalle quote, se il calendario non l'ha
   if (!L.fixtures.some(x => { const q = x.split("|"); return q[2] === h && q[3] === a; }) && !L.played.some(x => { const q = x.split("|"); return q[1] === h && q[2] === a && Math.abs(dayDiff(q[0], when.d)) <= 4; }) && when.d >= TODAY) { L.fixtures.push([when.d, when.t, h, a, ""].join("|")); L.fixtures.sort(); changed.leagues = true; }
   nOdds++; changed.odds = true;
@@ -236,7 +236,7 @@ log("quote lette:", nOdds);
 
 // ---------- 3. schedine ----------
 const STAKE = 20, MINQ = 2.8;
-const hit = (k, h, a) => ({ "1": h > a, "X": h === a, "2": h < a, "1X": h >= a, "X2": h <= a, "12": h !== a, "Over 2,5": h + a > 2, "Under 2,5": h + a < 3, "Goal": h > 0 && a > 0, "NoGoal": h === 0 || a === 0 })[k];
+const hit = (k, h, a) => ({ "1": h > a, "X": h === a, "2": h < a, "1X": h >= a, "X2": h <= a, "12": h !== a, "Over 2,5": h + a > 2, "Under 2,5": h + a < 3, "Over 1,5": h + a > 1, "Goal": h > 0 && a > 0, "NoGoal": h === 0 || a === 0 })[k];
 const resultOf = l => { const L = leagues[l.id]; const p = L?.played.find(x => { const q = x.split("|"); return q[1] === l.h && q[2] === l.a && Math.abs(dayDiff(q[0], l.d)) <= 4; }); if (!p) return null; const q = p.split("|"); return { hg: +q[3], ag: +q[4] }; };
 const ticketState = tk => { const r = tk.map(resultOf); if (tk.some((l, i) => r[i] && !hit(l.k, r[i].hg, r[i].ag))) return "lost"; return r.every(Boolean) ? "won" : "open"; };
 
@@ -323,6 +323,10 @@ function candidates(relaxed = false) {
       if (GM === "off" && !relaxed) {} else {
       if (ov && ov <= gMax && H.n >= gN && A.n >= gN && H.o / H.n >= rq && A.o / A.n >= rq) leg("Over 2,5", ov, 1 / ov / (1 / ov + 1 / un), "over");
       if (un && un <= 1.85 && H.o / H.n <= 0.35 && A.o / A.n <= 0.35 && Math.min(o1, o2) > 1.6) leg("Under 2,5", un, 1 / un / (1 / ov + 1 / un), "under");
+      // Over 1,5: dove ci aspettiamo gol (Goal o Over 2,5 sostenuti da entrambe), serve soprattutto
+      // come pronostico "compatibile" quando la stessa partita torna in un'altra schedina (idea di Toni, 20/11)
+      const o15 = dc["Over 1,5"];
+      if (o15 && o15 >= 1.08 && ((H.o / H.n >= rq && A.o / A.n >= rq) || (H.gg / H.n >= rq && A.gg / A.n >= rq))) leg("Over 1,5", o15, Math.min(0.93, 0.94 / o15), "over 1,5");
       if (gg && gg <= (relaxed ? 2 : GM === "strict" ? 1.5 : 1.85) && H.n >= gN && A.n >= gN && H.gg / H.n >= rq && A.gg / A.n >= rq) leg("Goal", gg, 1 / gg / (1 / gg + 1 / q[6]), "goal");
       }
     }
@@ -332,8 +336,12 @@ function candidates(relaxed = false) {
 }
 function addMin(t, m) { const [h, mm] = t.split(":").map(Number); const x = h * 60 + mm + m; return String(Math.floor(x / 60)).padStart(2, "0") + ":" + String(x % 60).padStart(2, "0"); }
 // la combinazione con la probabilità di vincita più alta che arriva alla quota minima (al massimo 7 partite)
-function best(cands, { avoid = new Set(), differ = [], usedSecca = new Set(), minQ = MINQ, maxLegs = 7 }) {
-  const pool = cands.filter(c => !avoid.has(c.key) && !(c.secca && c.odd > 1.3 && usedSecca.has(c.key))).slice(0, 22);
+// pronostici "della stessa famiglia": se una partita torna in un'altra schedina, ci va con un pronostico diverso
+// ma coerente con quello già giocato (es. Goal nella prima -> Over 1,5 nella seconda), mai uno che lo contraddice
+const FAM = [["Goal", "Over 2,5", "Over 1,5"], ["1", "1X"], ["2", "X2"]];
+const compat = (k, ks) => [...ks].every(x => x !== k && FAM.some(f => f.includes(x) && f.includes(k)));
+function best(cands, { avoid = new Set(), differ = [], usedSecca = new Set(), minQ = MINQ, maxLegs = 7, prev = {} }) {
+  const pool = cands.filter(c => !avoid.has(c.key) && !(c.secca && c.odd > 1.3 && usedSecca.has(c.key)) && (!prev[c.key] || compat(c.k, prev[c.key]))).slice(0, 22);
   const need = Math.log(minQ); let bestSet = null, bestP = -Infinity;
   const lo = pool.map(c => Math.log(c.odd)), lp = pool.map(c => Math.log(c.prob));
   const pick = [], keys = new Set();
@@ -360,13 +368,14 @@ if (!sch.byDay[TODAY] || FORCE) {
   const cands = candidates(); log("giocate possibili oggi:", cands.length);
   const tickets = [], usedSecca = new Set(), count = {};
   const inAll = () => new Set(Object.keys(count).filter(k => count[k] >= 2));
-  const add = t => { if (!t) return; tickets.push(t); t.forEach(c => { count[c.key] = (count[c.key] || 0) + 1; if (c.secca && c.odd > 1.3) usedSecca.add(c.key); }); };
+  const prev = {};
+  const add = t => { if (!t) return; tickets.push(t); t.forEach(c => { count[c.key] = (count[c.key] || 0) + 1; (prev[c.key] ??= new Set()).add(c.k); if (c.secca && c.odd > 1.3) usedSecca.add(c.key); }); };
   const legSet = t => new Set(t.map(c => c.key + c.k));
   // la stessa partita può stare in più schedine (scelta di Toni, 6/11), ma ogni schedina ha almeno 2 partite
   // diverse dalle altre e nessuna partita sta in tutte e 3
   const t1 = best(cands, { usedSecca }); add(t1);
-  const t2 = t1 && best(cands, { usedSecca, differ: [legSet(t1)] }); add(t2);
-  const t3 = t2 && best(cands, { usedSecca, avoid: inAll(), differ: [legSet(t1), legSet(t2)] }); add(t3);
+  const t2 = t1 && best(cands, { usedSecca, prev, differ: [legSet(t1)] }); add(t2);
+  const t3 = t2 && best(cands, { usedSecca, prev, avoid: inAll(), differ: [legSet(t1), legSet(t2)] }); add(t3);
   // niente doppioni
   const sig = t => t.map(c => c.key + c.k).sort().join(";");
   const uniq = tickets.filter((t, i) => tickets.findIndex(x => sig(x) === sig(t)) === i);

@@ -51,7 +51,7 @@ async function result(l) {
   }
   return null;
 }
-const hit = (k, h, a) => ({ "1": h > a, "X": h === a, "2": h < a, "1X": h >= a, "X2": h <= a, "12": h !== a, "Over 2,5": h + a > 2, "Under 2,5": h + a < 3, "Goal": h > 0 && a > 0, "NoGoal": h === 0 || a === 0 })[k];
+const hit = (k, h, a) => ({ "1": h > a, "X": h === a, "2": h < a, "1X": h >= a, "X2": h <= a, "12": h !== a, "Over 2,5": h + a > 2, "Under 2,5": h + a < 3, "Over 1,5": h + a > 1, "Goal": h > 0 && a > 0, "NoGoal": h === 0 || a === 0 })[k];
 const euro = v => v.toFixed(2).replace(".", ",") + " €";
 
 const rome = new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Rome", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit" }).format(new Date(process.env.NOW || Date.now()));
@@ -172,7 +172,7 @@ try {
 // Le richieste a OddsPapi sono poche al mese (piano gratuito): al massimo LM_CHECKS letture al giorno.
 const LM_MAX = 4, LM_CHECKS = 3, BK = "planetwin365.it";
 // esiti che so leggere nelle quote di Planetwin: [mercato, esito]
-const MK = { "1": ["101", "101"], "X": ["101", "102"], "2": ["101", "103"], "1X": ["101902", "101902"], "12": ["101902", "101903"], "X2": ["101902", "101904"], "Over 2,5": ["1010", "1010"], "Under 2,5": ["1010", "1011"], "Goal": ["104", "104"], "NoGoal": ["104", "105"] };
+const MK = { "1": ["101", "101"], "X": ["101", "102"], "2": ["101", "103"], "1X": ["101902", "101902"], "12": ["101902", "101903"], "X2": ["101902", "101904"], "Over 2,5": ["1010", "1010"], "Over 1,5": ["108", "108"], "Under 2,5": ["1010", "1011"], "Goal": ["104", "104"], "NoGoal": ["104", "105"] };
 try {
   const nowR = new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Rome", hour: "2-digit", minute: "2-digit" }).format(new Date(process.env.NOW || Date.now()));
   const odds = await open("odds");

@@ -271,7 +271,7 @@ body[data-sec="lotto"] .ball{background:var(--chip);color:var(--ink)}
       <div style="display:grid;justify-items:end;gap:4px">
         <div class="stamp" id="stamp">In caricamento…</div>
         <a id="refresh" class="refresh" target="_blank" rel="noopener" href="https://angar72.github.io/pronostici/" style="text-decoration:none">Apri con risultati in diretta ↗</a>
-        <div class="stamp">Versione 18 nov · icona aquila (3)</div>
+        <div class="stamp">Versione 18 nov · over 1,5</div>
       </div>
     </div>
     <div class="seg" role="group" aria-label="Sezione">
@@ -1405,7 +1405,7 @@ if (typeof module !== "undefined") module.exports = Model;
   }
   function hit(k, res) {
     const h = res.hg, a = res.ag;
-    return { "1": h > a, "X": h === a, "2": h < a, "1X": h >= a, "X2": h <= a, "Over 2,5": h + a > 2, "Under 2,5": h + a < 3,
+    return { "1": h > a, "X": h === a, "2": h < a, "1X": h >= a, "X2": h <= a, "Over 2,5": h + a > 2, "Under 2,5": h + a < 3, "Over 1,5": h + a > 1,
       "Goal": h > 0 && a > 0, "No Goal": h === 0 || a === 0 }[k];
   }
 
@@ -2602,7 +2602,7 @@ if (typeof module !== "undefined") module.exports = Model;
   // aggiornamento della pagina: l'app sulla schermata Home tiene in memoria la versione vecchia.
   // Ogni volta che si riapre (e ogni 10 minuti) controllo se c'è una versione nuova e mi ricarico da solo.
   // numero di versione crescente (BUILD): mi ricarico solo se sul server ce n'è uno PIÙ ALTO, e al massimo una volta ogni 5 minuti
-  const BUILD = 2026111803;
+  const BUILD = 2026112001;
   async function checkNewVersion() {
     try {
       let last = 0; try { last = +sessionStorage.getItem("pr.reload") || 0; } catch (e) {}
