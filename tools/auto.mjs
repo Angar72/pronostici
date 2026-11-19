@@ -304,13 +304,19 @@ function candidates(relaxed = false) {
       // In casa: forte in casa e avversaria debole fuori. Fuori casa (più rischioso): avversaria debole in casa,
       // favorita forte in trasferta e distacco in classifica netto (30/10: Elversberg-Mainz e Nice-Rennes perse così)
       const gap = opp.pos - fav.pos;
-      if (favH && gap >= Math.max(3, st.n / 6) && hppg >= 1.5 && appg <= 1.5) leg("1X", dc["1X"], p1 + pX, "doppia chance");
+      // storico 5 stagioni (2021-26), prime contro metà bassa: in trasferta le grandi perdono 1 volta su 4 in Liga,
+      // Bundesliga, Belgio e Serie B -> lì niente giocate sulla favorita fuori casa.
+      // In casa Portogallo, Liga e Olanda perdono solo il 4-8% -> doppia chance in casa con distacco un po' più basso
+      const FUORI_RISCHIO = ["es_1", "de_1", "be_1", "it_2"].includes(id), CASA_FORTE = ["pt_1", "es_1", "nl_1"].includes(id);
+      if (!favH && FUORI_RISCHIO) { /* niente 2 / X2 */ } else {
+      if (favH && gap >= (CASA_FORTE ? Math.max(3, st.n / 8) : Math.max(3, st.n / 6)) && hppg >= 1.5 && appg <= 1.5) leg("1X", dc["1X"], p1 + pX, CASA_FORTE ? "doppia chance (grande in casa)" : "doppia chance");
       if (!favH && gap >= Math.max(4, st.n / 5) && fav.pos <= half && appg >= 1.6 && hppg <= 1.3) leg("X2", dc["X2"], p2 + pX, "doppia chance");
       // vittoria secca solo per favorita in alto, forte in casa/fuori, contro avversaria debole
       if (favH && o1 <= 1.8 && H.pos <= half && hppg >= 2 && appg <= 1.3) leg("1", o1, p1, "secca casa");
       else if (relaxed && favH && p1 >= 0.5 && o1 <= 2.2 && H.pos < A.pos) leg("1", o1, p1, "secca casa");
       if (!favH && o2 <= 1.8 && A.pos <= half && appg >= 2 && hppg <= 1.3) leg("2", o2, p2, "secca fuori");
       else if (relaxed && !favH && p2 >= 0.5 && o2 <= 2.2 && A.pos < H.pos) leg("2", o2, p2, "secca fuori");
+      }
       // gol: solo se lo dicono entrambe le squadre
       const GM = process.env.GOALS || "on";
       const rq = relaxed ? 0.5 : GM === "strict" ? 0.7 : 0.6, gMax = relaxed ? 2 : GM === "strict" ? 1.45 : 1.8, gN = GM === "strict" && !relaxed ? 6 : 0;
