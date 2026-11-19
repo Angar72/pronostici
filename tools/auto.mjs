@@ -244,13 +244,14 @@ function stats(id) {
   const L = leagues[id], y = +TODAY.slice(0, 4), m = +TODAY.slice(5, 7);
   const from = (id === "se_1" || id === "no_1") ? `${y}-03-01` : `${m >= 7 ? y : y - 1}-07-01`;
   const T = {};
-  const g = t => T[t] || (T[t] = { p: 0, n: 0, gf: 0, ga: 0, hp: 0, hn: 0, ap: 0, an: 0, o: 0, gg: 0 });
+  const g = t => T[t] || (T[t] = { p: 0, n: 0, gf: 0, ga: 0, hp: 0, hn: 0, ap: 0, an: 0, o: 0, gg: 0, hgf: 0, hga: 0, agf: 0, aga: 0, fts: 0, cs: 0 });
   for (const r of L.played) {
     const q = r.split("|"); if (q[0] < from || q[0] >= TODAY) continue;
     const hg = +q[3], ag = +q[4], ph = hg > ag ? 3 : hg === ag ? 1 : 0, pa = ag > hg ? 3 : hg === ag ? 1 : 0;
     const H = g(q[1]), A = g(q[2]);
     H.p += ph; H.n++; H.gf += hg; H.ga += ag; H.hp += ph; H.hn++; A.p += pa; A.n++; A.gf += ag; A.ga += hg; A.ap += pa; A.an++;
     for (const X of [H, A]) { X.o += hg + ag > 2; X.gg += hg > 0 && ag > 0; }
+    H.hgf += hg; H.hga += ag; A.agf += ag; A.aga += hg; H.fts += hg === 0; A.fts += ag === 0; H.cs += ag === 0; A.cs += hg === 0;
   }
   const tab = Object.keys(T).sort((a, b) => T[b].p - T[a].p || (T[b].gf - T[b].ga) - (T[a].gf - T[a].ga));
   tab.forEach((t, i) => T[t].pos = i + 1);
@@ -320,14 +321,23 @@ function candidates(relaxed = false) {
       // gol: solo se lo dicono entrambe le squadre
       const GM = process.env.GOALS || "on";
       const rq = relaxed ? 0.5 : GM === "strict" ? 0.7 : 0.6, gMax = relaxed ? 2 : GM === "strict" ? 1.45 : 1.8, gN = GM === "strict" && !relaxed ? 6 : 0;
+      // gol fatti e subiti (idea di Toni, 20/11): quanti gol ci si aspetta da ciascuna squadra, usando
+      // per la squadra di casa i gol fatti/subiti in casa e per l'ospite quelli fuori (se ha giocato almeno 3 partite lì).
+      // Goal solo se TUTTE E DUE segnano con regolarità e TUTTE E DUE subiscono: se una non segna quasi mai
+      // o non prende quasi mai gol, niente Goal
+      const atkH = H.hn >= 3 ? H.hgf / H.hn : H.gf / H.n, conH = H.hn >= 3 ? H.hga / H.hn : H.ga / H.n;
+      const atkA = A.an >= 3 ? A.agf / A.an : A.gf / A.n, conA = A.an >= 3 ? A.aga / A.an : A.ga / A.n;
+      const xgH = (atkH + conA) / 2, xgA = (atkA + conH) / 2, xgT = xgH + xgA;
+      const segnano = Math.min(xgH, xgA) >= (relaxed ? 0.95 : 1.05) && H.fts / H.n <= (relaxed ? 0.4 : 0.3) && A.fts / A.n <= (relaxed ? 0.4 : 0.3)
+        && H.cs / H.n <= (relaxed ? 0.4 : 0.35) && A.cs / A.n <= (relaxed ? 0.4 : 0.35);
       if (GM === "off" && !relaxed) {} else {
-      if (ov && ov <= gMax && H.n >= gN && A.n >= gN && H.o / H.n >= rq && A.o / A.n >= rq) leg("Over 2,5", ov, 1 / ov / (1 / ov + 1 / un), "over");
-      if (un && un <= 1.85 && H.o / H.n <= 0.35 && A.o / A.n <= 0.35 && Math.min(o1, o2) > 1.6) leg("Under 2,5", un, 1 / un / (1 / ov + 1 / un), "under");
+      if (ov && ov <= gMax && xgT >= (relaxed ? 2.6 : 2.8) && H.n >= gN && A.n >= gN && H.o / H.n >= rq && A.o / A.n >= rq) leg("Over 2,5", ov, 1 / ov / (1 / ov + 1 / un), "over");
+      if (un && un <= 1.85 && xgT <= 2.3 && H.o / H.n <= 0.35 && A.o / A.n <= 0.35 && Math.min(o1, o2) > 1.6) leg("Under 2,5", un, 1 / un / (1 / ov + 1 / un), "under");
       // Over 1,5: dove ci aspettiamo gol (Goal o Over 2,5 sostenuti da entrambe), serve soprattutto
       // come pronostico "compatibile" quando la stessa partita torna in un'altra schedina (idea di Toni, 20/11)
       const o15 = dc["Over 1,5"];
-      if (o15 && o15 >= 1.08 && ((H.o / H.n >= rq && A.o / A.n >= rq) || (H.gg / H.n >= rq && A.gg / A.n >= rq))) leg("Over 1,5", o15, Math.min(0.93, 0.94 / o15), "over 1,5");
-      if (gg && gg <= (relaxed ? 2 : GM === "strict" ? 1.5 : 1.85) && H.n >= gN && A.n >= gN && H.gg / H.n >= rq && A.gg / A.n >= rq) leg("Goal", gg, 1 / gg / (1 / gg + 1 / q[6]), "goal");
+      if (o15 && o15 >= 1.08 && xgT >= 2.4 && ((H.o / H.n >= rq && A.o / A.n >= rq) || (H.gg / H.n >= rq && A.gg / A.n >= rq))) leg("Over 1,5", o15, Math.min(0.93, 0.94 / o15), "over 1,5");
+      if (segnano && gg && gg <= (relaxed ? 2 : GM === "strict" ? 1.5 : 1.85) && H.n >= gN && A.n >= gN && H.gg / H.n >= rq && A.gg / A.n >= rq) leg("Goal", gg, 1 / gg / (1 / gg + 1 / q[6]), "goal");
       }
     }
   }
