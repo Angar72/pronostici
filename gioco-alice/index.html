@@ -94,6 +94,15 @@
   .stats b{display:block;font-size:1.5rem;font-weight:900;color:var(--pri)}
   .stats span{font-size:.75rem;color:var(--muted);font-weight:700}
   .tottitle{text-align:center;font-weight:900;margin-top:18px;color:var(--muted);font-size:.9rem;text-transform:uppercase;letter-spacing:.05em}
+  .oggi{border-radius:16px;padding:12px 14px;margin:14px 0 6px;font-weight:900;text-align:center;line-height:1.35}
+  .oggi small{display:block;font-weight:700;font-size:.85rem;margin-top:3px}
+  .oggi.ok{background:#e6f7ee;color:#137a47} .oggi.todo{background:#fff3e0;color:#a85a00}
+  .wa{display:inline-block;margin-top:8px;background:#25d366;color:#fff;text-decoration:none;font-weight:900;border-radius:99px;padding:8px 18px;font-size:.95rem}
+  .wa.wabig{font-size:1.1rem;padding:12px 24px}
+  .sblocco{background:#e6f7ee;border-radius:18px;padding:16px;text-align:center;font-weight:900;margin:10px 0 16px;color:#137a47}
+  .sblocco.no{background:#fff3e0;color:#a85a00}
+  .sblocco .cod{font-size:2.6rem;letter-spacing:.2em;margin:6px 0 0;color:var(--ink)}
+  .sblocco .small{font-size:.85rem;font-weight:700;opacity:.85}
   .big{font-size:3.5rem;text-align:center;margin:6px 0}
   .score{font-size:1.5rem;text-align:center;font-weight:900}
   .msg{text-align:center;color:var(--muted);margin:8px 0 18px}
@@ -188,6 +197,17 @@ function toggleSuono(){
   document.querySelectorAll('.sbtn').forEach(b=>b.textContent = suonoOn?'🔊':'🔇');
   if(suonoOn) suona('ok');
 }
+const SOGLIA = 8;
+function oggiStr(d){ d=d||new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function codiceDel(giorno){ let x=2166136261; const s=giorno+'|alice-giulia-abracadown'; for(let i=0;i<s.length;i++){ x^=s.charCodeAt(i); x=Math.imul(x,16777619)>>>0; } return String(1000+(x%9000)); }
+function fattoOggi(){ return leggi('sblocco_'+oggiStr())==='1'; }
+function serie(){ let n=0; const d=new Date(); if(!fattoOggi()) d.setDate(d.getDate()-1); while(leggi('sblocco_'+oggiStr(d))==='1'){ n++; d.setDate(d.getDate()-1); } return n; }
+function boxOggi(){
+  const ok=fattoOggi(), s=serie();
+  return ok ? `<div class="oggi ok">✅ Allenamento di oggi completato!<small>Codice di oggi: <b>${codiceDel(oggiStr())}</b>${s>1?` · 🔥 ${s} giorni di fila`:''}</small><a class="wa" href="${linkPapa()}" target="_blank" rel="noopener">📲 Manda il codice a papà</a></div>`
+            : `<div class="oggi todo">📅 Allenamento di oggi: <b>da fare</b><small>Fai almeno ${SOGLIA} su 10 per ricevere il codice di sblocco${s>0?` · 🔥 serie di ${s} giorni, non perderla!`:''}</small></div>`;
+}
+function linkPapa(p){ const t=`Ciao papà! Ho fatto l'allenamento di oggi${p!=null?': '+p+'/10':''} ✅ Codice di sblocco: ${codiceDel(oggiStr())}`; return 'https://wa.me/?text='+encodeURIComponent(t); }
 function num(k){ return parseInt(leggi(k)||'0')||0 }
 function stats(){ return {tot:num('tot_esercizi'), ok:num('tot_giuste'), partite:num('tot_partite')} }
 function statBox(){ const s=stats(); return `<div class="stats"><div><b>${s.tot}</b><span>esercizi fatti</span></div><div><b>${s.ok}</b><span>risposte giuste</span></div><div><b>${s.partite}</b><span>partite finite</span></div></div>`; }
@@ -215,6 +235,7 @@ function splash(){
     <img class="hero" src="${IMG.amici}" alt="Alice e Giulia">
     <div class="herotxt">Ciao! Siamo <span style="color:var(--e)">Alice</span> e <span style="color:var(--a)">Giulia</span> 💖</div>
     <button class="play" onclick="audio(); home(true)">▶ Gioca</button>
+    ${boxOggi()}
     <div class="tottitle">Il tuo allenamento</div>${statBox()}`;
 }
 
@@ -252,6 +273,7 @@ async function home(intro){
   clearInterval(countdown); clearTimeout(timer);
   app.innerHTML = `
     <div class="sbtop"><button class="sbtn" onclick="toggleSuono()">${suonoOn?'🔊':'🔇'}</button></div>
+    ${boxOggi()}
     ${statBox()}
     <div class="stage">
       <div class="side left" id="sideA"><img id="imgA" src="${IMG.a1}" alt="Alice" style="--gc:var(--e)"><span>Alice</span></div>
@@ -375,6 +397,7 @@ function fine(){
   const k = 'record_'+modo, rec = parseInt(leggi(k)||'0');
   const nuovo = punti>rec; if(nuovo) salva(k,punti);
   salva('tot_partite', num('tot_partite')+1);
+  const superato = punti>=SOGLIA; if(superato) salva('sblocco_'+oggiStr(),'1');
   suona('fine');
   const perc = punti/giro.length;
   const emoji = perc===1?'🏆':perc>=.8?'🌟':perc>=.6?'😊':'💪';
@@ -384,6 +407,8 @@ function fine(){
     <div class="big">${emoji}</div>
     <div class="score">${punti} su ${giro.length}</div>
     <div class="msg">${msg}${nuovo&&rec>0?'<br>🎊 Nuovo record!':''}</div>
+    ${superato ? `<div class="sblocco"><div>🔓 Ce l'hai fatta! Ecco il codice di oggi</div><div class="cod">${codiceDel(oggiStr())}</div><div class="small">Mandalo a papà per sbloccare il telefono</div><a class="wa wabig" href="${linkPapa(punti)}" target="_blank" rel="noopener">📲 Manda il codice a papà</a></div>`
+               : `<div class="sblocco no"><div>🔒 Servono almeno ${SOGLIA} risposte giuste su 10 per il codice di sblocco.</div><div class="small">Ne hai fatte ${punti}: riprova, ce la puoi fare! 💪</div></div>`}
     ${errori.length?`<b>Da ripassare:</b><div class="rev">${errori.map(([f,g,s])=>`<div>${f.replace('___',`<span class="c">${g}</span>`)} <span style="color:var(--muted)">(avevi messo "${s}")</span></div>`).join('')}</div>`:''}
     <div class="btns">
       <button class="btn" onclick="inizia(modo)">Gioca ancora</button>

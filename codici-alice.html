@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="it"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Codici di sblocco</title>
+<style>
+body{font-family:system-ui,sans-serif;background:#111;color:#fff;margin:0;padding:24px;display:flex;justify-content:center}
+.w{max-width:420px;width:100%} h1{font-size:1.3rem}
+.oggi{background:#1f7a4a;border-radius:18px;padding:18px;text-align:center;margin:14px 0}
+.oggi b{display:block;font-size:3rem;letter-spacing:.2em}
+table{width:100%;border-collapse:collapse} td{padding:8px 4px;border-bottom:1px solid #333} td:last-child{text-align:right;font-weight:700;letter-spacing:.15em}
+p{color:#aaa;font-size:.9rem}
+</style></head><body><div class="w">
+<h1>🔑 Codici di sblocco di Alice</h1>
+<div class="oggi">Codice di oggi<b id="c"></b></div>
+<p>Se il codice che ti manda Alice corrisponde, puoi sbloccarle il telefono da Family Link.</p>
+<table id="t"></table>
+</div>
+<script>
+function oggiStr(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function codiceDel(giorno){ let x=2166136261; const s=giorno+'|alice-giulia-abracadown'; for(let i=0;i<s.length;i++){ x^=s.charCodeAt(i); x=Math.imul(x,16777619)>>>0; } return String(1000+(x%9000)); }
+const d=new Date(); document.getElementById('c').textContent=codiceDel(oggiStr(d));
+const nomi=['domenica','lunedì','martedì','mercoledì','giovedì','venerdì','sabato']; let rows='';
+for(let i=-1;i<=6;i++){ const g=new Date(); g.setDate(g.getDate()+i); rows+=`<tr><td>${i===0?'<b>oggi</b>':i===-1?'ieri':nomi[g.getDay()]} ${g.getDate()}/${g.getMonth()+1}</td><td>${codiceDel(oggiStr(g))}</td></tr>`; }
+document.getElementById('t').innerHTML=rows;
+</script></body></html>
