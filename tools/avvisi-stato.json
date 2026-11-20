@@ -1,5 +1,5 @@
 {
- "_giulia": 20,
+ "_giulia": 21,
  "lotto|2026-11-12": "persa",
  "se|2026-11-12": "persa",
  "2026-11-12|Schedina 1": "vinta",
@@ -14,5 +14,7 @@
  "se|2026-11-17": "persa",
  "lotto|2026-11-17": "persa",
  "lotto|2026-11-19": "persa",
- "se|2026-11-19": "persa"
+ "se|2026-11-19": "persa",
+ "lotto|2026-11-20": "persa",
+ "se|2026-11-20": "vinta"
 }
