@@ -1,7 +1,7 @@
 // Quote aggiornate prima del calcio d'inizio (21/11, richiesta di Toni) e "prossima schedina".
 // Gira dentro la Sentinella, senza Claude.
-// 1) Circa un'ora prima della prima partita ancora da giocare delle schedine (e del sistema) di oggi rilegge le
-//    quote Planetwin solo per quei campionati (1-2 richieste OddsPapi), al massimo 2 volte al giorno:
+// 1) Circa 10 minuti prima della prima partita ancora da giocare delle schedine (e del sistema) di oggi rilegge le
+//    quote Planetwin solo per quei campionati (1-2 richieste OddsPapi), al massimo 3 volte al giorno:
 //    la quota di ogni partita viene aggiornata, quella del mattino resta in "odd0".
 // 2) Quando le partite delle schedine di oggi sono tutte finite (o oggi non ce ne sono e sono passate le 20),
 //    stampa PROSSIMA=yyyy-mm-dd: la Sentinella prepara subito le schedine del giorno dopo.
@@ -28,10 +28,12 @@ const OP_T = { it_1: 23, it_2: 53, en_1: 17, es_1: 8, de_1: 35, fr_1: 34, nl_1: 
   es_c: 329, it_c: 328, en_fa: 19, en_lc: 21, de_c: 217, fr_c: 335, nl_c: 330, pt_c: 336 };
 const MK = { "1": ["101", "101"], "X": ["101", "102"], "2": ["101", "103"], "1X": ["101902", "101902"], "12": ["101902", "101903"], "X2": ["101902", "101904"],
   "Over 2,5": ["1010", "1010"], "Under 2,5": ["1010", "1011"], "Goal": ["104", "104"], "NoGoal": ["104", "105"], "No Goal": ["104", "105"], "Over 1,5": ["108", "108"] };
-const pending = legs.filter(l => l.t && mins(l.t) > now + 5);
+const pending = legs.filter(l => l.t && mins(l.t) > now + 2);
 const first = pending.length ? Math.min(...pending.map(l => mins(l.t))) : null;
 const Q = D || SIS; let changed = false;
-if (OP_KEY && Q && first !== null && first - now <= 75 && (Q.qn || 0) < 2 && (!Q.qAt || now - mins(Q.qAt) >= 150)) {
+// circa 10 minuti prima del calcio d'inizio (Toni, 21/11: "se inizia alle 15, alle 14:50"); il giro della Sentinella
+// dura ~5 minuti, quindi la finestra è fra 15 e 3 minuti prima. Massimo 3 volte al giorno, a distanza di almeno 90 minuti
+if (OP_KEY && Q && first !== null && first - now <= 15 && first - now >= 3 && (Q.qn || 0) < 3 && (!Q.qAt || now - mins(Q.qAt) >= 90)) {
   const fx = {}; // fixtureId -> partite da aggiornare
   for (const l of pending) { const id = odds[l.id]?.fx?.[l.h + "|" + l.a]; if (id) (fx[id] ||= []).push(l); }
   const tids = [...new Set(pending.map(l => OP_T[l.id]).filter(Boolean))];
