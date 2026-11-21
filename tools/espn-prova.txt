@@ -1,4 +1,24 @@
-3 partite
-2026-11-13T19:00Z | Dijon FCO | Orléans | post
-2026-11-13T19:00Z | Neuvillette-Jamin | Valenciennes | post
-2026-11-13T19:00Z | US Saint-Philbert-de-Grand-Lieu | La Roche-sur-Yon | post
+4 partite
+2026-11-21T14:00Z | Como | Cagliari | post | ids {'home': '2572', 'away': '2925'}
+   det: Goal - Header sp=True og=False team=2572 ['Jacobo Ramón']
+   det: Goal - Header sp=True og=False team=2572 ['Lucas Da Cunha']
+2026-11-21T14:00Z | Lazio | Lecce | post | ids {'home': '112', 'away': '113'}
+   det: Goal - Header sp=True og=False team=112 ['Tijjani Noslin']
+   det: Yellow Card sp=False og=False team=113 ['Jamil Siebert']
+   det: Goal sp=True og=False team=112 ['Tijjani Noslin']
+   det: Yellow Card sp=False og=False team=113 ['Danilo Veiga']
+   det: Yellow Card sp=False og=False team=112 ['Luca Pellegrini']
+   det: Goal sp=True og=False team=112 ['Davide Frattesi']
+2026-11-21T17:00Z | Parma | AS Roma | post | ids {'home': '115', 'away': '104'}
+   det: Goal sp=True og=False team=104 ['Donyell Malen']
+   det: Yellow Card sp=False og=False team=115 ['Emanuele Valeri']
+   det: Goal sp=True og=False team=115 ['Nesta Elphege']
+   det: Goal sp=True og=False team=104 ['Donyell Malen']
+   det: Goal sp=True og=False team=104 ['Rodrigo Mora']
+   det: Goal sp=True og=False team=104 ['Donyell Malen']
+   det: Goal sp=True og=False team=104 ['Donyell Malen']
+2026-11-21T19:45Z | Napoli | Torino | post | ids {'home': '114', 'away': '239'}
+   det: Yellow Card sp=False og=False team=239 ['Pietro Comuzzo']
+   det: Yellow Card sp=False og=False team=114 ['Billy Gilmour']
+   det: Goal sp=True og=False team=114 ['Scott McTominay']
+   det: Yellow Card sp=False og=False team=114 ['Frank Anguissa']
