@@ -271,7 +271,7 @@ body[data-sec="lotto"] .ball{background:var(--chip);color:var(--ink)}
       <div style="display:grid;justify-items:end;gap:4px">
         <div class="stamp" id="stamp">In caricamento…</div>
         <a id="refresh" class="refresh" target="_blank" rel="noopener" href="https://angar72.github.io/pronostici/" style="text-decoration:none">Apri con risultati in diretta ↗</a>
-        <div class="stamp">Versione 21 nov · oro argento bronzo</div>
+        <div class="stamp">Versione 21 nov · extra corretti</div>
       </div>
     </div>
     <div class="seg" role="group" aria-label="Sezione">
@@ -2443,7 +2443,9 @@ if (typeof module !== "undefined") module.exports = Model;
         <div class="res" style="display:grid;gap:8px">
           <div class="money-box ${E.state === "won" ? "win" : E.state === "lost" ? "lose" : ""}">
             <div><span>Giocata</span><b class="num">${euro(E.cost)}</b></div>
-            ${E.wrong === 1 && E.state !== "lost" ? (() => { const wi = E.st.indexOf(-1), r = E.legs[wi];
+            ${E.state === "lost" ? `<div><span>Esito</span><b>✗ Perso (${E.wrong} errori)</b></div><div><span>Vincita</span><b class="num">${euro(0)}</b></div>`
+            : E.state === "won" ? `<div><span>Esito</span><b>✓ ${E.wrong ? "Vinto con 1 errore" : "Tutte giuste"}</b></div><div><span>Vinto</span><b class="num">${euro(E.pay)}</b></div>`
+            : E.wrong === 1 ? (() => { const wi = E.st.indexOf(-1), r = E.legs[wi];
               return `<div><span>Errore già usato</span><b>${TL(r.m.h)} – ${TL(r.m.a)}</b></div>
             <div><span>Quota delle altre ${E.n - 1}</span><b class="num">${q(E.legs.reduce((a, x, i) => i === wi ? a : a * x.s.odd, 1))}</b></div>
             <div><span>${E.state === "won" ? "Vinto" : "Possibile vincita se le altre sono giuste"}</span><b class="num">${euro(E.combos[wi])}</b></div>`; })()
@@ -2477,10 +2479,11 @@ if (typeof module !== "undefined") module.exports = Model;
     const X = extraTally();
     // da sinistra: l'altro ieri, ieri, oggi (come le schedine); si apre su oggi
     const t = today(), lastD = sl => sl.legs.map(l => l.d).sort().pop();
-    const xs = new Set(Object.keys(state.sistemi?.byDay || {}).concat(Object.keys(state.lastminute?.byDay || {}), X.rows.map(r => lastD(r.sl))).filter(d => d >= addDays(t, -2) && d <= t));
+    const xs = new Set(Object.keys(state.sistemi?.byDay || {}).concat(Object.keys(state.lastminute?.byDay || {}), X.rows.map(r => lastD(r.sl))).filter(d => d >= addDays(t, -2) && d <= addDays(t, 1)));
     xs.add(t);
     const xdays = [...xs].sort();
-    if (!xdays.includes(state.xday)) state.xday = t;
+    // a sera, con le partite di oggi finite, si apre sul sistema di domani se c'è già (21/11)
+    if (!xdays.includes(state.xday)) { const tom = addDays(t, 1), S0 = state.sistemi?.byDay?.[t]; state.xday = xdays.includes(tom) && (!S0 || sistemaEval(S0).state !== "open") ? tom : t; }
     state.xd = state.xday;
     const chips = xdays.length > 1 ? `<div class="chips" role="group" aria-label="Giorno">${xdays.map(d => `<button class="chip" data-xday="${d}" aria-pressed="${d === state.xd}">${dayLabel(d)}</button>`).join("")}</div>` : "";
     const SIS2 = sistemiHtml() + lastMinuteHtml(state.xd);
@@ -2634,7 +2637,7 @@ if (typeof module !== "undefined") module.exports = Model;
   // aggiornamento della pagina: l'app sulla schermata Home tiene in memoria la versione vecchia.
   // Ogni volta che si riapre (e ogni 10 minuti) controllo se c'è una versione nuova e mi ricarico da solo.
   // numero di versione crescente (BUILD): mi ricarico solo se sul server ce n'è uno PIÙ ALTO, e al massimo una volta ogni 5 minuti
-  const BUILD = 2026112107;
+  const BUILD = 2026112108;
   async function checkNewVersion() {
     try {
       let last = 0; try { last = +sessionStorage.getItem("pr.reload") || 0; } catch (e) {}
