@@ -111,8 +111,7 @@ for (const [id, [lg, , name, flag, doms]] of Object.entries(NAT_CUPS)) {
   const fresh = () => ({ code: id, name, flag, cup: true, ver: 2, k: 10, season: "", fixtures: [], played: [], prev: [], teams: [], dom: {}, prior: {} });
   const C = leagues[id]?.ver === 2 ? leagues[id] : fresh();
   let touched = leagues[id] !== C;
-  const SCB = +(process.env.SC_BACK || 3); // SC_BACK=50 una volta sola: marcatori delle ultime settimane
-  for (let k = -SCB; k <= 2; k++) {
+  for (let k = -3; k <= 2; k++) {
     const day = addDays(TODAY, k);
     const j = await fetchJ(`https://site.api.espn.com/apis/site/v2/sports/soccer/${lg}/scoreboard?dates=${day.replace(/-/g, "")}`);
     for (const e of j?.events || []) for (const c of e.competitions?.[0]?.competitors || []) {
@@ -146,7 +145,8 @@ for (const [id, [lg, , name, flag, doms]] of Object.entries(NAT_CUPS)) {
 // ---------- 1. risultati e calendario da ESPN ----------
 for (const [id, lg] of Object.entries(ESPN_LG)) {
   const L = leagues[id]; if (!L || !L.teams?.length) continue;
-  for (let k = -3; k <= 2; k++) {
+  const SCB = +(process.env.SC_BACK || 3); // SC_BACK=50 una volta sola: marcatori delle ultime settimane
+  for (let k = -SCB; k <= 2; k++) {
     const day = addDays(TODAY, k);
     const j = await fetchJ(`https://site.api.espn.com/apis/site/v2/sports/soccer/${lg}/scoreboard?dates=${day.replace(/-/g, "")}`);
     for (const e of j?.events || []) {
