@@ -18,7 +18,8 @@ jobs:
           out=[str(len(ev))+' partite']
           for e in ev:
             c=e['competitions'][0];t={x['homeAway']:x['team'].get('displayName') for x in c['competitors']}
-            out.append(e['date']+' | '+str(t.get('home'))+' | '+str(t.get('away'))+' | '+e['status']['type']['state'])
+            out.append(e['date']+' | '+str(t.get('home'))+' | '+str(t.get('away'))+' | '+e['status']['type']['state']+' | ids '+str({x['homeAway']:x['team'].get('id') for x in c['competitors']}))
+            for x in c.get('details',[]): out.append('   det: '+str(x.get('type',{}).get('text'))+' sp='+str(x.get('scoringPlay'))+' og='+str(x.get('ownGoal'))+' team='+str(x.get('team',{}).get('id'))+' '+str([a.get('displayName') for a in x.get('athletesInvolved',[])]))
           open('tools/espn-prova.txt','w').write('\n'.join(out)+'\n')"
           git config user.name "pronostici-bot"; git config user.email "pronostici-bot@users.noreply.github.com"
           git add tools/espn-prova.txt; git commit -m "Prova ESPN" || exit 0
