@@ -1,0 +1,23 @@
+name: Marcatori (storico e giorno dopo)
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: dati
+  cancel-in-progress: false
+jobs:
+  marcatori:
+    runs-on: ubuntu-latest
+    env:
+      SITE_CODE: ${{ secrets.SITE_CODE }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: |
+          SC_BACK=50 node tools/auto.mjs
+          NOW="$(TZ=Europe/Rome date -d tomorrow +%F)T07:00:00Z" node tools/auto.mjs
+          git config user.name "pronostici-bot"; git config user.email "pronostici-bot@users.noreply.github.com"
+          git add data; git commit -qm "Marcatori dalle ultime settimane" || exit 0
+          for i in 1 2 3; do git pull --rebase -q && git push -q && break; sleep 5; done

@@ -1,4 +1,17 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><title>Pronostici Calcio e Lotto</title><link rel="apple-touch-icon" href="https://angar72.github.io/pronostici/apple-touch-icon.png?v=2"><link rel="apple-touch-icon" sizes="180x180" href="https://angar72.github.io/pronostici/apple-touch-icon.png?v=2"><link rel="icon" type="image/png" sizes="512x512" href="https://angar72.github.io/pronostici/assets/icona-512.png?v=2"><link rel="manifest" href="manifest.json?v=2"><meta name="apple-mobile-web-app-title" content="Pronostici"></head><body>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}
+/* schedina "di carta" (Toni, 21/11): carta color crema, intestazione del colore della medaglia, bordo seghettato in fondo */
+.slip{--ink:#1c1912;--muted:#6d6453;--line:#d8ccb3;--surface:#fffaf0;--chip:#f3ead6;--paper:#fffaf0;--tint:#d4a62a;color:var(--ink);
+  background:linear-gradient(180deg,color-mix(in srgb,var(--tint) 24%,var(--paper)) 0,color-mix(in srgb,var(--tint) 9%,var(--paper)) 140px,var(--paper) 100%)!important;
+  border:2px solid var(--tint)!important;border-radius:8px 8px 0 0!important;padding:12px 14px 22px!important;font-variant-numeric:tabular-nums;box-shadow:none!important;
+  -webkit-mask:conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) 50%/14px 100%;mask:conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) 50%/14px 100%}
+.slip .sub,.slip-head{background:var(--tint);color:#16130d!important;margin:-12px -14px 6px;padding:8px 14px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;border-radius:6px 6px 0 0}
+.slip>div:not(.sub):not(.slip-head)+div,.slip .res+.res{border-top:1px dashed var(--line)}
+.slip .res{border-bottom:0}
+.slip b.num,.slip .num{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.slip .money-box{background:color-mix(in srgb,var(--tint) 10%,#fff);border:1px dashed color-mix(in srgb,var(--tint) 70%,#000)}
+.slip .note{color:var(--muted)}.slip .money-box b{font-size:19px}
+.slip.gold{--tint:#d4a62a}.slip.silver{--tint:#b4bac4}.slip.bronze{--tint:#c07a3e}.slip.extra{--tint:#4fb07a}.slip.sis{--tint:#6fa8dc}
+</style><title>Pronostici Calcio e Lotto</title><link rel="apple-touch-icon" href="https://angar72.github.io/pronostici/apple-touch-icon.png?v=2"><link rel="apple-touch-icon" sizes="180x180" href="https://angar72.github.io/pronostici/apple-touch-icon.png?v=2"><link rel="icon" type="image/png" sizes="512x512" href="https://angar72.github.io/pronostici/assets/icona-512.png?v=2"><link rel="manifest" href="manifest.json?v=2"><meta name="apple-mobile-web-app-title" content="Pronostici"></head><body>
 <title>Pronostici Calcio e Lotto</title>
 <meta name="robots" content="noindex,nofollow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -271,7 +284,7 @@ body[data-sec="lotto"] .ball{background:var(--chip);color:var(--ink)}
       <div style="display:grid;justify-items:end;gap:4px">
         <div class="stamp" id="stamp">In caricamento…</div>
         <a id="refresh" class="refresh" target="_blank" rel="noopener" href="https://angar72.github.io/pronostici/" style="text-decoration:none">Apri con risultati in diretta ↗</a>
-        <div class="stamp">Versione 21 nov · extra corretti</div>
+        <div class="stamp">Versione 22 nov · schedine di carta</div>
       </div>
     </div>
     <div class="seg" role="group" aria-label="Sezione">
@@ -1707,9 +1720,9 @@ if (typeof module !== "undefined") module.exports = Model;
       const lost = tk.some(r => r.res && !hit(r.s.k, r.res)), allDone = tk.every(r => r.res);
       if (lost || allDone) { played++; if (!lost) { won++; net += stake * (q - 1); } else net -= stake; }
       // oro, argento, bronzo per affidabilità (Toni, 21/11)
-      const medal = tickets.length > 1 ? ["#d4a62a", "#b9bec8", "#b87333"][Math.min(2, order.indexOf(i))] : null;
-      html += `<div class="ticket"${medal ? ` style="border:2px solid ${medal};background:color-mix(in srgb,${medal} 9%,transparent)"` : ""}>
-        <div class="sub"${medal ? ` style="color:${medal};font-weight:700"` : ""}>${names[i]} · ${tk.length} partite${(() => { const sh = tickets.slice(0, i).map((o, j) => o.some(x => tk.some(y => keyOf(x) === keyOf(y))) ? j + 1 : 0).filter(Boolean); return sh.length ? ` · ha partite in comune con la schedina ${sh.join(" e ")}` : ""; })()}</div>
+      const medal = tickets.length > 1 ? ["gold", "silver", "bronze"][Math.min(2, order.indexOf(i))] : "gold";
+      html += `<div class="ticket slip ${medal}">
+        <div class="sub">${names[i]} · ${tk.length} partite${(() => { const sh = tickets.slice(0, i).map((o, j) => o.some(x => tk.some(y => keyOf(x) === keyOf(y))) ? j + 1 : 0).filter(Boolean); return sh.length ? ` · ha partite in comune con la schedina ${sh.join(" e ")}` : ""; })()}</div>
         ${tk.map(r => `<div style="display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:baseline">
             <span style="min-width:0;font-weight:600">${TL(r.m.h)}${RCt(r.id, r.m.h, r.m.a, r.m.h)} – ${TL(r.m.a)}${RCt(r.id, r.m.h, r.m.a, r.m.a)}${r.res ? ` <span class="note">${r.res.hg}-${r.res.ag}</span>` : ""}</span>
             <b style="white-space:nowrap">${esc(r.s.k)} · ${fmtQ(r.s.odd)}${r.s.est ? "*" : ""}${r.s.odd0 != null && r.s.odd0 !== r.s.odd ? ` <span class="note" style="font-weight:400">(era ${fmtQ(r.s.odd0)})</span>` : ""}${r.res ? (hit(r.s.k, r.res) ? ' <span class="ok">✓</span>' : ' <span class="ko">✗</span>') : ""}</b>
@@ -2433,14 +2446,14 @@ if (typeof module !== "undefined") module.exports = Model;
     return `<div class="day">Sistema con 1 errore permesso</div><p class="note">Si vince anche sbagliando una partita: si giocano tutte le combinazioni con una partita in meno. Solo da seguire, non entra nel conto.</p>` + days.map(d => {
       const E = sistemaEval(by[d]);
       const head = E.state === "won" ? `<span class="ok">✓ vinto${E.wrong ? " con 1 errore" : " con tutte giuste"} · ${euro(E.pay)}</span>` : E.state === "lost" ? `<span class="ko">✗ perso (${E.wrong} errori)</span>` : `in gioco · ${E.wrong ? "1 errore già usato" : "nessun errore finora"}`;
-      return `<div class="day">${esc(dayLabel(d))} · sistema ${E.n - 1}/${E.n} · ${head}</div><div class="card">
+      return `<div class="day">${esc(dayLabel(d))} · sistema ${E.n - 1}/${E.n} · ${head}</div><div class="card slip sis"><div class="slip-head">Sistema ${E.n - 1}/${E.n} · 1 errore permesso</div>
         ${E.legs.map((r, i) => { const lv = !r.res && liveFor(r.id, r.m.h, r.m.a);
           const mk = E.st[i] > 0 ? '<span class="ok">✓</span>' : E.st[i] < 0 ? '<span class="ko">✗</span>' : lv ? (hit(r.s.k, lv) ? '<span class="ok">✓</span>' : '<span class="ko">✗</span>') : "·";
           return `<div class="res" style="display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:baseline">
           <span style="min-width:0;font-weight:600">${TL(r.m.h)}${RCt(r.id, r.m.h, r.m.a, r.m.h)} – ${TL(r.m.a)}${RCt(r.id, r.m.h, r.m.a, r.m.a)}${r.res ? ` <span class="note">${r.res.hg}-${r.res.ag}</span>` : ""}</span>
           <b style="white-space:nowrap">${esc(r.s.k)} · ${q(r.s.odd)} ${mk}</b>
           <span class="note" style="grid-column:1/-1">${esc(r.m.t || "")} · ${esc(r.L.d.name || "")}${r.res ? " · finale" : lv ? ` · <span class="live-inline"><span class="dot"></span>in corso ${lv.hg}-${lv.ag} ${liveWhen(lv)}</span> · per ora` : ""}</span></div>`; }).join("")}
-        <div class="res" style="display:grid;gap:8px">
+        <div class="res" style="display:grid;gap:8px;grid-template-columns:1fr">
           <div class="money-box ${E.state === "won" ? "win" : E.state === "lost" ? "lose" : ""}">
             <div><span>Giocata</span><b class="num">${euro(E.cost)}</b></div>
             ${E.state === "lost" ? `<div><span>Esito</span><b>✗ Perso (${E.wrong} errori)</b></div><div><span>Vincita</span><b class="num">${euro(0)}</b></div>`
@@ -2455,6 +2468,17 @@ if (typeof module !== "undefined") module.exports = Model;
           </div>
           <div class="note">${E.n} combinazioni da ${E.n - 1} partite, ${euro(E.per)} ciascuna. Con 1 errore la vincita dipende da quale partita si sbaglia: più bassa la sua quota, più alta la vincita.</div></div></div>`;
     }).join("");
+  }
+  // marcatori del giorno (21/11): 1 o 2 attaccanti in forma di squadre nettamente favorite, solo da seguire
+  function marcatoriHtml(day) {
+    const M = state.marcatori?.byDay?.[day]; if (!M || !M.length) return "";
+    return `<div class="day" style="margin-top:18px">Marcatori del giorno ⚽</div><div class="card slip gold"><div class="slip-head">Marcatore · segna sì</div>${M.map(m => {
+      const g = state.raw?.[m.id]?.sc?.[m.d + "|" + m.h + "|" + m.a], ok = g ? g.some(([sd, n]) => sd === m.side && n === m.player) : null;
+      const mk = ok === true ? '<span class="ok">✓ ha segnato</span>' : ok === false ? '<span class="ko">✗ non ha segnato</span>' : "·";
+      return `<div class="res" style="display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:baseline">
+        <span style="min-width:0;font-weight:700">${esc(m.player)} <span class="note">(${TL(m.team)})</span></span><b style="white-space:nowrap">Segna sì ${mk}</b>
+        <span class="note" style="grid-column:1/-1">${TL(m.h)} – ${TL(m.a)} · ${esc(m.t || "")} · a segno in <b>${m.n5} delle ultime ${m.of}</b> partite (${m.g} gol) · ${esc(m.team)} vince al ${Math.round(m.pw * 100)}% secondo le quote</span></div>`; }).join("")}
+      <p class="note">Solo da seguire. La quota "marcatore" la trovi su Planetwin alla voce Marcatori: di solito tra 1,70 e 2,50.</p></div>`;
   }
   // last minute: giocate suggerite durante le partite (le trova da sola il controllo ogni 15 minuti)
   function lmHit(k, h, a) {
@@ -2486,14 +2510,14 @@ if (typeof module !== "undefined") module.exports = Model;
     if (!xdays.includes(state.xday)) { const tom = addDays(t, 1), S0 = state.sistemi?.byDay?.[t]; state.xday = xdays.includes(tom) && (!S0 || sistemaEval(S0).state !== "open") ? tom : t; }
     state.xd = state.xday;
     const chips = xdays.length > 1 ? `<div class="chips" role="group" aria-label="Giorno">${xdays.map(d => `<button class="chip" data-xday="${d}" aria-pressed="${d === state.xd}">${dayLabel(d)}</button>`).join("")}</div>` : "";
-    const SIS2 = sistemiHtml() + lastMinuteHtml(state.xd);
+    const SIS2 = sistemiHtml() + marcatoriHtml(state.xd) + lastMinuteHtml(state.xd);
     const cur = r => lastD(r.sl) === state.xd || (state.xd === t && lastD(r.sl) > t);
     if (!X.rows.some(cur)) return chips + (SIS2 || `<div class="empty">${state.xd === t ? "Oggi" : "In questo giorno"} non ci sono extra.</div>`);
     let html = chips + SIS2 + `<div class="day" style="margin-top:18px">Multiple extra da seguire</div>`;
     X.rows.forEach((r, si) => {
       if (!cur(r)) return;
       const head = r.win ? `<span class="ok">✓ vinta</span>` : r.lost ? `<span class="ko">✗ persa</span>` : "in gioco";
-      html += `<div class="day">${esc(r.sl.name)} · quota ${r.q.toFixed(2).replace(".", ",")} · ${head}</div><div class="card">`;
+      html += `<div class="day">${esc(r.sl.name)} · quota ${r.q.toFixed(2).replace(".", ",")} · ${head}</div><div class="card slip extra"><div class="slip-head">Extra · ${esc(r.sl.name)}</div>`;
       r.sl.legs.forEach((l, li) => {
         const s = r.st[li], ev = extraEvOf(l), k = si + "-" + li;
         const score = ev ? (ev.live ? `<b class="num">${ev.hg}-${ev.ag}</b> · <b class="min">${esc(ev.min)}</b>` : ev.done ? `finale <b class="num">${ev.hg}-${ev.ag}</b>${ev.hl.length >= 2 ? ` (1° t. ${ev.hl[0]}-${ev.al[0]})` : ""}` : ev.off ? "rinviata" : "") : "";
@@ -2637,7 +2661,7 @@ if (typeof module !== "undefined") module.exports = Model;
   // aggiornamento della pagina: l'app sulla schermata Home tiene in memoria la versione vecchia.
   // Ogni volta che si riapre (e ogni 10 minuti) controllo se c'è una versione nuova e mi ricarico da solo.
   // numero di versione crescente (BUILD): mi ricarico solo se sul server ce n'è uno PIÙ ALTO, e al massimo una volta ogni 5 minuti
-  const BUILD = 2026112108;
+  const BUILD = 2026112110;
   async function checkNewVersion() {
     try {
       let last = 0; try { last = +sessionStorage.getItem("pr.reload") || 0; } catch (e) {}
@@ -2796,6 +2820,7 @@ if (typeof module !== "undefined") module.exports = Model;
     }, () => { gotLeagues = true; done(); });
     db.doc("live/prep").onSnapshot(doc => { state.prep = doc.exists ? doc.data() : null; if (state.prep?.date === today()) store.set("pr.prep", "0"); if (state.ready) render(); }, () => {});
     db.doc("live/sistemi").onSnapshot(doc => { state.sistemi = doc.exists ? doc.data() : null; if (state.ready) render(); }, () => {});
+    db.doc("live/marcatori").onSnapshot(doc => { state.marcatori = doc.exists ? doc.data() : null; if (state.ready) render(); }, () => {});
     db.doc("live/lastminute").onSnapshot(doc => { state.lastminute = doc.exists ? doc.data() : null; if (state.ready) render(); }, () => {});
     db.doc("live/extra").onSnapshot(doc => { state.extra = doc.exists ? doc.data() : null; if (state.ready) render(); }, () => {});
     db.doc("live/schedine").onSnapshot(doc => { state.saved = doc.exists ? doc.data() : null; state.savedLoaded = true; if (state.ready) render(); }, () => {});

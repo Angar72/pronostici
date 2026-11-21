@@ -111,7 +111,8 @@ for (const [id, [lg, , name, flag, doms]] of Object.entries(NAT_CUPS)) {
   const fresh = () => ({ code: id, name, flag, cup: true, ver: 2, k: 10, season: "", fixtures: [], played: [], prev: [], teams: [], dom: {}, prior: {} });
   const C = leagues[id]?.ver === 2 ? leagues[id] : fresh();
   let touched = leagues[id] !== C;
-  for (let k = -3; k <= 2; k++) {
+  const SCB = +(process.env.SC_BACK || 3); // SC_BACK=50 una volta sola: marcatori delle ultime settimane
+  for (let k = -SCB; k <= 2; k++) {
     const day = addDays(TODAY, k);
     const j = await fetchJ(`https://site.api.espn.com/apis/site/v2/sports/soccer/${lg}/scoreboard?dates=${day.replace(/-/g, "")}`);
     for (const e of j?.events || []) for (const c of e.competitions?.[0]?.competitors || []) {
@@ -157,6 +158,12 @@ for (const [id, lg] of Object.entries(ESPN_LG)) {
       if (/postpon|cancel|abandon|suspend/i.test(st.name || "")) continue;
       const fi = L.fixtures.findIndex(f => { const q = f.split("|"); return q[2] === h && q[3] === a && Math.abs(dayDiff(q[0], when.d)) <= 4; });
       if (st.completed) {
+        // marcatori (Toni, 21/11): "data|casa|ospite" -> [[h/a, nome], ...] senza autogol
+        const det = e.competitions?.[0]?.details || [], sk = when.d + "|" + h + "|" + a;
+        if (det.length && !(L.sc && L.sc[sk])) {
+          const g = det.filter(x => x.scoringPlay && !x.ownGoal && x.athletesInvolved?.[0]?.displayName).map(x => [String(x.team?.id) === String(H.team?.id) ? "h" : "a", x.athletesInvolved[0].displayName]);
+          (L.sc ||= {})[sk] = g; changed.leagues = true;
+        }
         const done = L.played.some(p => { const q = p.split("|"); return q[1] === h && q[2] === a && Math.abs(dayDiff(q[0], when.d)) <= 4; });
         if (done) { if (fi >= 0) { L.fixtures.splice(fi, 1); changed.leagues = true; } continue; }
         const rd = fi >= 0 ? (L.fixtures[fi].split("|")[4] || "") : "";
@@ -449,6 +456,43 @@ if (!sis.byDay[TODAY] || FORCE) {
     for (const d of Object.keys(sis.byDay)) if (d < addDays(TODAY, -14)) delete sis.byDay[d];
     changed.live = true; log("sistema", legs.length - 1 + "/" + legs.length, "quota piena", legs.reduce((a, c) => a * c.odd, 1).toFixed(2));
   } else log("sistema: partite insufficienti");
+}
+
+// ---------- 4b. marcatori del giorno (Toni, 21/11): 1 o 2, solo da seguire ----------
+// Squadra nettamente favorita (almeno 62% secondo Planetwin) e giocatore che ha segnato in almeno 3 delle sue
+// ultime 5 partite (marcatori da ESPN). In ordine: partite a segno sulle ultime 5 x probabilità di vittoria.
+if (!BACKTEST) {
+  const mc = live.marcatori || (live.marcatori = { byDay: {} });
+  if (!mc.byDay[TODAY] || FORCE) {
+    const cand = [];
+    for (const [id, L] of Object.entries(leagues)) {
+      const O = odds[id]; if (!O || !L.sc) continue;
+      for (const row of O.rows || []) {
+        const q = row.split("|"); if (q[0] !== TODAY) continue;
+        const h = q[1], a = q[2], o1 = +q[3], oX = +q[4], o2 = +q[5]; if (!(o1 > 1 && oX > 1 && o2 > 1)) continue;
+        const sm = 1 / o1 + 1 / oX + 1 / o2, p1 = 1 / o1 / sm, p2 = 1 / o2 / sm;
+        const side = p1 >= 0.62 ? "h" : p2 >= 0.62 ? "a" : null; if (!side) continue;
+        const team = side === "h" ? h : a, pw = side === "h" ? p1 : p2;
+        const last = L.played.map(x => x.split("|")).filter(x => x[0] < TODAY && (x[1] === team || x[2] === team)).slice(-5);
+        const cnt = {}, tot = {}; let known = 0;
+        for (const x of last) {
+          const g = L.sc[x[0] + "|" + x[1] + "|" + x[2]]; if (!g) continue; known++;
+          const sd = x[1] === team ? "h" : "a", nm = new Set();
+          for (const [ss, n] of g) if (ss === sd) { nm.add(n); tot[n] = (tot[n] || 0) + 1; }
+          nm.forEach(n => cnt[n] = (cnt[n] || 0) + 1);
+        }
+        if (known < 4) continue;
+        const fx = (L.fixtures.find(f => { const z = f.split("|"); return z[2] === h && z[3] === a; }) || "").split("|");
+        for (const [n, c] of Object.entries(cnt)) if (c >= 3) cand.push({ id, d: TODAY, t: fx[1] || "", h, a, side, team, player: n, n5: c, of: known, g: tot[n], pw: Math.round(pw * 100) / 100, score: c / known * pw });
+      }
+    }
+    cand.sort((x, y) => y.score - x.score || y.g - x.g);
+    const pick = [], seen = new Set();
+    for (const c of cand) { if (seen.has(c.id + c.h)) continue; pick.push(c); seen.add(c.id + c.h); if (pick.length === 2) break; }
+    mc.byDay[TODAY] = pick; changed.live = true;
+    for (const d of Object.keys(mc.byDay)) if (d < addDays(TODAY, -7)) delete mc.byDay[d];
+    log("marcatori:", pick.map(c => `${c.player} (${c.team}) ${c.n5}/${c.of}`).join(", ") || "nessuno");
+  }
 }
 
 // ---------- 5. extra: le partite di coppa nazionale di oggi, solo da seguire ----------
