@@ -360,7 +360,7 @@ function best(cands, { avoid = new Set(), differ = [], usedSecca = new Set(), mi
   // l'Over 1,5 (quota bassa) entra solo come versione "coerente" di una partita già giocata in un'altra schedina:
   // da solo riempiva la schedina di quote 1,1-1,2 e non si arrivava più a 2,80 (21/11)
   const pool = cands.filter(c => !avoid.has(c.key) && !(c.secca && c.odd > 1.3 && usedSecca.has(c.key)) && (!prev[c.key] || compat(c.k, prev[c.key]))
-    && (c.k !== "Over 1,5" || prev[c.key]) && c.odd >= 1.08).slice(0, 24);
+    && (c.k !== "Over 1,5" || prev[c.key]) && c.odd >= 1.08).slice(0, 40); // 40 e non 24: il 21/11 Lazio-Lecce (1 a 1,47, vinta 3-0) era rimasta fuori
   const need = Math.log(minQ); let bestSet = null, bestP = -Infinity;
   const lo = pool.map(c => Math.log(c.odd)), lp = pool.map(c => Math.log(c.prob));
   const pick = [], keys = new Set();
