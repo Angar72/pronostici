@@ -404,6 +404,8 @@ if (!sch.byDay[TODAY] || FORCE) {
   // niente doppioni
   const sig = t => t.map(c => c.key + c.k).sort().join(";");
   const uniq = tickets.filter((t, i) => tickets.findIndex(x => sig(x) === sig(t)) === i);
+  // in ordine di affidabilità: la Schedina 1 è quella con la probabilità più alta che siano giuste tutte (Toni, 21/11)
+  const pAll = t => t.reduce((a, c) => a * c.prob, 1); uniq.sort((x, y) => pAll(y) - pAll(x));
   if (uniq.length) { sch.byDay[TODAY] = { stake: STAKE, tickets: uniq.map(t => t.map(legOut)), auto: true }; changed.live = true; }
   else if (cands.length < 2) {
     // nessuna partita abbastanza sicura: lo scrivo, così il sito lo dice e non riprova all'infinito

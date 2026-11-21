@@ -271,7 +271,7 @@ body[data-sec="lotto"] .ball{background:var(--chip);color:var(--ink)}
       <div style="display:grid;justify-items:end;gap:4px">
         <div class="stamp" id="stamp">In caricamento…</div>
         <a id="refresh" class="refresh" target="_blank" rel="noopener" href="https://angar72.github.io/pronostici/" style="text-decoration:none">Apri con risultati in diretta ↗</a>
-        <div class="stamp">Versione 21 nov · schedina consigliata</div>
+        <div class="stamp">Versione 21 nov · stelle</div>
       </div>
     </div>
     <div class="seg" role="group" aria-label="Sezione">
@@ -1686,9 +1686,12 @@ if (typeof module !== "undefined") module.exports = Model;
     const lowDay = !!state.saved?.byDay?.[state.day]?.low;
     if (lowDay) html += `<p class="note callout">Oggi le partite sicure non bastano per arrivare a quota 2,80: c'è una sola schedina, con la vincita più alta possibile usando solo le giocate sicure.</p>`;
     // la più affidabile: quella con la probabilità più alta che siano giuste tutte (prodotto degli indici), non per forza la prima
-    const prT = tickets.map(tk => tk.reduce((a, r) => a * (r.s.prob || 0), 1)), bestI = tickets.length > 1 ? prT.indexOf(Math.max(...prT)) : -1;
-    const names = tickets.map((tk, i) => lowDay ? "Schedina unica del giorno" : (i === bestI ? `⭐ Schedina ${i + 1} · la più affidabile (${Math.round(prT[i] * 100)}%)` : tk.every(r => /Over|Under|Goal/.test(r.s.k)) ? `Schedina ${i + 1} · gol` : `Schedina ${i + 1}`));
+    // stelle per affidabilità (Toni, 21/11): ⭐⭐⭐ la più probabile, ⭐⭐ la seconda, ⭐ la terza; mostrate in quest'ordine
+    const prT = tickets.map(tk => tk.reduce((a, r) => a * (r.s.prob || 0), 1)), order = tickets.map((_, i) => i).sort((a, b) => prT[b] - prT[a]);
+    const bestI = tickets.length > 1 ? order[0] : -1, stars = i => tickets.length > 1 ? "⭐".repeat(Math.max(1, 3 - order.indexOf(i))) + " " : "";
+    const names = tickets.map((tk, i) => lowDay ? "Schedina unica del giorno" : `${stars(i)}Schedina ${i + 1}${i === bestI ? " · la più affidabile" : tk.every(r => /Over|Under|Goal/.test(r.s.k)) ? " · gol" : ""} (${Math.round(prT[i] * 100)}%)`);
     html += `<div class="day">Le schedine ${dayTxt}</div>`;
+    html += starStats();
     if (lowered) html += `<p class="note callout">Con le sole giocate sicure ${state.day === today() ? "oggi" : "in questo giorno"} non si arriva a ${euro(state.mtarget)}: le schedine puntano a quota ${fmtQ(built.need)}, cioè ${euro(stake)} che diventano circa ${euro(stake * built.need)} o poco più. Si vince meno, ma si perde molto meno spesso.</p>`;
     // niente schedina di recupero se le schedine di domani sono già pronte: confondeva (21/11)
     if (state.day !== "next3" && !state.saved?.byDay?.[addDays(t, 1)]) html += recoveryHtml(state.day, tickets, frozen, stake, fmtQ);
@@ -1698,7 +1701,7 @@ if (typeof module !== "undefined") module.exports = Model;
     if (tickets.length < 3) html += `<p class="note">Con le favorite affidabili di questo giorno ${tickets.length === 1 ? "c'è una sola schedina sicura" : "ci sono solo " + tickets.length + " schedine sicure diverse"}: le altre partite non superano i controlli.${days.includes("next3") && state.day !== "next3" ? " Con «Prossimi 3 giorni» ci sono più partite tra cui scegliere." : ""}</p>`;
     const keyOf = r => r.id + "|" + r.m.h;
     let played = 0, won = 0, net = 0;
-    tickets.forEach((tk, i) => {
+    order.map(i => [tickets[i], i]).forEach(([tk, i]) => {
       const q = tk.reduce((a, r) => a * r.s.odd, 1), pr = tk.reduce((a, r) => a * r.s.prob, 1);
       const pm = tk.every(r => r.s.mkt != null) ? tk.reduce((a, r) => a * r.s.mkt, 1) : null, anyEst = tk.some(r => r.s.est);
       const lost = tk.some(r => r.res && !hit(r.s.k, r.res)), allDone = tk.every(r => r.res);
@@ -2046,6 +2049,20 @@ if (typeof module !== "undefined") module.exports = Model;
     if (!t && lg) { const f = (lg.fixtures || []).find(r => { const q = r.split("|"); return q[2] === x.h && q[3] === x.a; }); if (f) t = f.split("|")[1]; }
     return { id: x.id, L: { d: lg || { name: x.id } }, m: { d: x.d, t: t || "", h: x.h, a: x.a },
       s: { k: x.k, odd: x.odd, odd0: x.odd0, prob: x.prob, model: x.model, mkt: x.mkt, est: !!x.est, edge: 0, score: x.prob }, res };
+  }
+  // statistica: quante schedine vinte per numero di stelle, su tutti i giorni salvati con almeno 2 schedine
+  function starStats() {
+    const agg = [0, 0, 0].map(() => ({ n: 0, w: 0 }));
+    for (const d of Object.keys(state.saved?.byDay || {})) {
+      const F = frozenFor(d); if (!F || F.tickets.length < 2) continue;
+      const pr = F.tickets.map(tk => tk.reduce((a, r) => a * (r.s.prob || 0), 1)), ord = F.tickets.map((_, i) => i).sort((a, b) => pr[b] - pr[a]);
+      F.tickets.forEach((tk, i) => {
+        const lost = tk.some(r => r.res && !hit(r.s.k, r.res)), won = !lost && tk.every(r => r.res);
+        if (!lost && !won) return; const A = agg[Math.min(2, ord.indexOf(i))]; A.n++; A.w += won;
+      });
+    }
+    if (!agg.some(a => a.n)) return "";
+    return `<p class="note">Statistica delle schedine finite, per stelle: ${agg.map((a, k) => a.n ? `${"⭐".repeat(3 - k)} vinte <b>${a.w} su ${a.n}</b> (${Math.round(a.w / a.n * 100)}%)` : "").filter(Boolean).join(" · ")}</p>`;
   }
   function frozenFor(day) {
     const D = state.saved?.byDay?.[day];
@@ -2615,7 +2632,7 @@ if (typeof module !== "undefined") module.exports = Model;
   // aggiornamento della pagina: l'app sulla schermata Home tiene in memoria la versione vecchia.
   // Ogni volta che si riapre (e ogni 10 minuti) controllo se c'è una versione nuova e mi ricarico da solo.
   // numero di versione crescente (BUILD): mi ricarico solo se sul server ce n'è uno PIÙ ALTO, e al massimo una volta ogni 5 minuti
-  const BUILD = 2026112105;
+  const BUILD = 2026112106;
   async function checkNewVersion() {
     try {
       let last = 0; try { last = +sessionStorage.getItem("pr.reload") || 0; } catch (e) {}
