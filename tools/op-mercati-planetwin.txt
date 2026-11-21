@@ -1,0 +1,66 @@
+101|Full Time Result|0.0|fulltime
+104|Both Teams To Score|0.0|fulltime
+106|Over Under Full Time|0.5|fulltime
+108|Over Under Full Time|1.5|fulltime
+1010|Over Under Full Time|2.5|fulltime
+1012|Over Under Full Time|3.5|fulltime
+1014|Over Under Full Time|4.5|fulltime
+1016|Over Under Full Time|5.5|fulltime
+1018|Over Under Full Time|6.5|fulltime
+1020|Over Under Full Time|7.5|fulltime
+1022|Over Under Full Time|8.5|fulltime
+10140|European Handicap|-1.0|fulltime
+10143|European Handicap|-2.0|fulltime
+10146|European Handicap|-3.0|fulltime
+10149|European Handicap|-4.0|fulltime
+10208|First Half Result|0.0|p1
+10222|Odd Even Full Time|0.0|fulltime
+10256|Over Under First Half|0.5|p1
+10258|Over Under First Half|1.5|p1
+10260|Over Under First Half|2.5|p1
+10262|Over Under First Half|3.5|p1
+10336|Correct Score Full Time|0.0|fulltime
+10761|2Up - Full Time Result|0.0|fulltime
+10764|Corners - 1X2|0.0|fulltime
+10787|Corners - Over Under Full Time|5.5|fulltime
+10799|Corners - Over Under Full Time|8.5|fulltime
+10803|Corners - Over Under Full Time|9.5|fulltime
+10807|Corners - Over Under Full Time|10.5|fulltime
+10811|Corners - Over Under Full Time|11.5|fulltime
+10815|Corners - Over Under Full Time|12.5|fulltime
+10819|Corners - Over Under Full Time|13.5|fulltime
+10823|Corners - Over Under Full Time|14.5|fulltime
+10851|Corners - Handicap|-6.5|fulltime
+10855|Corners - Handicap|-5.5|fulltime
+10859|Corners - Handicap|-4.5|fulltime
+10863|Corners - Handicap|-3.5|fulltime
+10867|Corners - Handicap|-2.5|fulltime
+101394|Corners - Odd Even|0.0|fulltime
+101396|Corners - Odd Even First Half|0.0|p1
+101432|Corners - Over Under Team 1|5.5|fulltime
+101436|Corners - Over Under Team 1|6.5|fulltime
+101440|Corners - Over Under Team 1|7.5|fulltime
+101444|Corners - Over Under Team 1|8.5|fulltime
+101448|Corners - Over Under Team 1|9.5|fulltime
+101480|Corners - Over Under Team 2|2.5|fulltime
+101484|Corners - Over Under Team 2|3.5|fulltime
+101488|Corners - Over Under Team 2|4.5|fulltime
+101492|Corners - Over Under Team 2|5.5|fulltime
+101532|Corners - 1X2 First Half|0.0|p1
+101547|Corners - Over Under First Half|3.5|p1
+101551|Corners - Over Under First Half|4.5|p1
+101555|Corners - Over Under First Half|5.5|p1
+101559|Corners - Over Under First Half|6.5|p1
+101605|Corners - Handicap First Half|-2.5|p1
+101609|Corners - Handicap First Half|-1.5|p1
+101613|Corners - Handicap First Half|-0.5|p1
+101649|Corners - Over Under Team 1 First Half|3.5|p1
+101681|Corners - Over Under Team 2 First Half|1.5|p1
+101736|Corners - Over Under Second Half|4.5|p2
+101744|Corners - Over Under Second Half|6.5|p2
+101786|Corners - Handicap Second Half|-3.5|p2
+101790|Corners - Handicap Second Half|-2.5|p2
+101794|Corners - Handicap Second Half|-1.5|p2
+101798|Corners - Handicap Second Half|-0.5|p2
+101902|Double Chance Full Time|0.0|fulltime
+101919|Half Time / Full Time|0.0|fulltime
