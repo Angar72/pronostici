@@ -463,7 +463,7 @@ if (!sis.byDay[TODAY] || FORCE) {
 // ultime 5 partite (marcatori da ESPN). In ordine: partite a segno sulle ultime 5 x probabilità di vittoria.
 if (!BACKTEST) {
   const mc = live.marcatori || (live.marcatori = { byDay: {} });
-  if (!mc.byDay[TODAY]?.length || FORCE) {
+  if (!mc.byDay[TODAY]?.length || FORCE || process.env.MC_FORCE === "true") {
     const cand = [];
     for (const [id, L] of Object.entries(leagues)) {
       const O = odds[id]; if (!O || !L.sc) continue;
@@ -489,6 +489,17 @@ if (!BACKTEST) {
     cand.sort((x, y) => y.score - x.score || y.g - x.g);
     const pick = [], seen = new Set();
     for (const c of cand) { if (seen.has(c.id + c.h)) continue; pick.push(c); seen.add(c.id + c.h); if (pick.length === 2) break; }
+    // quota del marcatore: Planetwin (e i bookmaker italiani) su OddsPapi non pubblicano il mercato "gol del giocatore";
+    // prendo la quota media di quelli che lo pubblicano, come riferimento (1 richiesta per partita, al massimo 2 al giorno)
+    const nm = x => eNorm(String(x).includes(",") ? String(x).split(",").reverse().join(" ") : x);
+    for (const c of pick) {
+      const fid = odds[c.id]?.fx?.[c.h + "|" + c.a]; if (!fid || !OP_KEY) continue;
+      await new Promise(r => setTimeout(r, 2500));
+      const j = await fetchJ(`https://api.oddspapi.io/v4/odds?fixtureId=${encodeURIComponent(fid)}&bookmakers=stake,20bet,tiptorro,cloudbet,tonybet&apiKey=${OP_KEY}`, 1);
+      const pr = [];
+      for (const v of Object.values(j?.bookmakerOdds || {})) for (const x of Object.values(v.markets?.["10733"]?.outcomes?.["10734"]?.players || {})) if (x.price > 1 && nm(x.playerName || x.name || "") === nm(c.player)) pr.push(x.price);
+      if (pr.length) { pr.sort((x, y) => x - y); c.odd = Math.round(pr[Math.floor(pr.length / 2)] * 100) / 100; c.oddSrc = "media altri bookmaker"; }
+    }
     mc.byDay[TODAY] = pick; changed.live = true;
     for (const d of Object.keys(mc.byDay)) if (d < addDays(TODAY, -7)) delete mc.byDay[d];
     log("marcatori:", pick.map(c => `${c.player} (${c.team}) ${c.n5}/${c.of}`).join(", ") || "nessuno");

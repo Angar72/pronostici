@@ -2499,7 +2499,7 @@ if (typeof module !== "undefined") module.exports = Model;
         <span style="min-width:0;font-weight:700">${esc(m.player)} <span class="note">(${TL(m.team)})</span></span><b style="white-space:nowrap">Segna sì${q}</b>
         <span style="grid-column:1/-1">${mk}</span>
         <span class="note" style="grid-column:1/-1">${TL(m.h)} – ${TL(m.a)} · ${esc(m.t || "")} · a segno in <b>${m.n5} delle ultime ${m.of}</b> partite (${m.g} gol) · ${esc(m.team)} vince al ${Math.round(m.pw * 100)}% secondo le quote</span></div>`; }).join("")}
-      <p class="note">Solo da seguire. Si aggiorna in diretta mentre si gioca. ${M.some(m => m.odd) ? "Quote Planetwin, voce Marcatori." : "Quota Planetwin non ancora disponibile: di solito tra 1,70 e 2,50 alla voce Marcatori."}</p></div>`;
+      <p class="note">Solo da seguire. Si aggiorna in diretta mentre si gioca. ${M.some(m => m.odd) ? "La quota è indicativa: Planetwin non la pubblica nel servizio delle quote, è la media dei bookmaker che la pubblicano. Su Planetwin la trovi alla voce Marcatori, di solito simile." : "Quota non disponibile: su Planetwin la trovi alla voce Marcatori, di solito tra 1,50 e 2,50."}</p></div>`;
   }
   // last minute: giocate suggerite durante le partite (le trova da sola il controllo ogni 15 minuti)
   function lmHit(k, h, a) {
