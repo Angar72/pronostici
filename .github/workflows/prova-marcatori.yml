@@ -11,20 +11,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: |
-          curl -s "https://api.oddspapi.io/v4/odds?fixtureId=${{ inputs.fixture }}&bookmakers=planetwin365.it&apiKey=${{ secrets.ODDSPAPI_KEY }}" -o /tmp/o.json
+          curl -s "https://api.oddspapi.io/v4/odds?fixtureId=${{ inputs.fixture }}&apiKey=${{ secrets.ODDSPAPI_KEY }}" -o /tmp/o.json
           python3 -c "
           import json;d=json.load(open('/tmp/o.json'))
-          bk=(d.get('bookmakerOdds') or {}).get('planetwin365.it') or {}
-          mk=bk.get('markets') or {}
-          out=['mercati: '+str(len(mk)), 'chiavi: '+','.join(sorted(mk.keys())[:80])]
-          for mid in ('10733','10734'):
-            m=mk.get(mid)
-            if m:
-              for oid,o in (m.get('outcomes') or {}).items():
-                pl=o.get('players') or {}
-                out.append(mid+'/'+oid+' giocatori '+str(len(pl))+' es: '+str(list(pl.items())[:3]))
-          if not mk: out.append(str(d)[:600])
-          open('tools/marcatori-prova.txt','w').write('\n'.join(out)+'\n')"
+          out=[]
+          for bk,v in (d.get('bookmakerOdds') or {}).items():
+            m=(v.get('markets') or {}).get('10733')
+            if not m: continue
+            o=(m.get('outcomes') or {}).get('10734') or {}
+            pl=o.get('players') or {}
+            out.append(bk+' giocatori '+str(len(pl))+' es: '+str([(k,x.get('price'),x.get('playerName') or x.get('name')) for k,x in list(pl.items())[:4]]))
+          out.insert(0,'bookmaker totali '+str(len(d.get('bookmakerOdds') or {}))+', con gol giocatore: '+str(len(out)))
+          open('tools/marcatori-prova.txt','w').write('\\n'.join(out)+'\\n')"
           git config user.name "pronostici-bot"; git config user.email "pronostici-bot@users.noreply.github.com"
           git add tools/marcatori-prova.txt; git commit -m "Prova quote marcatori" || exit 0
           for i in 1 2 3; do git pull --rebase -q && git push -q && break; sleep 5; done
