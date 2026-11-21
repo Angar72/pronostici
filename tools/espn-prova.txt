@@ -1,24 +1,39 @@
-4 partite
-2026-11-21T14:00Z | Como | Cagliari | post | ids {'home': '2572', 'away': '2925'}
-   det: Goal - Header sp=True og=False team=2572 ['Jacobo Ramón']
-   det: Goal - Header sp=True og=False team=2572 ['Lucas Da Cunha']
-2026-11-21T14:00Z | Lazio | Lecce | post | ids {'home': '112', 'away': '113'}
-   det: Goal - Header sp=True og=False team=112 ['Tijjani Noslin']
+5 partite
+2026-11-01T11:30Z | Como | Venezia | post | ids {'home': '2572', 'away': '17530'}
+   det: Yellow Card sp=False og=False team=17530 ['Simon Sohm']
+   det: Yellow Card sp=False og=False team=17530 ['Juan Jesus']
+   det: Penalty - Scored sp=True og=False team=2572 ['Lucas Da Cunha']
+   det: Yellow Card sp=False og=False team=2572 ['Kaiki']
+2026-11-01T14:00Z | Frosinone | Torino | post | ids {'home': '4057', 'away': '239'}
+   det: Yellow Card sp=False og=False team=239 ['Zakaria Aboukhlal']
+   det: Yellow Card sp=False og=False team=239 ['Gvidas Gineitis']
+   det: Goal sp=True og=False team=4057 ['Farès Ghedjemis']
+   det: Yellow Card sp=False og=False team=4057 ['Patrizio Masini']
+   det: Yellow Card sp=False og=False team=239 ['Saúl Coco']
+   det: Goal sp=True og=False team=4057 ['Giacomo Calo']
+2026-11-01T14:00Z | Lazio | Cagliari | post | ids {'home': '112', 'away': '2925'}
+   det: Goal sp=True og=False team=2925 ["M'Bala Nzola"]
+   det: Goal sp=True og=False team=112 ['Gustav Isaksen']
+   det: Yellow Card sp=False og=False team=2925 ['Jacopo Fazzini']
+   det: Yellow Card sp=False og=False team=2925 ['Juan Rodríguez']
+   det: Yellow Card sp=False og=False team=2925 ['Adam Obert']
+   det: Goal - Header sp=True og=False team=112 ['Andrea Pinamonti']
+   det: Yellow Card sp=False og=False team=112 ['Andrea Pinamonti']
+   det: Red Card sp=False og=False team=2925 ['Adam Obert']
+2026-11-01T17:00Z | Lecce | Genoa | post | ids {'home': '113', 'away': '3263'}
+   det: Goal sp=True og=False team=3263 ['Milutin Osmajic']
+   det: Goal sp=True og=False team=3263 ['Junior Messias']
+   det: Goal - Free-kick sp=True og=False team=113 ['Youssef Maleh']
+   det: Yellow Card sp=False og=False team=113 ['Mohamed Kaba']
+   det: Yellow Card sp=False og=False team=3263 ['Hamed Traoré']
    det: Yellow Card sp=False og=False team=113 ['Jamil Siebert']
-   det: Goal sp=True og=False team=112 ['Tijjani Noslin']
-   det: Yellow Card sp=False og=False team=113 ['Danilo Veiga']
-   det: Yellow Card sp=False og=False team=112 ['Luca Pellegrini']
-   det: Goal sp=True og=False team=112 ['Davide Frattesi']
-2026-11-21T17:00Z | Parma | AS Roma | post | ids {'home': '115', 'away': '104'}
-   det: Goal sp=True og=False team=104 ['Donyell Malen']
-   det: Yellow Card sp=False og=False team=115 ['Emanuele Valeri']
-   det: Goal sp=True og=False team=115 ['Nesta Elphege']
-   det: Goal sp=True og=False team=104 ['Donyell Malen']
-   det: Goal sp=True og=False team=104 ['Rodrigo Mora']
-   det: Goal sp=True og=False team=104 ['Donyell Malen']
-   det: Goal sp=True og=False team=104 ['Donyell Malen']
-2026-11-21T19:45Z | Napoli | Torino | post | ids {'home': '114', 'away': '239'}
-   det: Yellow Card sp=False og=False team=239 ['Pietro Comuzzo']
-   det: Yellow Card sp=False og=False team=114 ['Billy Gilmour']
-   det: Goal sp=True og=False team=114 ['Scott McTominay']
-   det: Yellow Card sp=False og=False team=114 ['Frank Anguissa']
+   det: Yellow Card sp=False og=False team=113 []
+2026-11-01T19:45Z | Juventus | Napoli | post | ids {'home': '111', 'away': '114'}
+   det: Yellow Card sp=False og=False team=111 ['Douglas Luiz']
+   det: Yellow Card sp=False og=False team=111 ['Jhon Lucumí']
+   det: Yellow Card sp=False og=False team=114 ['Luca Marianucci']
+   det: Goal sp=True og=False team=111 ['Kerim Alajbegovic']
+   det: Yellow Card sp=False og=False team=111 ['Kerim Alajbegovic']
+   det: Red Card sp=False og=False team=114 ['Luca Marianucci']
+   det: Goal sp=True og=False team=111 ['Jérémie Boga']
+   det: Yellow Card sp=False og=False team=114 ['Rafa Marín']
