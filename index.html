@@ -271,7 +271,7 @@ body[data-sec="lotto"] .ball{background:var(--chip);color:var(--ink)}
       <div style="display:grid;justify-items:end;gap:4px">
         <div class="stamp" id="stamp">In caricamento…</div>
         <a id="refresh" class="refresh" target="_blank" rel="noopener" href="https://angar72.github.io/pronostici/" style="text-decoration:none">Apri con risultati in diretta ↗</a>
-        <div class="stamp">Versione 21 nov · stelle</div>
+        <div class="stamp">Versione 21 nov · oro argento bronzo</div>
       </div>
     </div>
     <div class="seg" role="group" aria-label="Sezione">
@@ -1706,8 +1706,10 @@ if (typeof module !== "undefined") module.exports = Model;
       const pm = tk.every(r => r.s.mkt != null) ? tk.reduce((a, r) => a * r.s.mkt, 1) : null, anyEst = tk.some(r => r.s.est);
       const lost = tk.some(r => r.res && !hit(r.s.k, r.res)), allDone = tk.every(r => r.res);
       if (lost || allDone) { played++; if (!lost) { won++; net += stake * (q - 1); } else net -= stake; }
-      html += `<div class="ticket"${i !== (bestI < 0 ? 0 : bestI) ? ' style="border-color:var(--line)"' : ""}>
-        <div class="sub">${names[i]} · ${tk.length} partite${(() => { const sh = tickets.slice(0, i).map((o, j) => o.some(x => tk.some(y => keyOf(x) === keyOf(y))) ? j + 1 : 0).filter(Boolean); return sh.length ? ` · ha partite in comune con la schedina ${sh.join(" e ")}` : ""; })()}</div>
+      // oro, argento, bronzo per affidabilità (Toni, 21/11)
+      const medal = tickets.length > 1 ? ["#d4a62a", "#b9bec8", "#b87333"][Math.min(2, order.indexOf(i))] : null;
+      html += `<div class="ticket"${medal ? ` style="border:2px solid ${medal};background:color-mix(in srgb,${medal} 9%,transparent)"` : ""}>
+        <div class="sub"${medal ? ` style="color:${medal};font-weight:700"` : ""}>${names[i]} · ${tk.length} partite${(() => { const sh = tickets.slice(0, i).map((o, j) => o.some(x => tk.some(y => keyOf(x) === keyOf(y))) ? j + 1 : 0).filter(Boolean); return sh.length ? ` · ha partite in comune con la schedina ${sh.join(" e ")}` : ""; })()}</div>
         ${tk.map(r => `<div style="display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:baseline">
             <span style="min-width:0;font-weight:600">${TL(r.m.h)}${RCt(r.id, r.m.h, r.m.a, r.m.h)} – ${TL(r.m.a)}${RCt(r.id, r.m.h, r.m.a, r.m.a)}${r.res ? ` <span class="note">${r.res.hg}-${r.res.ag}</span>` : ""}</span>
             <b style="white-space:nowrap">${esc(r.s.k)} · ${fmtQ(r.s.odd)}${r.s.est ? "*" : ""}${r.s.odd0 != null && r.s.odd0 !== r.s.odd ? ` <span class="note" style="font-weight:400">(era ${fmtQ(r.s.odd0)})</span>` : ""}${r.res ? (hit(r.s.k, r.res) ? ' <span class="ok">✓</span>' : ' <span class="ko">✗</span>') : ""}</b>
@@ -2632,7 +2634,7 @@ if (typeof module !== "undefined") module.exports = Model;
   // aggiornamento della pagina: l'app sulla schermata Home tiene in memoria la versione vecchia.
   // Ogni volta che si riapre (e ogni 10 minuti) controllo se c'è una versione nuova e mi ricarico da solo.
   // numero di versione crescente (BUILD): mi ricarico solo se sul server ce n'è uno PIÙ ALTO, e al massimo una volta ogni 5 minuti
-  const BUILD = 2026112106;
+  const BUILD = 2026112107;
   async function checkNewVersion() {
     try {
       let last = 0; try { last = +sessionStorage.getItem("pr.reload") || 0; } catch (e) {}
