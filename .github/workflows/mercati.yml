@@ -13,14 +13,9 @@ jobs:
           python3 -c "
           import json
           d=json.load(open('/tmp/m.json'))
-          out=[]
-          for m in d:
-              n=str(m.get('marketName'))+' '+str(m.get('handicap',''))
-              if any(x in n.lower() for x in ('over','under','total')):
-                  outs=';'.join(f\"{o.get('outcomeId')}={o.get('outcomeName')}\" for o in m.get('outcomes',[]))
-                  out.append(f\"{m.get('marketId')}|{m.get('marketName')}|{m.get('handicap')}|{m.get('period')}|{outs}\")
-          open('tools/op-mercati.txt','w').write('\n'.join(out[:200])+'\n')
-          print(len(d),len(out))"
+          want=set('101,1010,1012,101394,101396,1014,10140,10143,101432,101436,101440,101444,101448,10146,101480,101484,101488,10149,101492,101532,101547,101551,101555,101559,1016,101605,101609,101613,101649,101681,101736,101744,101786,101790,101794,101798,1018,101902,101919,1020,10208,1022,10222,10256,10258,10260,10262,10336,104,106,10761,10764,10787,10799,108,10803,10807,10811,10815,10819,10823,10851,10855,10859,10863,10867'.split(','))
+          out=[f\"{m.get('marketId')}|{m.get('marketName')}|{m.get('handicap')}|{m.get('period')}\" for m in d if str(m.get('marketId')) in want]
+          open('tools/op-mercati-planetwin.txt','w').write('\\n'.join(out)+'\\n')"
           git config user.name "pronostici-bot"; git config user.email "pronostici-bot@users.noreply.github.com"
-          git add tools/op-mercati.txt; git commit -m "Mercati trovati" || exit 0
+          git add tools/op-mercati-planetwin.txt; git commit -m "Mercati trovati" || exit 0
           for i in 1 2 3; do git pull --rebase -q && git push -q && break; sleep 5; done
