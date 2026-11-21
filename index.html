@@ -271,7 +271,7 @@ body[data-sec="lotto"] .ball{background:var(--chip);color:var(--ink)}
       <div style="display:grid;justify-items:end;gap:4px">
         <div class="stamp" id="stamp">In caricamento…</div>
         <a id="refresh" class="refresh" target="_blank" rel="noopener" href="https://angar72.github.io/pronostici/" style="text-decoration:none">Apri con risultati in diretta ↗</a>
-        <div class="stamp">Versione 21 nov · schedine di domani</div>
+        <div class="stamp">Versione 21 nov · schedina consigliata</div>
       </div>
     </div>
     <div class="seg" role="group" aria-label="Sezione">
@@ -1685,7 +1685,9 @@ if (typeof module !== "undefined") module.exports = Model;
     }
     const lowDay = !!state.saved?.byDay?.[state.day]?.low;
     if (lowDay) html += `<p class="note callout">Oggi le partite sicure non bastano per arrivare a quota 2,80: c'è una sola schedina, con la vincita più alta possibile usando solo le giocate sicure.</p>`;
-    const names = tickets.map((tk, i) => lowDay ? "Schedina unica del giorno" : i === 0 ? "Schedina 1 · la più affidabile" : tk.every(r => /Over|Under|Goal/.test(r.s.k)) ? `Schedina ${i + 1} · gol` : `Schedina ${i + 1}`);
+    // la più affidabile: quella con la probabilità più alta che siano giuste tutte (prodotto degli indici), non per forza la prima
+    const prT = tickets.map(tk => tk.reduce((a, r) => a * (r.s.prob || 0), 1)), bestI = tickets.length > 1 ? prT.indexOf(Math.max(...prT)) : -1;
+    const names = tickets.map((tk, i) => lowDay ? "Schedina unica del giorno" : (i === bestI ? `⭐ Schedina ${i + 1} · la più affidabile (${Math.round(prT[i] * 100)}%)` : tk.every(r => /Over|Under|Goal/.test(r.s.k)) ? `Schedina ${i + 1} · gol` : `Schedina ${i + 1}`));
     html += `<div class="day">Le schedine ${dayTxt}</div>`;
     if (lowered) html += `<p class="note callout">Con le sole giocate sicure ${state.day === today() ? "oggi" : "in questo giorno"} non si arriva a ${euro(state.mtarget)}: le schedine puntano a quota ${fmtQ(built.need)}, cioè ${euro(stake)} che diventano circa ${euro(stake * built.need)} o poco più. Si vince meno, ma si perde molto meno spesso.</p>`;
     // niente schedina di recupero se le schedine di domani sono già pronte: confondeva (21/11)
@@ -1701,7 +1703,7 @@ if (typeof module !== "undefined") module.exports = Model;
       const pm = tk.every(r => r.s.mkt != null) ? tk.reduce((a, r) => a * r.s.mkt, 1) : null, anyEst = tk.some(r => r.s.est);
       const lost = tk.some(r => r.res && !hit(r.s.k, r.res)), allDone = tk.every(r => r.res);
       if (lost || allDone) { played++; if (!lost) { won++; net += stake * (q - 1); } else net -= stake; }
-      html += `<div class="ticket"${i ? ' style="border-color:var(--line)"' : ""}>
+      html += `<div class="ticket"${i !== (bestI < 0 ? 0 : bestI) ? ' style="border-color:var(--line)"' : ""}>
         <div class="sub">${names[i]} · ${tk.length} partite${(() => { const sh = tickets.slice(0, i).map((o, j) => o.some(x => tk.some(y => keyOf(x) === keyOf(y))) ? j + 1 : 0).filter(Boolean); return sh.length ? ` · ha partite in comune con la schedina ${sh.join(" e ")}` : ""; })()}</div>
         ${tk.map(r => `<div style="display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:baseline">
             <span style="min-width:0;font-weight:600">${TL(r.m.h)}${RCt(r.id, r.m.h, r.m.a, r.m.h)} – ${TL(r.m.a)}${RCt(r.id, r.m.h, r.m.a, r.m.a)}${r.res ? ` <span class="note">${r.res.hg}-${r.res.ag}</span>` : ""}</span>
@@ -2613,7 +2615,7 @@ if (typeof module !== "undefined") module.exports = Model;
   // aggiornamento della pagina: l'app sulla schermata Home tiene in memoria la versione vecchia.
   // Ogni volta che si riapre (e ogni 10 minuti) controllo se c'è una versione nuova e mi ricarico da solo.
   // numero di versione crescente (BUILD): mi ricarico solo se sul server ce n'è uno PIÙ ALTO, e al massimo una volta ogni 5 minuti
-  const BUILD = 2026112104;
+  const BUILD = 2026112105;
   async function checkNewVersion() {
     try {
       let last = 0; try { last = +sessionStorage.getItem("pr.reload") || 0; } catch (e) {}
