@@ -271,7 +271,7 @@ body[data-sec="lotto"] .ball{background:var(--chip);color:var(--ink)}
       <div style="display:grid;justify-items:end;gap:4px">
         <div class="stamp" id="stamp">In caricamento…</div>
         <a id="refresh" class="refresh" target="_blank" rel="noopener" href="https://angar72.github.io/pronostici/" style="text-decoration:none">Apri con risultati in diretta ↗</a>
-        <div class="stamp">Versione 21 nov · sistema extra</div>
+        <div class="stamp">Versione 21 nov · media punti</div>
       </div>
     </div>
     <div class="seg" role="group" aria-label="Sezione">
@@ -963,8 +963,8 @@ if (typeof module !== "undefined") module.exports = Model;
     const power = Object.fromEntries(L.teams.map(t => [t, (f.att[t] ?? 1) / (f.def[t] ?? 1)]));
     const maxP = Math.max(...Object.values(power));
     return `<div class="tbl-wrap"><table>
-      <thead><tr><th class="t" colspan="2">Squadra</th><th>Pt</th><th>G</th><th>V</th><th>N</th><th>P</th><th>Gol</th><th class="t">Forma</th><th class="t">Forza modello</th></tr></thead>
-      <tbody>${rows.map((r, i) => `<tr><td class="pos">${i + 1}</td><td class="t">${TL(r.n)}</td><td class="pt">${r.pt}</td><td>${r.g}</td><td>${r.v}</td><td>${r.x}</td><td>${r.p}</td><td>${r.gf}:${r.gs}</td>
+      <thead><tr><th class="t" colspan="2">Squadra</th><th>Pt</th><th title="punti a partita">Media</th><th>G</th><th>V</th><th>N</th><th>P</th><th>Gol</th><th class="t">Forma</th><th class="t">Forza modello</th></tr></thead>
+      <tbody>${rows.map((r, i) => `<tr><td class="pos">${i + 1}</td><td class="t">${TL(r.n)}</td><td class="pt">${r.pt}</td><td>${r.g ? (r.pt / r.g).toFixed(2).replace(".", ",") : "–"}</td><td>${r.g}</td><td>${r.v}</td><td>${r.x}</td><td>${r.p}</td><td>${r.gf}:${r.gs}</td>
         <td class="t"><span class="form">${r.form.map(x => `<i class="${x}" title="${x}"></i>`).join("")}</span></td>
         <td class="t"><div class="strength" title="${power[r.n].toFixed(2)}"><i style="width:${(power[r.n] / maxP * 100).toFixed(0)}%"></i></div></td></tr>`).join("")}</tbody>
     </table></div>
@@ -2606,7 +2606,7 @@ if (typeof module !== "undefined") module.exports = Model;
   // aggiornamento della pagina: l'app sulla schermata Home tiene in memoria la versione vecchia.
   // Ogni volta che si riapre (e ogni 10 minuti) controllo se c'è una versione nuova e mi ricarico da solo.
   // numero di versione crescente (BUILD): mi ricarico solo se sul server ce n'è uno PIÙ ALTO, e al massimo una volta ogni 5 minuti
-  const BUILD = 2026112101;
+  const BUILD = 2026112102;
   async function checkNewVersion() {
     try {
       let last = 0; try { last = +sessionStorage.getItem("pr.reload") || 0; } catch (e) {}

@@ -319,7 +319,10 @@ function candidates(relaxed = false) {
       if (favH && gap >= (CASA_FORTE ? Math.max(3, st.n / 8) : Math.max(3, st.n / 6)) && hppg >= 1.5 && appg <= 1.5) leg("1X", dc["1X"], p1 + pX, CASA_FORTE ? "doppia chance (grande in casa)" : "doppia chance");
       if (!favH && gap >= Math.max(4, st.n / 5) && fav.pos <= half && appg >= 1.6 && hppg <= 1.3) leg("X2", dc["X2"], p2 + pX, "doppia chance");
       // vittoria secca solo per favorita in alto, forte in casa/fuori, contro avversaria debole
-      if (favH && o1 <= 1.8 && H.pos <= half && hppg >= 2 && appg <= 1.3) leg("1", o1, p1, "secca casa");
+      // media punti (idea di Toni, 21/11). Storico 5 stagioni: chi fa almeno 2,3 punti a partita in casa contro chi ne fa
+      // al massimo 1,0 fuori vince il 77% delle volte (766 partite) e il "1" ha reso +4% a quota piena -> priorità
+      const mediaForte = favH && H.hn >= 3 && A.an >= 3 && hppg >= 2.3 && appg <= 1.0;
+      if (favH && o1 <= 1.8 && ((H.pos <= half && hppg >= 2 && appg <= 1.3) || mediaForte)) leg("1", o1, mediaForte ? Math.min(0.92, p1 * 1.04) : p1, mediaForte ? "media punti" : "secca casa");
       else if (relaxed && favH && p1 >= 0.5 && o1 <= 2.2 && H.pos < A.pos) leg("1", o1, p1, "secca casa");
       if (!favH && o2 <= 1.8 && A.pos <= half && appg >= 2 && hppg <= 1.3) leg("2", o2, p2, "secca fuori");
       else if (relaxed && !favH && p2 >= 0.5 && o2 <= 2.2 && A.pos < H.pos) leg("2", o2, p2, "secca fuori");
