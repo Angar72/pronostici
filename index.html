@@ -271,7 +271,7 @@ body[data-sec="lotto"] .ball{background:var(--chip);color:var(--ink)}
       <div style="display:grid;justify-items:end;gap:4px">
         <div class="stamp" id="stamp">In caricamento…</div>
         <a id="refresh" class="refresh" target="_blank" rel="noopener" href="https://angar72.github.io/pronostici/" style="text-decoration:none">Apri con risultati in diretta ↗</a>
-        <div class="stamp">Versione 18 nov · over 1,5</div>
+        <div class="stamp">Versione 21 nov · sistema extra</div>
       </div>
     </div>
     <div class="seg" role="group" aria-label="Sezione">
@@ -2415,9 +2415,13 @@ if (typeof module !== "undefined") module.exports = Model;
         <div class="res" style="display:grid;gap:8px">
           <div class="money-box ${E.state === "won" ? "win" : E.state === "lost" ? "lose" : ""}">
             <div><span>Giocata</span><b class="num">${euro(E.cost)}</b></div>
-            <div><span>Quota tutte giuste</span><b class="num">${q(E.legs.reduce((a, r) => a * r.s.odd, 1))}</b></div>
-            <div><span>Vincita tutte giuste</span><b class="num">${euro(E.max)}</b></div>
-            <div><span>Vincita con 1 errore</span><b class="num">${euro(Math.min(...E.combos))} – ${euro(Math.max(...E.combos))}</b></div>
+            ${E.wrong === 1 && E.state !== "lost" ? (() => { const wi = E.st.indexOf(-1), r = E.legs[wi];
+              return `<div><span>Errore già usato</span><b>${TL(r.m.h)} – ${TL(r.m.a)}</b></div>
+            <div><span>Quota delle altre ${E.n - 1}</span><b class="num">${q(E.legs.reduce((a, x, i) => i === wi ? a : a * x.s.odd, 1))}</b></div>
+            <div><span>${E.state === "won" ? "Vinto" : "Possibile vincita se le altre sono giuste"}</span><b class="num">${euro(E.combos[wi])}</b></div>`; })()
+            : `<div><span>Quota tutte giuste</span><b class="num">${q(E.legs.reduce((a, r) => a * r.s.odd, 1))}</b></div>
+            <div><span>Vincita se sono tutte giuste</span><b class="num">${euro(E.max)}</b></div>
+            <div><span>Vincita con 1 errore</span><b class="num">${euro(Math.min(...E.combos))} – ${euro(Math.max(...E.combos))}</b></div>`}
           </div>
           <div class="note">${E.n} combinazioni da ${E.n - 1} partite, ${euro(E.per)} ciascuna. Con 1 errore la vincita dipende da quale partita si sbaglia: più bassa la sua quota, più alta la vincita.</div></div></div>`;
     }).join("");
@@ -2602,7 +2606,7 @@ if (typeof module !== "undefined") module.exports = Model;
   // aggiornamento della pagina: l'app sulla schermata Home tiene in memoria la versione vecchia.
   // Ogni volta che si riapre (e ogni 10 minuti) controllo se c'è una versione nuova e mi ricarico da solo.
   // numero di versione crescente (BUILD): mi ricarico solo se sul server ce n'è uno PIÙ ALTO, e al massimo una volta ogni 5 minuti
-  const BUILD = 2026112001;
+  const BUILD = 2026112101;
   async function checkNewVersion() {
     try {
       let last = 0; try { last = +sessionStorage.getItem("pr.reload") || 0; } catch (e) {}
