@@ -103,6 +103,9 @@
   .sblocco.no{background:#fff3e0;color:#a85a00}
   .sblocco .cod{font-size:2.6rem;letter-spacing:.2em;margin:6px 0 0;color:var(--ink)}
   .sblocco .small{font-size:.85rem;font-weight:700;opacity:.85}
+  .m-p{background:#2fa36b}
+  .probl{display:block;font-size:1.15rem;line-height:1.5;text-align:left;font-weight:700;background:#f7f4fb;border-radius:14px;padding:12px 14px;margin-bottom:10px}
+  .rlab{font-size:1.2rem}
   .big{font-size:3.5rem;text-align:center;margin:6px 0}
   .score{font-size:1.5rem;text-align:center;font-weight:900}
   .msg{text-align:center;color:var(--muted);margin:8px 0 18px}
@@ -130,7 +133,7 @@
 <body>
 <div class="wrap">
   <h1>✏️ Allenamento di Alice</h1>
-  <div class="sub">Scegli la parola giusta per completare la frase</div>
+  <div class="sub">Allenati con le parole e con i numeri</div>
   <div class="card" id="app"></div>
 </div>
 
@@ -170,6 +173,8 @@ const GUIDE = {
       domande:['Ci vuole a oppure ha? Pensaci bene…','Prova il trucco di "aveva"!','Leggi la frase con calma.','Dai, questa la sai!'],
       ko_frasi:['Niente paura, si impara sbagliando!','Ci eri vicina, riprova alla prossima!','Ora te lo ricordi di sicuro.']}
 };
+GUIDE.pA = Object.assign({}, GUIDE.e, {domande:['Leggi bene: si aggiunge o si toglie?','Qui si mette insieme… che operazione è?','Fai il calcolo con calma!','Prova a contare sulle dita se serve 😉']});
+GUIDE.pG = Object.assign({}, GUIDE.a, {domande:['Attenta: qualcosa si toglie?','Si toglie o si aggiunge? Pensaci bene!','Fai la sottrazione con calma 🤔','Rileggi il problema, ce la fai!']});
 const BRAVO = ['Bravissima! 🎉','Esatto! 👏','Perfetto! 🌟','Giusto! 💪','Sei fortissima! ✨'];
 let suonoOn = (function(){try{return localStorage.getItem('suono')!=='off'}catch(e){return true}})();
 let actx = null, timer = null, countdown = null;
@@ -283,6 +288,7 @@ async function home(intro){
           <button class="mode m-e" onclick="inizia('e')">e oppure è ?<small>Congiunzione o verbo essere</small></button>
           <button class="mode m-a" onclick="inizia('a')">a oppure ha ?<small>Preposizione o verbo avere</small></button>
           <button class="mode m-mix" onclick="inizia('mix')">Tutto mescolato 🎲<small>Frasi di entrambi i tipi</small></button>
+          <button class="mode m-p" onclick="inizia('p')">Problemi ➕➖<small>Addizioni e sottrazioni</small></button>
         </div>
       </div>
       <div class="side right" id="sideG"><img id="imgG" src="${IMG.g1}" alt="Giulia" style="--gc:var(--a)"><span>Giulia</span></div>
@@ -329,8 +335,50 @@ async function home(intro){
   setTimeout(fine, 12000);
 }
 
+
+// ---------- PROBLEMI con addizioni e sottrazioni ----------
+function rnd(a,b){ return a+Math.floor(Math.random()*(b-a+1)); }
+const NOMI = ['Marco','Sara','Luca','Giulia','Alice','Paolo','Elena','Matteo','la nonna','lo zio Franco','la maestra','Sofia'];
+const MODELLI_ADD = [
+  (a,b,n)=>`${cap(n)} ha ${a} figurine. Ne riceve altre ${b} in regalo. Quante figurine ha adesso?`,
+  (a,b,n)=>`In un cesto ci sono ${a} mele. ${cap(n)} ne aggiunge ${b}. Quante mele ci sono ora nel cesto?`,
+  (a,b)=>`Sull'autobus ci sono ${a} persone. Alla fermata salgono altre ${b} persone. Quante persone ci sono ora sull'autobus?`,
+  (a,b,n)=>`${cap(n)} legge ${a} pagine lunedì e ${b} pagine martedì. Quante pagine ha letto in tutto?`,
+  (a,b)=>`Al corso di cucina si preparano ${a} biscotti al cioccolato e ${b} biscotti alla vaniglia. Quanti biscotti in tutto?`,
+  (a,b,n)=>`${cap(n)} ha ${a} euro nel salvadanaio. La nonna gliene regala ${b}. Quanti euro ha adesso?`,
+  (a,b)=>`In classe ci sono ${a} bambine e ${b} bambini. Quanti alunni ci sono in tutto?`,
+  (a,b)=>`Al musical vengono ${a} spettatori il sabato e ${b} la domenica. Quanti spettatori in tutto?`,
+];
+const MODELLI_SOT = [
+  (a,b,n)=>`${cap(n)} ha ${a} caramelle. Ne regala ${b} agli amici. Quante caramelle ha ancora?`,
+  (a,b)=>`In un albero ci sono ${a} uccellini. Ne volano via ${b}. Quanti uccellini restano sull'albero?`,
+  (a,b)=>`Sull'autobus ci sono ${a} persone. Alla fermata ne scendono ${b}. Quante persone restano sull'autobus?`,
+  (a,b,n)=>`${cap(n)} ha ${a} euro. Compra un libro che costa ${b} euro. Quanti euro ha ancora?`,
+  (a,b)=>`Un libro ha ${a} pagine. Alice ne ha già lette ${b}. Quante pagine le mancano per finirlo?`,
+  (a,b)=>`Per la torta servono ${a} grammi di zucchero. Nella ciotola ce ne sono già ${b}. Quanti grammi bisogna ancora aggiungere?`,
+  (a,b,n)=>`${cap(n)} aveva ${a} matite colorate. Ne ha perse ${b}. Quante matite colorate ha adesso?`,
+  (a,b)=>`Al cinema ci sono ${a} posti. ${b} posti sono già occupati. Quanti posti sono ancora liberi?`,
+];
+function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+function creaProblema(){
+  const somma = Math.random()<0.5;
+  let a,b,ris,testo;
+  const n = pick(NOMI);
+  if(somma){ a=rnd(5,60); b=rnd(3,40); ris=a+b; testo=pick(MODELLI_ADD)(a,b,n); }
+  else { a=rnd(15,99); b=rnd(3,a-4); ris=a-b; testo=pick(MODELLI_SOT)(a,b,n); }
+  const sbagliata = somma ? Math.abs(a-b) : a+b;   // risultato con l'operazione sbagliata
+  const set = new Set([ris, sbagliata]);
+  while(set.size<3){ const d = ris + pick([-10,-2,-1,1,2,10]); if(d>0) set.add(d); }
+  const scelte = mescola([...set]).map(String);
+  const spieg = somma
+    ? `Qualcosa si <b>aggiunge</b> o si mette <b>insieme</b>, quindi è un'<b>addizione</b>: ${a} + ${b} = <b>${ris}</b>.`
+    : `Qualcosa si <b>toglie</b> (o si cerca quanto <b>manca</b>), quindi è una <b>sottrazione</b>: ${a} − ${b} = <b>${ris}</b>.`;
+  return [testo, String(ris), 'p', scelte, spieg, somma?'pA':'pG'];
+}
+
 function inizia(m){
   modo = m;
+  if(m==='p'){ giro=[]; for(let i=0;i<PER_GIRO;i++) giro.push(creaProblema()); idx=0; punti=0; errori=[]; domanda(); return; }
   let pool = m==='e' ? DATI.e.map(x=>[...x,'e']) : m==='a' ? DATI.a.map(x=>[...x,'a']) : [...DATI.e.map(x=>[...x,'e']),...DATI.a.map(x=>[...x,'a'])];
   giro = mescola(pool).slice(0,PER_GIRO); idx=0; punti=0; errori=[];
   domanda();
@@ -338,16 +386,17 @@ function inizia(m){
 
 function domanda(){
   const [frase, giusta, tipo] = giro[idx];
-  const scelte = tipo==='e' ? ['e','è'] : ['a','ha'];
-  const parti = frase.split('___');
+  const gk = tipo==='p' ? giro[idx][5] : tipo;
+  const scelte = tipo==='e' ? ['e','è'] : tipo==='a' ? ['a','ha'] : giro[idx][3];
+  const parti = tipo==='p' ? [`<span class="probl">${frase}</span><br><span class="rlab">Risposta: </span>`, ''] : frase.split('___');
   app.innerHTML = `
     <div class="top"><span>Domanda ${idx+1} di ${giro.length}</span><span>📚 <span id="totq">${num('tot_esercizi')}</span> &nbsp;⭐ ${punti} <button class="sbtn" onclick="toggleSuono()">${suonoOn?'🔊':'🔇'}</button></span></div>
     <div class="bar"><i style="width:${idx/giro.length*100}%"></i></div>
-    <div id="guida">${guida(tipo, GUIDE[tipo].pensa, pick(GUIDE[tipo].domande))}</div>
+    <div id="guida">${guida(gk, GUIDE[gk].pensa, pick(GUIDE[gk].domande))}</div>
     <div class="sentence">${parti[0]}<span class="blank" id="blank">?</span>${parti[1]}</div>
     <div class="choices">${scelte.map(s=>`<button class="ch" onclick="rispondi(this,'${s}')">${s}</button>`).join('')}</div>
     <button class="hintbtn" id="hb" onclick="document.getElementById('hint').style.display='block';this.style.display='none'">💡 Aiutino</button>
-    <div class="hint" id="hint">${tipo==='e' ? 'Prova a mettere <b>"era"</b> al posto dello spazio: ha senso?' : 'Prova a mettere <b>"aveva"</b> al posto dello spazio: ha senso?'}</div>
+    <div class="hint" id="hint">${tipo==='e' ? 'Prova a mettere <b>"era"</b> al posto dello spazio: ha senso?' : tipo==='a' ? 'Prova a mettere <b>"aveva"</b> al posto dello spazio: ha senso?' : 'Se qualcosa si <b>aggiunge</b> o si mette insieme → <b>+</b>. Se qualcosa si <b>toglie</b> o si cerca quanto <b>manca</b> → <b>−</b>.'}</div>
     <div class="fb" id="fb"></div>
     <div class="auto" id="auto"><i id="autobar"></i></div>`;
   avviaTempo();
@@ -366,20 +415,21 @@ function rispondi(btn, scelta){
   bl.textContent = giusta; bl.classList.add(ok?'ok':'ko');
   document.getElementById('hb').style.display='none';
   document.getElementById('hint').style.display='none';
+  const gk = tipo==='p' ? giro[idx][5] : tipo;
   const prova = tipo==='e' ? 'era' : 'aveva';
   const fraseProva = frase.replace('___', `<u>${prova}</u>`);
   const haSenso = (giusta==='è'||giusta==='ha');
-  const spieg = tipo==='e'
+  const spieg = tipo==='p' ? giro[idx][4] : tipo==='e'
     ? (haSenso ? `Qui c'è il verbo <b>essere</b>, quindi ci vuole <b>è</b> con l'accento.` : `Qui <b>e</b> serve a unire due cose, come "e anche". Niente accento!`)
     : (haSenso ? `Qui c'è il verbo <b>avere</b>, quindi ci vuole <b>ha</b> con l'acca.` : `Qui <b>a</b> è una preposizione (dove? a chi? quando?). Niente acca!`);
   const fb = document.getElementById('fb');
   fb.className = 'fb ' + (ok?'ok':'ko');
-  const G = GUIDE[tipo];
+  const G = GUIDE[gk];
   document.getElementById('guida').innerHTML = ok
-    ? guida(tipo, pick(G.ok), pick(BRAVO), 'pop')
-    : guida(tipo, G.ko, scaduto ? 'Tempo scaduto! ⏰ La prossima volta sii più veloce!' : pick(G.ko_frasi), 'shake');
+    ? guida(gk, pick(G.ok), pick(BRAVO), 'pop')
+    : guida(gk, G.ko, scaduto ? 'Tempo scaduto! ⏰ La prossima volta sii più veloce!' : pick(G.ko_frasi), 'shake');
   fb.innerHTML = `<b>${ok ? 'Risposta giusta: "'+giusta+'"' : (scaduto?'⏰ Tempo scaduto! ':'')+'Ci voleva "'+giusta+'" 🙂'}</b><br>${spieg}
-    <div class="trick">Prova con "${prova}": «${fraseProva}» → ${haSenso?'ha senso ✅':'non ha senso ❌'}</div>`;
+    ${tipo==='p' ? '' : `<div class="trick">Prova con "${prova}": «${fraseProva}» → ${haSenso?'ha senso ✅':'non ha senso ❌'}</div>`}`;
   if(ok) punti++; else errori.push([frase,giusta,scaduto?'tempo scaduto':scelta]);
   salva('tot_esercizi', num('tot_esercizi')+1); if(ok) salva('tot_giuste', num('tot_giuste')+1);
   const tt=document.getElementById('totq'); if(tt) tt.textContent=num('tot_esercizi');
@@ -409,7 +459,7 @@ function fine(){
     <div class="msg">${msg}${nuovo&&rec>0?'<br>🎊 Nuovo record!':''}</div>
     ${superato ? `<div class="sblocco"><div>🔓 Ce l'hai fatta! Ecco il codice di oggi</div><div class="cod">${codiceDel(oggiStr())}</div><div class="small">Mandalo a papà per sbloccare il telefono</div><a class="wa wabig" href="${linkPapa(punti)}" target="_blank" rel="noopener">📲 Manda il codice a papà</a></div>`
                : `<div class="sblocco no"><div>🔒 Servono almeno ${SOGLIA} risposte giuste su 10 per il codice di sblocco.</div><div class="small">Ne hai fatte ${punti}: riprova, ce la puoi fare! 💪</div></div>`}
-    ${errori.length?`<b>Da ripassare:</b><div class="rev">${errori.map(([f,g,s])=>`<div>${f.replace('___',`<span class="c">${g}</span>`)} <span style="color:var(--muted)">(avevi messo "${s}")</span></div>`).join('')}</div>`:''}
+    ${errori.length?`<b>Da ripassare:</b><div class="rev">${errori.map(([f,g,s])=>`<div>${f.includes('___') ? f.replace('___',`<span class="c">${g}</span>`) : f+' → <span class="c">'+g+'</span>'} <span style="color:var(--muted)">(avevi messo "${s}")</span></div>`).join('')}</div>`:''}
     <div class="btns">
       <button class="btn" onclick="inizia(modo)">Gioca ancora</button>
       <button class="btn sec" onclick="home()">Cambia esercizio</button>
