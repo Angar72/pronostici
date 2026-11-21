@@ -33,6 +33,9 @@ jobs:
             git fetch -q origin main && git reset -q --hard origin/main
             ONLY_IF_MISSING=true timeout 300 node tools/auto.mjs || true
             timeout 240 node tools/avvisi.mjs || true
+            # quote aggiornate prima del calcio d'inizio; a partite finite, le schedine del giorno dopo
+            p=$(timeout 120 node tools/quote.mjs | tee /dev/stderr | sed -n 's/^PROSSIMA=//p') || true
+            if [ -n "$p" ]; then NOW="${p}T07:00:00Z" ONLY_IF_MISSING=true timeout 300 node tools/auto.mjs || true; fi
             d=$(TZ=Europe/Rome date +%u); hm=$(TZ=Europe/Rome date +%H%M)
             if [[ "$d" =~ ^(2|4|5|6)$ ]] && [ "$hm" -ge 2005 ] && [ "$hm" -le 2330 ] && [ $SECONDS -ge $lotto ]; then
               LOTTO_ONLY=true timeout 120 node tools/auto.mjs || true; lotto=$((SECONDS + 10*60))

@@ -271,7 +271,7 @@ body[data-sec="lotto"] .ball{background:var(--chip);color:var(--ink)}
       <div style="display:grid;justify-items:end;gap:4px">
         <div class="stamp" id="stamp">In caricamento…</div>
         <a id="refresh" class="refresh" target="_blank" rel="noopener" href="https://angar72.github.io/pronostici/" style="text-decoration:none">Apri con risultati in diretta ↗</a>
-        <div class="stamp">Versione 21 nov · media punti</div>
+        <div class="stamp">Versione 21 nov · quote aggiornate</div>
       </div>
     </div>
     <div class="seg" role="group" aria-label="Sezione">
@@ -1698,11 +1698,11 @@ if (typeof module !== "undefined") module.exports = Model;
         <div class="sub">${names[i]} · ${tk.length} partite${(() => { const sh = tickets.slice(0, i).map((o, j) => o.some(x => tk.some(y => keyOf(x) === keyOf(y))) ? j + 1 : 0).filter(Boolean); return sh.length ? ` · ha partite in comune con la schedina ${sh.join(" e ")}` : ""; })()}</div>
         ${tk.map(r => `<div style="display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:baseline">
             <span style="min-width:0;font-weight:600">${TL(r.m.h)}${RCt(r.id, r.m.h, r.m.a, r.m.h)} – ${TL(r.m.a)}${RCt(r.id, r.m.h, r.m.a, r.m.a)}${r.res ? ` <span class="note">${r.res.hg}-${r.res.ag}</span>` : ""}</span>
-            <b style="white-space:nowrap">${esc(r.s.k)} · ${fmtQ(r.s.odd)}${r.s.est ? "*" : ""}${r.res ? (hit(r.s.k, r.res) ? ' <span class="ok">✓</span>' : ' <span class="ko">✗</span>') : ""}</b>
+            <b style="white-space:nowrap">${esc(r.s.k)} · ${fmtQ(r.s.odd)}${r.s.est ? "*" : ""}${r.s.odd0 != null && r.s.odd0 !== r.s.odd ? ` <span class="note" style="font-weight:400">(era ${fmtQ(r.s.odd0)})</span>` : ""}${r.res ? (hit(r.s.k, r.res) ? ' <span class="ok">✓</span>' : ' <span class="ko">✗</span>') : ""}</b>
             <span class="note">${r.m.d !== state.day ? esc(dayLabel(r.m.d)) + " " : ""}${r.m.t ? esc(r.m.t) + " · " : ""}${esc(r.L.d.name)} · indice di favore <b>${pct(r.s.prob)}</b> (${r.s.mkt == null ? `solo modello ${pct(r.s.model)}%, prudenzialmente ${pct(r.s.prob)}, quota stimata` : `modello ${pct(r.s.model)}%, bookmaker ${pct(r.s.mkt)}%${r.s.edge ? ", con valore" : ""}`})${(() => { if (r.res) return ""; const lv = liveFor(r.id, r.m.h, r.m.a); return lv ? ` · <span class="live-inline"><span class="dot"></span>in corso ${lv.hg}-${lv.ag} ${liveWhen(lv)}</span> per ora ${hit(r.s.k, lv) ? '<span class="ok">✓</span>' : '<span class="ko">✗</span>'}${eventsHtml(lv)}` : ""; })()}</span><span></span>
             ${(() => { const g = SCORERS[r.id + "|" + r.m.h + "|" + r.m.a]; return g && g.length ? `<span style="grid-column:1/-1">${eventsHtml({ goals: g, reds: [] })}</span>` : ""; })()}
           </div>`).join("")}
-        <div class="note">Quota: ${tk.map(r => fmtQ(r.s.odd) + (r.s.est ? "*" : "")).join(" × ")} = <b>${fmtQ(q)}</b>${anyEst ? `<br>* quota stimata dal modello: il bookmaker non l'ha ancora pubblicata, controlla la quota reale prima di giocare.` : ""}</div>
+        <div class="note">Quota: ${tk.map(r => fmtQ(r.s.odd) + (r.s.est ? "*" : "")).join(" × ")} = <b>${fmtQ(q)}</b>${frozen?.qAt ? ` · quote Planetwin aggiornate alle ${esc(frozen.qAt)}` : ""}${anyEst ? `<br>* quota stimata dal modello: il bookmaker non l'ha ancora pubblicata, controlla la quota reale prima di giocare.` : ""}</div>
         ${(() => {
           const wonT = tk.every(r => r.res && hit(r.s.k, r.res));
           const liveBad = !lost && tk.some(r => !r.res && (() => { const lv = liveFor(r.id, r.m.h, r.m.a); return lv && !hit(r.s.k, lv); })());
@@ -2022,7 +2022,7 @@ if (typeof module !== "undefined") module.exports = Model;
   }
   // ---- schedine "giocate": fissate il giorno stesso (non cambiano più se cambiano le quote) e schedina di recupero ----
   // salvate nel documento live/schedine: { byDay: { "AAAA-MM-GG": { stake, tickets: [[giocata]], recovery: { lost, stake, need, legs: [giocata] } } } }
-  const dehyd = r => ({ id: r.id, d: r.m.d, t: r.m.t || "", h: r.m.h, a: r.m.a, k: r.s.k, odd: r.s.odd, prob: r.s.prob, model: r.s.model, mkt: r.s.mkt, est: !!r.s.est });
+  const dehyd = r => ({ id: r.id, d: r.m.d, t: r.m.t || "", h: r.m.h, a: r.m.a, k: r.s.k, odd: r.s.odd, ...(r.s.odd0 != null ? { odd0: r.s.odd0 } : {}), prob: r.s.prob, model: r.s.model, mkt: r.s.mkt, est: !!r.s.est });
   const playedCache = {};
   function playedOf(id) {
     const lg = state.leagues[id]; if (!lg) return [];
@@ -2036,13 +2036,13 @@ if (typeof module !== "undefined") module.exports = Model;
     let t = x.t;
     if (!t && lg) { const f = (lg.fixtures || []).find(r => { const q = r.split("|"); return q[2] === x.h && q[3] === x.a; }); if (f) t = f.split("|")[1]; }
     return { id: x.id, L: { d: lg || { name: x.id } }, m: { d: x.d, t: t || "", h: x.h, a: x.a },
-      s: { k: x.k, odd: x.odd, prob: x.prob, model: x.model, mkt: x.mkt, est: !!x.est, edge: 0, score: x.prob }, res };
+      s: { k: x.k, odd: x.odd, odd0: x.odd0, prob: x.prob, model: x.model, mkt: x.mkt, est: !!x.est, edge: 0, score: x.prob }, res };
   }
   function frozenFor(day) {
     const D = state.saved?.byDay?.[day];
     if (!D || !D.tickets) return null;
     const R = D.recovery;
-    return { tickets: D.tickets.map(tk => tk.map(hydrate)), stake: D.stake,
+    return { tickets: D.tickets.map(tk => tk.map(hydrate)), stake: D.stake, qAt: D.qAt,
       recovery: R ? { lost: R.lost, stake: R.stake, need: R.need, legs: R.legs.map(hydrate) } : null };
   }
   let savingSched = false, schedFailed = false;
@@ -2606,7 +2606,7 @@ if (typeof module !== "undefined") module.exports = Model;
   // aggiornamento della pagina: l'app sulla schermata Home tiene in memoria la versione vecchia.
   // Ogni volta che si riapre (e ogni 10 minuti) controllo se c'è una versione nuova e mi ricarico da solo.
   // numero di versione crescente (BUILD): mi ricarico solo se sul server ce n'è uno PIÙ ALTO, e al massimo una volta ogni 5 minuti
-  const BUILD = 2026112102;
+  const BUILD = 2026112103;
   async function checkNewVersion() {
     try {
       let last = 0; try { last = +sessionStorage.getItem("pr.reload") || 0; } catch (e) {}
