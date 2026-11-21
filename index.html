@@ -299,7 +299,7 @@ body[data-sec="lotto"] .ball{background:var(--chip);color:var(--ink)}
       <div style="display:grid;justify-items:end;gap:4px">
         <div class="stamp" id="stamp">In caricamento…</div>
         <a id="refresh" class="refresh" target="_blank" rel="noopener" href="https://angar72.github.io/pronostici/" style="text-decoration:none">Apri con risultati in diretta ↗</a>
-        <div class="stamp">Versione 22 nov · schedine retrò</div>
+        <div class="stamp">Versione 22 nov · marcatori in diretta</div>
       </div>
     </div>
     <div class="seg" role="group" aria-label="Sezione">
@@ -662,7 +662,7 @@ if (typeof module !== "undefined") module.exports = Model;
   const pct = v => Math.round(v * 100);
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   // stemmi delle squadre (solo sul sito: arrivano da ESPN) ed espulsioni lette dai risultati in diretta
-  const LOGOS = {}, REDS = {}, EXTRA_EV = {}, SCORERS = {};
+  const LOGOS = {}, REDS = {}, EXTRA_EV = {}, SCORERS = {}, SCORERN = {};
   // nazionali (Nations League): bandiera e nome in italiano
   const NAT = {"Albania": ["🇦🇱", "Albania"], "Andorra": ["🇦🇩", "Andorra"], "Armenia": ["🇦🇲", "Armenia"], "Austria": ["🇦🇹", "Austria"], "Azerbaijan": ["🇦🇿", "Azerbaigian"], "Belarus": ["🇧🇾", "Bielorussia"], "Belgium": ["🇧🇪", "Belgio"], "Bosnia-Herzegovina": ["🇧🇦", "Bosnia ed Erzegovina"], "Bosnia and Herzegovina": ["🇧🇦", "Bosnia ed Erzegovina"], "Bulgaria": ["🇧🇬", "Bulgaria"], "Croatia": ["🇭🇷", "Croazia"], "Cyprus": ["🇨🇾", "Cipro"], "Czechia": ["🇨🇿", "Rep. Ceca"], "Czech Republic": ["🇨🇿", "Rep. Ceca"], "Denmark": ["🇩🇰", "Danimarca"], "England": ["🏴󠁧󠁢󠁥󠁮󠁧󠁿", "Inghilterra"], "Estonia": ["🇪🇪", "Estonia"], "Faroe Islands": ["🇫🇴", "Isole Far Oer"], "Finland": ["🇫🇮", "Finlandia"], "France": ["🇫🇷", "Francia"], "Georgia": ["🇬🇪", "Georgia"], "Germany": ["🇩🇪", "Germania"], "Gibraltar": ["🇬🇮", "Gibilterra"], "Greece": ["🇬🇷", "Grecia"], "Hungary": ["🇭🇺", "Ungheria"], "Iceland": ["🇮🇸", "Islanda"], "Israel": ["🇮🇱", "Israele"], "Italy": ["🇮🇹", "Italia"], "Kazakhstan": ["🇰🇿", "Kazakistan"], "Kosovo": ["🇽🇰", "Kosovo"], "Latvia": ["🇱🇻", "Lettonia"], "Liechtenstein": ["🇱🇮", "Liechtenstein"], "Lithuania": ["🇱🇹", "Lituania"], "Luxembourg": ["🇱🇺", "Lussemburgo"], "Malta": ["🇲🇹", "Malta"], "Moldova": ["🇲🇩", "Moldavia"], "Montenegro": ["🇲🇪", "Montenegro"], "Netherlands": ["🇳🇱", "Paesi Bassi"], "North Macedonia": ["🇲🇰", "Macedonia del Nord"], "Northern Ireland": ["🇬🇧", "Irlanda del Nord"], "Norway": ["🇳🇴", "Norvegia"], "Poland": ["🇵🇱", "Polonia"], "Portugal": ["🇵🇹", "Portogallo"], "Republic of Ireland": ["🇮🇪", "Irlanda"], "Ireland": ["🇮🇪", "Irlanda"], "Romania": ["🇷🇴", "Romania"], "Russia": ["🇷🇺", "Russia"], "San Marino": ["🇸🇲", "San Marino"], "Scotland": ["🏴󠁧󠁢󠁳󠁣󠁴󠁿", "Scozia"], "Serbia": ["🇷🇸", "Serbia"], "Slovakia": ["🇸🇰", "Slovacchia"], "Slovenia": ["🇸🇮", "Slovenia"], "Spain": ["🇪🇸", "Spagna"], "Sweden": ["🇸🇪", "Svezia"], "Switzerland": ["🇨🇭", "Svizzera"], "Turkey": ["🇹🇷", "Turchia"], "Türkiye": ["🇹🇷", "Turchia"], "Ukraine": ["🇺🇦", "Ucraina"], "Wales": ["🏴󠁧󠁢󠁷󠁬󠁳󠁿", "Galles"]};
   const TL = n => NAT[n] ? `<span class="tlogo" aria-hidden="true" style="width:auto;height:auto;font-size:1.05em">${NAT[n][0]}</span>${esc(NAT[n][1])}` : (LOGOS[n] ? `<img class="tlogo" src="${esc(LOGOS[n])}" alt="" loading="lazy" decoding="async">` : "") + esc(n);
@@ -2488,12 +2488,18 @@ if (typeof module !== "undefined") module.exports = Model;
   function marcatoriHtml(day) {
     const M = state.marcatori?.byDay?.[day]; if (!M || !M.length) return "";
     return `<div class="day" style="margin-top:18px">Marcatori del giorno ⚽</div><div class="card slip gold"><div class="slip-head">Marcatore · segna sì</div>${M.map(m => {
-      const g = state.raw?.[m.id]?.sc?.[m.d + "|" + m.h + "|" + m.a], ok = g ? g.some(([sd, n]) => sd === m.side && n === m.player) : null;
-      const mk = ok === true ? '<span class="ok">✓ ha segnato</span>' : ok === false ? '<span class="ko">✗ non ha segnato</span>' : "·";
+      // in diretta: marcatori letti da ESPN mentre si gioca; a fine partita anche dai dati salvati
+      const key = m.id + "|" + m.h + "|" + m.a, lv = liveFor(m.id, m.h, m.a, m.t), saved = state.raw?.[m.id]?.sc?.[m.d + "|" + m.h + "|" + m.a];
+      const liveG = (SCORERN[key] || []).filter(([sd, n]) => sd === m.side && n === m.player);
+      const done = !!saved || (state.raw?.[m.id]?.played || []).some(x => x.startsWith(m.d + "|" + m.h + "|" + m.a + "|"));
+      const scored = liveG.length || (saved || []).some(([sd, n]) => sd === m.side && n === m.player);
+      const mk = scored ? `<span class="ok">✓ ha segnato${liveG.length ? " " + liveG.map(x => x[2]).filter(Boolean).join(", ") : ""}</span>` : done ? '<span class="ko">✗ non ha segnato</span>' : lv ? `<span class="note">in corso ${lv.hg}-${lv.ag} ${liveWhen(lv)}</span>` : "·";
+      const q = m.odd ? ` · ${m.odd.toFixed(2).replace(".", ",")}` : "";
       return `<div class="res" style="display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:baseline">
-        <span style="min-width:0;font-weight:700">${esc(m.player)} <span class="note">(${TL(m.team)})</span></span><b style="white-space:nowrap">Segna sì ${mk}</b>
+        <span style="min-width:0;font-weight:700">${esc(m.player)} <span class="note">(${TL(m.team)})</span></span><b style="white-space:nowrap">Segna sì${q}</b>
+        <span style="grid-column:1/-1">${mk}</span>
         <span class="note" style="grid-column:1/-1">${TL(m.h)} – ${TL(m.a)} · ${esc(m.t || "")} · a segno in <b>${m.n5} delle ultime ${m.of}</b> partite (${m.g} gol) · ${esc(m.team)} vince al ${Math.round(m.pw * 100)}% secondo le quote</span></div>`; }).join("")}
-      <p class="note">Solo da seguire. La quota "marcatore" la trovi su Planetwin alla voce Marcatori: di solito tra 1,70 e 2,50.</p></div>`;
+      <p class="note">Solo da seguire. Si aggiorna in diretta mentre si gioca. ${M.some(m => m.odd) ? "Quote Planetwin, voce Marcatori." : "Quota Planetwin non ancora disponibile: di solito tra 1,70 e 2,50 alla voce Marcatori."}</p></div>`;
   }
   // last minute: giocate suggerite durante le partite (le trova da sola il controllo ogni 15 minuti)
   function lmHit(k, h, a) {
@@ -2676,7 +2682,7 @@ if (typeof module !== "undefined") module.exports = Model;
   // aggiornamento della pagina: l'app sulla schermata Home tiene in memoria la versione vecchia.
   // Ogni volta che si riapre (e ogni 10 minuti) controllo se c'è una versione nuova e mi ricarico da solo.
   // numero di versione crescente (BUILD): mi ricarico solo se sul server ce n'è uno PIÙ ALTO, e al massimo una volta ogni 5 minuti
-  const BUILD = 2026112201;
+  const BUILD = 2026112202;
   async function checkNewVersion() {
     try {
       let last = 0; try { last = +sessionStorage.getItem("pr.reload") || 0; } catch (e) {}
@@ -2946,6 +2952,8 @@ if (typeof module !== "undefined") module.exports = Model;
           REDS[m.id + "|" + m.h + "|" + m.a] = det.filter(x => x.redCard).map(lab);
           m.goals = det.filter(x => x.scoringPlay).map(lab).join(";");
           SCORERS[m.id + "|" + m.h + "|" + m.a] = det.filter(x => x.scoringPlay).map(lab);
+          // per i marcatori del giorno: lato, nome completo e minuto (senza autogol)
+          SCORERN[m.id + "|" + m.h + "|" + m.a] = det.filter(x => x.scoringPlay && !x.ownGoal).map(x => [who(x) === m.h ? "h" : "a", x.athletesInvolved?.[0]?.displayName || "", x.clock?.displayValue || ""]);
         }
         if (m.evOnly) return;
         if (/suspend|abandon|delay/i.test(s.name || "") && (s.state === "in" || hg + ag > 0)) {
