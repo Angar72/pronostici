@@ -351,7 +351,10 @@ function addMin(t, m) { const [h, mm] = t.split(":").map(Number); const x = h * 
 const FAM = [["Goal", "Over 2,5", "Over 1,5"], ["1", "1X"], ["2", "X2"]];
 const compat = (k, ks) => [...ks].every(x => x !== k && FAM.some(f => f.includes(x) && f.includes(k)));
 function best(cands, { avoid = new Set(), differ = [], usedSecca = new Set(), minQ = MINQ, maxLegs = 7, prev = {} }) {
-  const pool = cands.filter(c => !avoid.has(c.key) && !(c.secca && c.odd > 1.3 && usedSecca.has(c.key)) && (!prev[c.key] || compat(c.k, prev[c.key]))).slice(0, 22);
+  // l'Over 1,5 (quota bassa) entra solo come versione "coerente" di una partita già giocata in un'altra schedina:
+  // da solo riempiva la schedina di quote 1,1-1,2 e non si arrivava più a 2,80 (21/11)
+  const pool = cands.filter(c => !avoid.has(c.key) && !(c.secca && c.odd > 1.3 && usedSecca.has(c.key)) && (!prev[c.key] || compat(c.k, prev[c.key]))
+    && (c.k !== "Over 1,5" || prev[c.key]) && c.odd >= 1.08).slice(0, 24);
   const need = Math.log(minQ); let bestSet = null, bestP = -Infinity;
   const lo = pool.map(c => Math.log(c.odd)), lp = pool.map(c => Math.log(c.prob));
   const pick = [], keys = new Set();
