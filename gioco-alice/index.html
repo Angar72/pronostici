@@ -287,7 +287,7 @@ async function home(intro){
         <div class="modes" id="modes">
           <button class="mode m-e" onclick="inizia('e')">e oppure è ?<small>Congiunzione o verbo essere</small></button>
           <button class="mode m-a" onclick="inizia('a')">a oppure ha ?<small>Preposizione o verbo avere</small></button>
-          <button class="mode m-mix" onclick="inizia('mix')">Tutto mescolato 🎲<small>Frasi di entrambi i tipi</small></button>
+          <button class="mode m-mix" onclick="inizia('mix')">Tutto mescolato 🎲<small>Frasi e problemi insieme</small></button>
           <button class="mode m-p" onclick="inizia('p')">Problemi ➕➖<small>Addizioni e sottrazioni</small></button>
         </div>
       </div>
@@ -379,6 +379,12 @@ function creaProblema(){
 function inizia(m){
   modo = m;
   if(m==='p'){ giro=[]; for(let i=0;i<PER_GIRO;i++) giro.push(creaProblema()); idx=0; punti=0; errori=[]; domanda(); return; }
+  if(m==='mix'){
+    const e3 = mescola(DATI.e).slice(0,3).map(x=>[...x,'e']);
+    const a3 = mescola(DATI.a).slice(0,3).map(x=>[...x,'a']);
+    const p4 = [creaProblema(),creaProblema(),creaProblema(),creaProblema()];
+    giro = mescola([...e3,...a3,...p4]); idx=0; punti=0; errori=[]; domanda(); return;
+  }
   let pool = m==='e' ? DATI.e.map(x=>[...x,'e']) : m==='a' ? DATI.a.map(x=>[...x,'a']) : [...DATI.e.map(x=>[...x,'e']),...DATI.a.map(x=>[...x,'a'])];
   giro = mescola(pool).slice(0,PER_GIRO); idx=0; punti=0; errori=[];
   domanda();
