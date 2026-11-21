@@ -204,6 +204,9 @@ if (OP_KEY && !ready) {
 }
 const T2ID = Object.fromEntries(Object.entries(OP_T).map(([k, v]) => [v, k]));
 let nOdds = 0;
+// marcatori (21/11): Planetwin pubblica il mercato "gol del giocatore" (10733)? Lo scrivo nel log per verificarlo
+{ let nf = 0, np = 0; for (const f of opFix) { const m = f.bookmakerOdds?.[BK]?.markets?.["10733"]; if (m) { nf++; np += Object.keys(m.outcomes?.["10734"]?.players || {}).length; } }
+  console.log(`marcatori: mercato gol giocatore in ${nf} partite su ${opFix.length}, ${np} giocatori quotati`); }
 for (const f of opFix) {
   const id = T2ID[f.tournamentId], L = leagues[id]; if (!L) continue;
   const mk = f.bookmakerOdds?.[BK]?.markets; if (!mk) continue;
