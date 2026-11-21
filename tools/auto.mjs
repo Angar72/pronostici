@@ -463,7 +463,7 @@ if (!sis.byDay[TODAY] || FORCE) {
 // ultime 5 partite (marcatori da ESPN). In ordine: partite a segno sulle ultime 5 x probabilità di vittoria.
 if (!BACKTEST) {
   const mc = live.marcatori || (live.marcatori = { byDay: {} });
-  if (!mc.byDay[TODAY] || FORCE) {
+  if (!mc.byDay[TODAY]?.length || FORCE) {
     const cand = [];
     for (const [id, L] of Object.entries(leagues)) {
       const O = odds[id]; if (!O || !L.sc) continue;
