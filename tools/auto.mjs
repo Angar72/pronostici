@@ -244,14 +244,14 @@ function stats(id) {
   const L = leagues[id], y = +TODAY.slice(0, 4), m = +TODAY.slice(5, 7);
   const from = (id === "se_1" || id === "no_1") ? `${y}-03-01` : `${m >= 7 ? y : y - 1}-07-01`;
   const T = {};
-  const g = t => T[t] || (T[t] = { p: 0, n: 0, gf: 0, ga: 0, hp: 0, hn: 0, ap: 0, an: 0, o: 0, gg: 0, hgf: 0, hga: 0, agf: 0, aga: 0, fts: 0, cs: 0 });
+  const g = t => T[t] || (T[t] = { p: 0, n: 0, gf: 0, ga: 0, hp: 0, hn: 0, ap: 0, an: 0, o: 0, gg: 0, hgf: 0, hga: 0, agf: 0, aga: 0, fts: 0, cs: 0, last: [] });
   for (const r of L.played) {
     const q = r.split("|"); if (q[0] < from || q[0] >= TODAY) continue;
     const hg = +q[3], ag = +q[4], ph = hg > ag ? 3 : hg === ag ? 1 : 0, pa = ag > hg ? 3 : hg === ag ? 1 : 0;
     const H = g(q[1]), A = g(q[2]);
     H.p += ph; H.n++; H.gf += hg; H.ga += ag; H.hp += ph; H.hn++; A.p += pa; A.n++; A.gf += ag; A.ga += hg; A.ap += pa; A.an++;
     for (const X of [H, A]) { X.o += hg + ag > 2; X.gg += hg > 0 && ag > 0; }
-    H.hgf += hg; H.hga += ag; A.agf += ag; A.aga += hg; H.fts += hg === 0; A.fts += ag === 0; H.cs += ag === 0; A.cs += hg === 0;
+    H.hgf += hg; H.hga += ag; A.agf += ag; A.aga += hg; H.fts += hg === 0; A.fts += ag === 0; H.cs += ag === 0; A.cs += hg === 0; H.last.push(ph); A.last.push(pa);
   }
   const tab = Object.keys(T).sort((a, b) => T[b].p - T[a].p || (T[b].gf - T[b].ga) - (T[a].gf - T[a].ga));
   tab.forEach((t, i) => T[t].pos = i + 1);
@@ -309,7 +309,13 @@ function candidates(relaxed = false) {
       // Bundesliga, Belgio e Serie B -> lì niente giocate sulla favorita fuori casa.
       // In casa Portogallo, Liga e Olanda perdono solo il 4-8% -> doppia chance in casa con distacco un po' più basso
       const FUORI_RISCHIO = ["es_1", "de_1", "be_1", "it_2"].includes(id), CASA_FORTE = ["pt_1", "es_1", "nl_1"].includes(id);
-      if (!favH && FUORI_RISCHIO) { /* niente 2 / X2 */ } else {
+      // analisi del 21/11 (3 schedine perse): City (VVPPP) e Monaco (nessuna vittoria nelle ultime 5) giocate "1",
+      // Chelsea (2 sconfitte nelle ultime 3) giocata "1X", Lille-Lione "1X" contro la quinta in classifica.
+      // Quindi: niente giocate sulla favorita se è in cattiva forma, né se l'avversaria è nelle prime 6
+      const l5 = fav.last.slice(-5), l3 = fav.last.slice(-3);
+      const formaOk = l5.filter(x => x === 3).length >= 2 && l3.filter(x => x === 0).length < 2;
+      const scontroAlto = opp.pos <= 6;
+      if ((!favH && FUORI_RISCHIO) || !formaOk || scontroAlto) { /* niente 1 / 2 / 1X / X2 */ } else {
       if (favH && gap >= (CASA_FORTE ? Math.max(3, st.n / 8) : Math.max(3, st.n / 6)) && hppg >= 1.5 && appg <= 1.5) leg("1X", dc["1X"], p1 + pX, CASA_FORTE ? "doppia chance (grande in casa)" : "doppia chance");
       if (!favH && gap >= Math.max(4, st.n / 5) && fav.pos <= half && appg >= 1.6 && hppg <= 1.3) leg("X2", dc["X2"], p2 + pX, "doppia chance");
       // vittoria secca solo per favorita in alto, forte in casa/fuori, contro avversaria debole
