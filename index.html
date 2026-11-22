@@ -1,31 +1,49 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}
-/* schedina retrò anni '70 (Toni, 22/11): carta ingiallita, griglia a righe numerate, segni a penna,
-   intestazione e cornice in metallo vero (oro, argento, bronzo) */
-.slip{--ink:#2a2418;--muted:#6a5d45;--line:#3e5a3c;--surface:#efe4c4;--chip:#e6d8b2;--paper:#efe4c4;
-  --metal:linear-gradient(135deg,#6f5212 0%,#c9a43a 18%,#fff2b0 34%,#d8b44a 48%,#8a6a1f 66%,#f5dd85 84%,#9c7a26 100%);--metal-ink:#2b2008;
+/* schedina retrò (Toni, 22/11): tutta ricoperta di metallo (oro, argento, bronzo), righe numerate,
+   orario in evidenza a sinistra, giocata a destra in un riquadro che diventa verde se vinta e rosso se persa */
+.slip{--ink:#1e1708;--muted:#3f3420;--line:rgba(40,30,10,.55);--surface:transparent;--chip:rgba(255,255,255,.3);
+  --metal:linear-gradient(135deg,#7a5a14 0%,#c9a43a 14%,#fff0a6 28%,#e2bf55 40%,#9c7a24 55%,#f4d97c 70%,#b38b2a 85%,#ffe9a0 100%);--metal-ink:#2b2008;
   color:var(--ink);counter-reset:riga;position:relative;font-family:"Oswald","Barlow Condensed",sans-serif;
-  background:radial-gradient(circle at 12% 8%,rgba(140,110,50,.16),transparent 38%),radial-gradient(circle at 88% 92%,rgba(120,90,40,.18),transparent 40%),
-    repeating-linear-gradient(0deg,rgba(90,70,30,.035) 0 1px,transparent 1px 3px),var(--paper)!important;
-  border:5px solid transparent!important;border-image:var(--metal) 1!important;border-radius:0!important;padding:0 0 10px!important;
-  box-shadow:0 10px 24px rgba(0,0,0,.45),inset 0 0 40px rgba(120,90,40,.18)!important;-webkit-mask:none;mask:none;font-variant-numeric:tabular-nums}
-.slip.silver{--metal:linear-gradient(135deg,#5d6267 0%,#b9bec4 18%,#ffffff 34%,#c8cdd2 48%,#7c8187 66%,#eef0f2 84%,#8d9298 100%);--metal-ink:#1d2024}
-.slip.bronze{--metal:linear-gradient(135deg,#4a2810 0%,#a8652c 18%,#f2b27a 34%,#c07a3e 48%,#6e3d17 66%,#e2a067 84%,#80461c 100%);--metal-ink:#2a1407}
-.slip .sub,.slip-head{display:flex;align-items:center;gap:10px;margin:0 0 4px;padding:8px 10px;background:var(--metal);color:var(--metal-ink)!important;
-  font-family:"Oswald",sans-serif;font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:13px;line-height:1.25;border-bottom:3px double var(--line);text-shadow:0 1px 0 rgba(255,255,255,.45)}
-.slip .conc{display:grid;place-items:center;min-width:54px;padding:2px 6px 4px;border:3px solid var(--line);background:var(--paper);color:var(--line);text-shadow:none;box-shadow:inset 0 0 0 2px var(--paper),inset 0 0 0 3px var(--line)}
-.slip .conc small{font-size:9px;letter-spacing:.08em}.slip .conc b{font-size:30px;line-height:1;font-family:"Oswald",sans-serif}
-.slip .leg,.slip .res{counter-increment:riga;position:relative;margin:0 10px;padding:6px 0 6px 30px!important;border-top:1px solid var(--line)!important;border-bottom:0!important}
-.slip .leg::before,.slip .res::before{content:counter(riga);position:absolute;left:0;top:6px;width:22px;font-family:"Special Elite",monospace;font-size:15px;color:var(--line);border-right:1px solid var(--line);height:calc(100% - 12px)}
-.slip .res:has(.money-box)::before,.slip .res:has(.money-box){counter-increment:none}.slip .res:has(.money-box)::before{content:none}.slip .res:has(.money-box){padding-left:0!important}
-.slip .leg>span:first-child,.slip .res>span:first-child{text-transform:uppercase;letter-spacing:.02em;font-weight:500}
-.slip .pick,.slip .leg b,.slip .res b{font-family:"Caveat",cursive;font-size:22px;color:#1d3f8f;font-weight:700;letter-spacing:0;text-transform:none}
+  background:repeating-linear-gradient(115deg,rgba(255,255,255,.07) 0 2px,rgba(0,0,0,.03) 2px 5px),var(--metal)!important;
+  border:3px solid rgba(0,0,0,.35)!important;border-radius:10px!important;padding:0 0 12px!important;overflow:hidden;
+  box-shadow:0 10px 26px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.7),inset 0 -2px 6px rgba(0,0,0,.25)!important;font-variant-numeric:tabular-nums}
+.slip.silver{--ink:#15181c;--muted:#30353b;--metal:linear-gradient(135deg,#6b7076 0%,#b7bcc2 14%,#ffffff 28%,#d3d7db 40%,#878c92 55%,#f1f3f5 70%,#9ca1a7 85%,#e9ecef 100%);--metal-ink:#15181c}
+.slip.bronze{--ink:#1f0e04;--muted:#3e210d;--metal:linear-gradient(135deg,#5a3010 0%,#a8652c 14%,#f3b680 28%,#c98545 40%,#7c4519 55%,#e7a66b 70%,#94521f 85%,#f0b27a 100%);--metal-ink:#1f0e04}
+.slip .sub,.slip-head{display:flex;align-items:center;gap:10px;margin:0;padding:10px 12px;background:rgba(0,0,0,.12);color:var(--metal-ink)!important;
+  font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:13px;line-height:1.25;border-bottom:2px solid var(--line);text-shadow:0 1px 0 rgba(255,255,255,.5)}
+.slip .conc{display:grid;place-items:center;min-width:54px;padding:2px 6px 4px;border:3px double var(--metal-ink);background:rgba(255,255,255,.35);color:var(--metal-ink);text-shadow:none}
+.slip .conc small{font-size:9px;letter-spacing:.08em}.slip .conc b{font-size:30px;line-height:1}
+.slip .leg{counter-increment:riga;display:grid;grid-template-columns:56px 1fr auto;gap:4px 10px;align-items:start;margin:0 10px;padding:10px 0;border-top:1px solid var(--line)}
+.slip .sub+.leg{border-top:0}
+.slip .lt{display:grid;justify-items:center;gap:2px;padding-right:8px;border-right:1px solid var(--line)}
+.slip .lt::before{content:counter(riga);font-family:"Special Elite",monospace;font-size:12px;color:var(--muted)}
+.slip .lt .hr{font-family:"Oswald",sans-serif;font-size:20px;line-height:1;background:rgba(255,255,255,.45);border:2px solid var(--metal-ink);border-radius:4px;padding:3px 4px;color:#111}
+.slip .lt small{font-size:10px;text-transform:uppercase;color:var(--muted)}
+.slip .teams{font-size:16px;font-weight:700;text-transform:uppercase;letter-spacing:.02em;line-height:1.2;color:var(--ink)}
+.slip .sc{font-family:"Special Elite",monospace;font-size:14px;margin-top:2px}.slip .sc b{font-size:18px}
+.slip .lm .note{margin-top:3px}
+.slip .lp{display:grid;justify-items:center;gap:2px;min-width:74px;padding:6px 8px;background:rgba(255,255,255,.55);border:2px solid var(--metal-ink);border-radius:6px;text-align:center}
+.slip .lp .pick{font-family:"Caveat",cursive;font-size:26px;line-height:1;color:#123a8c;font-weight:700}
+.slip .lp .q{font-family:"Special Elite",monospace;font-size:16px;color:#111}
+.slip .lp small{font-family:"Special Elite",monospace;font-size:10px;color:var(--muted)}
+.slip .lp .esito{font-weight:700;font-size:11px;letter-spacing:.04em}
+.slip .leg.win .lp{background:#1f8f45;border-color:#0d5a26}.slip .leg.win .lp *{color:#fff!important}
+.slip .leg.lose .lp{background:#c0352b;border-color:#7d1610}.slip .leg.lose .lp *{color:#fff!important}
+.slip .leg.live-ok .lp{background:#cdeed6;border-color:#1f8f45}.slip .leg.live-ok .esito{color:#1f8f45}
+.slip .leg.live-ko .lp{background:#f6d0cc;border-color:#c0352b}.slip .leg.live-ko .esito{color:#c0352b}
+.slip .res{counter-increment:riga;position:relative;margin:0 10px;padding:8px 0 8px 30px!important;border-top:1px solid var(--line)!important;border-bottom:0!important}
+.slip .res::before{content:counter(riga);position:absolute;left:0;top:8px;width:22px;font-family:"Special Elite",monospace;font-size:15px;color:var(--muted);border-right:1px solid var(--line);height:calc(100% - 16px)}
+.slip .res:has(.money-box){counter-increment:none;padding-left:0!important}.slip .res:has(.money-box)::before{content:none}
+.slip .res>span:first-child{text-transform:uppercase;font-weight:700}
+.slip .res b{font-family:"Caveat",cursive;font-size:22px;color:#123a8c}
 .slip .note{font-family:"Special Elite",monospace;font-size:12px;color:var(--muted);text-transform:none}
-.slip .money-box{margin:6px 10px 0;background:rgba(255,255,255,.25);border:2px solid var(--line);border-radius:0}
-.slip .money-box span{font-family:"Special Elite",monospace;color:var(--line)}
-.slip .money-box b{font-family:"Special Elite",monospace!important;font-size:20px!important;color:var(--ink)!important}
-.slip>.note,.slip>div>.note,.slip>p{margin:6px 10px 0}
-.slip .ok{color:#1f7a3a}.slip .ko{color:#b3261e}
 .slip .note b{font-family:inherit!important;font-size:inherit!important;color:var(--ink)!important}
+.slip .money-box{margin:8px 10px 0;background:rgba(255,255,255,.5);border:2px solid var(--metal-ink);border-radius:6px}
+.slip .money-box span{font-family:"Special Elite",monospace;color:var(--muted)}
+.slip .money-box b{font-family:"Special Elite",monospace!important;font-size:20px!important;color:#111!important}
+.slip>.note,.slip>div>.note,.slip>p,.slip>.day{margin:8px 10px 0}
+.slip .ok{color:#0f6e2f;font-weight:700}.slip .ko{color:#a3190f;font-weight:700}
+.slip.sis,.slip.extra{}
 </style><title>Pronostici Calcio e Lotto</title><link rel="apple-touch-icon" href="https://angar72.github.io/pronostici/apple-touch-icon.png?v=2"><link rel="apple-touch-icon" sizes="180x180" href="https://angar72.github.io/pronostici/apple-touch-icon.png?v=2"><link rel="icon" type="image/png" sizes="512x512" href="https://angar72.github.io/pronostici/assets/icona-512.png?v=2"><link rel="manifest" href="manifest.json?v=2"><meta name="apple-mobile-web-app-title" content="Pronostici"></head><body>
 <title>Pronostici Calcio e Lotto</title>
 <meta name="robots" content="noindex,nofollow">
@@ -299,7 +317,7 @@ body[data-sec="lotto"] .ball{background:var(--chip);color:var(--ink)}
       <div style="display:grid;justify-items:end;gap:4px">
         <div class="stamp" id="stamp">In caricamento…</div>
         <a id="refresh" class="refresh" target="_blank" rel="noopener" href="https://angar72.github.io/pronostici/" style="text-decoration:none">Apri con risultati in diretta ↗</a>
-        <div class="stamp">Versione 22 nov · marcatori in diretta</div>
+        <div class="stamp">Versione 22 nov · schedine oro</div>
       </div>
     </div>
     <div class="seg" role="group" aria-label="Sezione">
@@ -1738,12 +1756,15 @@ if (typeof module !== "undefined") module.exports = Model;
       const medal = tickets.length > 1 ? ["gold", "silver", "bronze"][Math.min(2, order.indexOf(i))] : "gold";
       html += `<div class="ticket slip ${medal}">
         <div class="sub"><span class="conc"><small>Schedina</small><b>${i + 1}</b></span><span class="tit">${names[i]} · ${tk.length} partite${(() => { const sh = tickets.slice(0, i).map((o, j) => o.some(x => tk.some(y => keyOf(x) === keyOf(y))) ? j + 1 : 0).filter(Boolean); return sh.length ? ` · ha partite in comune con la schedina ${sh.join(" e ")}` : ""; })()}</span></div>
-        ${tk.map(r => `<div class="leg" style="display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:baseline">
-            <span style="min-width:0;font-weight:600">${TL(r.m.h)}${RCt(r.id, r.m.h, r.m.a, r.m.h)} – ${TL(r.m.a)}${RCt(r.id, r.m.h, r.m.a, r.m.a)}${r.res ? ` <span class="note">${r.res.hg}-${r.res.ag}</span>` : ""}</span>
-            <b style="white-space:nowrap"><span class="pick">${esc(r.s.k)}</span> · ${fmtQ(r.s.odd)}${r.s.est ? "*" : ""}${r.s.odd0 != null && r.s.odd0 !== r.s.odd ? ` <span class="note" style="font-weight:400">(era ${fmtQ(r.s.odd0)})</span>` : ""}${r.res ? (hit(r.s.k, r.res) ? ' <span class="ok">✓</span>' : ' <span class="ko">✗</span>') : ""}</b>
-            <span class="note">${r.m.d !== state.day ? esc(dayLabel(r.m.d)) + " " : ""}${r.m.t ? esc(r.m.t) + " · " : ""}${esc(r.L.d.name)} · indice di favore <b>${pct(r.s.prob)}</b> (${r.s.mkt == null ? `solo modello ${pct(r.s.model)}%, prudenzialmente ${pct(r.s.prob)}, quota stimata` : `modello ${pct(r.s.model)}%, bookmaker ${pct(r.s.mkt)}%${r.s.edge ? ", con valore" : ""}`})${(() => { if (r.res) return ""; const lv = liveFor(r.id, r.m.h, r.m.a); return lv ? ` · <span class="live-inline"><span class="dot"></span>in corso ${lv.hg}-${lv.ag} ${liveWhen(lv)}</span> per ora ${hit(r.s.k, lv) ? '<span class="ok">✓</span>' : '<span class="ko">✗</span>'}${eventsHtml(lv)}` : ""; })()}</span><span></span>
-            ${(() => { const g = SCORERS[r.id + "|" + r.m.h + "|" + r.m.a]; return g && g.length ? `<span style="grid-column:1/-1">${eventsHtml({ goals: g, reds: [] })}</span>` : ""; })()}
-          </div>`).join("")}
+        ${tk.map(r => { const lv = r.res ? null : liveFor(r.id, r.m.h, r.m.a), stl = r.res ? (hit(r.s.k, r.res) ? "win" : "lose") : lv ? (hit(r.s.k, lv) ? "live-ok" : "live-ko") : "";
+          return `<div class="leg ${stl}">
+            <div class="lt"><b class="hr">${r.m.t ? esc(r.m.t) : "--:--"}</b>${r.m.d !== state.day ? `<small>${esc(dayLabel(r.m.d))}</small>` : ""}</div>
+            <div class="lm"><div class="teams">${TL(r.m.h)}${RCt(r.id, r.m.h, r.m.a, r.m.h)} – ${TL(r.m.a)}${RCt(r.id, r.m.h, r.m.a, r.m.a)}</div>
+              ${r.res ? `<div class="sc">Finale <b>${r.res.hg}-${r.res.ag}</b></div>` : lv ? `<div class="sc live-inline"><span class="dot"></span>In corso <b>${lv.hg}-${lv.ag}</b> ${liveWhen(lv)}</div>` : ""}
+              <div class="note">${esc(r.L.d.name)} · indice di favore <b>${pct(r.s.prob)}</b> (${r.s.mkt == null ? `solo modello ${pct(r.s.model)}%, prudenzialmente ${pct(r.s.prob)}, quota stimata` : `modello ${pct(r.s.model)}%, bookmaker ${pct(r.s.mkt)}%${r.s.edge ? ", con valore" : ""}`})</div>
+              ${(() => { const g = SCORERS[r.id + "|" + r.m.h + "|" + r.m.a]; return g && g.length ? eventsHtml({ goals: g, reds: [] }) : lv ? eventsHtml(lv) : ""; })()}</div>
+            <div class="lp"><span class="pick">${esc(r.s.k)}</span><span class="q">${fmtQ(r.s.odd)}${r.s.est ? "*" : ""}</span>${r.s.odd0 != null && r.s.odd0 !== r.s.odd ? `<small>era ${fmtQ(r.s.odd0)}</small>` : ""}${stl ? `<span class="esito">${stl === "win" ? "✓ VINTA" : stl === "lose" ? "✗ PERSA" : stl === "live-ok" ? "✓ per ora" : "✗ per ora"}</span>` : ""}</div>
+          </div>`; }).join("")}
         <div class="note">Quota: ${tk.map(r => fmtQ(r.s.odd) + (r.s.est ? "*" : "")).join(" × ")} = <b>${fmtQ(q)}</b>${frozen?.qAt ? ` · quote Planetwin aggiornate alle ${esc(frozen.qAt)}` : ""}${anyEst ? `<br>* quota stimata dal modello: il bookmaker non l'ha ancora pubblicata, controlla la quota reale prima di giocare.` : ""}</div>
         ${(() => {
           const wonT = tk.every(r => r.res && hit(r.s.k, r.res));
@@ -2463,11 +2484,8 @@ if (typeof module !== "undefined") module.exports = Model;
       const head = E.state === "won" ? `<span class="ok">✓ vinto${E.wrong ? " con 1 errore" : " con tutte giuste"} · ${euro(E.pay)}</span>` : E.state === "lost" ? `<span class="ko">✗ perso (${E.wrong} errori)</span>` : `in gioco · ${E.wrong ? "1 errore già usato" : "nessun errore finora"}`;
       return `<div class="day">${esc(dayLabel(d))} · sistema ${E.n - 1}/${E.n} · ${head}</div><div class="card slip sis"><div class="slip-head">Sistema ${E.n - 1}/${E.n} · 1 errore permesso</div>
         ${E.legs.map((r, i) => { const lv = !r.res && liveFor(r.id, r.m.h, r.m.a);
-          const mk = E.st[i] > 0 ? '<span class="ok">✓</span>' : E.st[i] < 0 ? '<span class="ko">✗</span>' : lv ? (hit(r.s.k, lv) ? '<span class="ok">✓</span>' : '<span class="ko">✗</span>') : "·";
-          return `<div class="res" style="display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:baseline">
-          <span style="min-width:0;font-weight:600">${TL(r.m.h)}${RCt(r.id, r.m.h, r.m.a, r.m.h)} – ${TL(r.m.a)}${RCt(r.id, r.m.h, r.m.a, r.m.a)}${r.res ? ` <span class="note">${r.res.hg}-${r.res.ag}</span>` : ""}</span>
-          <b style="white-space:nowrap">${esc(r.s.k)} · ${q(r.s.odd)} ${mk}</b>
-          <span class="note" style="grid-column:1/-1">${esc(r.m.t || "")} · ${esc(r.L.d.name || "")}${r.res ? " · finale" : lv ? ` · <span class="live-inline"><span class="dot"></span>in corso ${lv.hg}-${lv.ag} ${liveWhen(lv)}</span> · per ora` : ""}</span></div>`; }).join("")}
+          const stl = E.st[i] > 0 ? "win" : E.st[i] < 0 ? "lose" : lv ? (hit(r.s.k, lv) ? "live-ok" : "live-ko") : "";
+          return slipLeg({ t: r.m.t, teams: `${TL(r.m.h)}${RCt(r.id, r.m.h, r.m.a, r.m.h)} – ${TL(r.m.a)}${RCt(r.id, r.m.h, r.m.a, r.m.a)}`, res: r.res, lv, note: esc(r.L.d.name || ""), pick: esc(r.s.k), q: q(r.s.odd), odd0: r.s.odd0 != null && r.s.odd0 !== r.s.odd ? q(r.s.odd0) : "", stl }); }).join("")}
         <div class="res" style="display:grid;gap:8px;grid-template-columns:1fr">
           <div class="money-box ${E.state === "won" ? "win" : E.state === "lost" ? "lose" : ""}">
             <div><span>Giocata</span><b class="num">${euro(E.cost)}</b></div>
@@ -2484,6 +2502,12 @@ if (typeof module !== "undefined") module.exports = Model;
           <div class="note">${E.n} combinazioni da ${E.n - 1} partite, ${euro(E.per)} ciascuna. Con 1 errore la vincita dipende da quale partita si sbaglia: più bassa la sua quota, più alta la vincita.</div></div></div>`;
     }).join("");
   }
+  // riga di schedina "retrò": orario a sinistra, partita al centro, giocata a destra (verde se vinta, rossa se persa)
+  function slipLeg({ t, teams, res, lv, note, pick, q, odd0, stl }) {
+    return `<div class="leg ${stl || ""}"><div class="lt"><b class="hr">${t ? esc(t) : "--:--"}</b></div>
+      <div class="lm"><div class="teams">${teams}</div>${res ? `<div class="sc">Finale <b>${res.hg}-${res.ag}</b></div>` : lv ? `<div class="sc live-inline"><span class="dot"></span>In corso <b>${lv.hg}-${lv.ag}</b> ${liveWhen(lv)}</div>` : ""}${note ? `<div class="note">${note}</div>` : ""}</div>
+      <div class="lp"><span class="pick">${pick}</span>${q ? `<span class="q">${q}</span>` : ""}${odd0 ? `<small>era ${odd0}</small>` : ""}${stl ? `<span class="esito">${{ win: "✓ VINTA", lose: "✗ PERSA", "live-ok": "✓ per ora", "live-ko": "✗ per ora", scored: "✓ HA SEGNATO", noscore: "✗ NON HA SEGNATO" }[stl] || ""}</span>` : ""}</div></div>`;
+  }
   // marcatori del giorno (21/11): 1 o 2 attaccanti in forma di squadre nettamente favorite, solo da seguire
   function marcatoriHtml(day) {
     const M = state.marcatori?.byDay?.[day]; if (!M || !M.length) return "";
@@ -2495,10 +2519,10 @@ if (typeof module !== "undefined") module.exports = Model;
       const scored = liveG.length || (saved || []).some(([sd, n]) => sd === m.side && n === m.player);
       const mk = scored ? `<span class="ok">✓ ha segnato${liveG.length ? " " + liveG.map(x => x[2]).filter(Boolean).join(", ") : ""}</span>` : done ? '<span class="ko">✗ non ha segnato</span>' : lv ? `<span class="note">in corso ${lv.hg}-${lv.ag} ${liveWhen(lv)}</span>` : "·";
       const q = m.odd ? ` · ${m.odd.toFixed(2).replace(".", ",")}` : "";
-      return `<div class="res" style="display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:baseline">
-        <span style="min-width:0;font-weight:700">${esc(m.player)} <span class="note">(${TL(m.team)})</span></span><b style="white-space:nowrap">Segna sì${q}</b>
-        <span style="grid-column:1/-1">${mk}</span>
-        <span class="note" style="grid-column:1/-1">${TL(m.h)} – ${TL(m.a)} · ${esc(m.t || "")} · a segno in <b>${m.n5} delle ultime ${m.of}</b> partite (${m.g} gol) · ${esc(m.team)} vince al ${Math.round(m.pw * 100)}% secondo le quote</span></div>`; }).join("")}
+      const stl = scored ? "win" : done ? "lose" : lv ? "" : "";
+      return slipLeg({ t: m.t, teams: `${esc(m.player)} <span class="note">(${TL(m.team)})</span>`, res: null, lv: scored || done ? null : lv,
+        note: `${TL(m.h)} – ${TL(m.a)} · a segno in <b>${m.n5} delle ultime ${m.of}</b> partite (${m.g} gol) · ${esc(m.team)} vince al ${Math.round(m.pw * 100)}% secondo le quote${liveG.length ? ` · gol al ${esc(liveG.map(x => x[2]).filter(Boolean).join(", "))}` : ""}`,
+        pick: "Segna", q: m.odd ? m.odd.toFixed(2).replace(".", ",") : "", stl: scored ? "scored" : done ? "noscore" : "" }).replace('class="leg scored"', 'class="leg win"').replace('class="leg noscore"', 'class="leg lose"'); }).join("")}
       <p class="note">Solo da seguire. Si aggiorna in diretta mentre si gioca. ${M.some(m => m.odd) ? "La quota è indicativa: Planetwin non la pubblica nel servizio delle quote, è la media dei bookmaker che la pubblicano. Su Planetwin la trovi alla voce Marcatori, di solito simile." : "Quota non disponibile: su Planetwin la trovi alla voce Marcatori, di solito tra 1,50 e 2,50."}</p></div>`;
   }
   // last minute: giocate suggerite durante le partite (le trova da sola il controllo ogni 15 minuti)
@@ -2682,7 +2706,7 @@ if (typeof module !== "undefined") module.exports = Model;
   // aggiornamento della pagina: l'app sulla schermata Home tiene in memoria la versione vecchia.
   // Ogni volta che si riapre (e ogni 10 minuti) controllo se c'è una versione nuova e mi ricarico da solo.
   // numero di versione crescente (BUILD): mi ricarico solo se sul server ce n'è uno PIÙ ALTO, e al massimo una volta ogni 5 minuti
-  const BUILD = 2026112202;
+  const BUILD = 2026112204;
   async function checkNewVersion() {
     try {
       let last = 0; try { last = +sessionStorage.getItem("pr.reload") || 0; } catch (e) {}
