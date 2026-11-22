@@ -13,17 +13,17 @@
   font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:13px;line-height:1.25;border-bottom:2px solid var(--line);text-shadow:0 1px 0 rgba(255,255,255,.5)}
 .slip .conc{display:grid;place-items:center;min-width:54px;padding:2px 6px 4px;border:3px double var(--metal-ink);background:rgba(255,255,255,.35);color:var(--metal-ink);text-shadow:none}
 .slip .conc small{font-size:9px;letter-spacing:.08em}.slip .conc b{font-size:30px;line-height:1}
-.slip .leg{counter-increment:riga;display:grid;grid-template-columns:56px 1fr auto;gap:4px 10px;align-items:start;margin:0 10px;padding:10px 0;border-top:1px solid var(--line)}
+.slip .leg{counter-increment:riga;display:grid;grid-template-columns:56px minmax(0,1fr) auto;gap:4px 10px;align-items:start;margin:0 10px;padding:10px 0;border-top:1px solid var(--line)}
 .slip .sub+.leg{border-top:0}
 .slip .lt{display:grid;justify-items:center;gap:2px;padding-right:8px;border-right:1px solid var(--line)}
 .slip .lt::before{content:counter(riga);font-family:"Special Elite",monospace;font-size:12px;color:var(--muted)}
 .slip .lt .hr{font-family:"Oswald",sans-serif;font-size:20px;line-height:1;background:rgba(255,255,255,.45);border:2px solid var(--metal-ink);border-radius:4px;padding:3px 4px;color:#111}
 .slip .lt small{font-size:10px;text-transform:uppercase;color:var(--muted)}
-.slip .teams{font-size:16px;font-weight:700;text-transform:uppercase;letter-spacing:.02em;line-height:1.2;color:var(--ink)}
+.slip .teams{overflow-wrap:anywhere;font-size:16px;font-weight:700;text-transform:uppercase;letter-spacing:.02em;line-height:1.2;color:var(--ink)}
 .slip .sc{font-family:"Special Elite",monospace;font-size:14px;margin-top:2px}.slip .sc b{font-size:18px}
 .slip .lm .note{margin-top:3px}
-.slip .lp{display:grid;justify-items:center;gap:2px;min-width:74px;padding:6px 8px;background:rgba(255,255,255,.55);border:2px solid var(--metal-ink);border-radius:6px;text-align:center}
-.slip .lp .pick{font-family:"Caveat",cursive;font-size:26px;line-height:1;color:#123a8c;font-weight:700}
+.slip .lp{max-width:42vw;overflow-wrap:anywhere;display:grid;justify-items:center;gap:2px;min-width:74px;padding:6px 8px;background:rgba(255,255,255,.55);border:2px solid var(--metal-ink);border-radius:6px;text-align:center}
+.slip .lp .pick{font-family:"Caveat",cursive;font-size:clamp(18px,6vw,26px);word-break:break-word;line-height:1;color:#123a8c;font-weight:700}
 .slip .lp .q{font-family:"Special Elite",monospace;font-size:16px;color:#111}
 .slip .lp small{font-family:"Special Elite",monospace;font-size:10px;color:var(--muted)}
 .slip .lp .esito{font-weight:700;font-size:11px;letter-spacing:.04em}
@@ -317,7 +317,7 @@ body[data-sec="lotto"] .ball{background:var(--chip);color:var(--ink)}
       <div style="display:grid;justify-items:end;gap:4px">
         <div class="stamp" id="stamp">In caricamento…</div>
         <a id="refresh" class="refresh" target="_blank" rel="noopener" href="https://angar72.github.io/pronostici/" style="text-decoration:none">Apri con risultati in diretta ↗</a>
-        <div class="stamp">Versione 22 nov · schedine oro</div>
+        <div class="stamp">Versione 22 nov · extra in ordine</div>
       </div>
     </div>
     <div class="seg" role="group" aria-label="Sezione">
@@ -2570,12 +2570,11 @@ if (typeof module !== "undefined") module.exports = Model;
         const mark = s.v === true || pv === true ? `<span class="ok">✓</span>` : s.v === false || pv === false ? `<span class="ko">✗</span>` : "·";
         const btns = `<button class="chip" data-x="${k}=1">Vinta</button> <button class="chip" data-x="${k}=0">Persa</button>${s.src === "a mano" ? ` <button class="chip" data-x="${k}=">Annulla</button>` : ""}`;
         const q2 = v => v.toFixed(2).replace(".", ",");
-        html += `<div class="res" style="display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:baseline">
-          <span style="min-width:0;font-weight:600">${TL(l.h)} – ${TL(l.a)}${ev && ev.done ? ` <span class="note">${ev.hg}-${ev.ag}</span>` : ""}</span>
-          <b style="text-align:right;max-width:58vw">${esc(l.pick === "Sì" ? l.mkt : l.pick)} · ${q2(l.odd)} ${mark}</b>
-          <span class="note" style="grid-column:1/-1">${esc(fmtShort(l.d))} ${esc(l.t || "")}${l.pick === "Sì" ? "" : " · " + esc(l.mkt)}${score ? " · " + score : ""}${pv != null ? " · per ora" : ""}${s.src ? ` · ${s.src}` : ""}</span>
-          ${s.v == null && (!ev || ev.done || (l.r || "manual") === "manual") ? ((l.r || "manual") === "manual" || (ev && ev.done) ? `<span class="note" style="grid-column:1/-1">Da controllare: ${btns}</span>` : "") : s.src === "a mano" ? `<span class="note" style="grid-column:1/-1">${btns}</span>` : ""}
-        </div>`;
+        const stl = s.v === true ? "win" : s.v === false ? "lose" : pv === true ? "live-ok" : pv === false ? "live-ko" : "";
+        const res = ev && ev.done ? { hg: ev.hg, ag: ev.ag } : null, lvx = ev && ev.live ? { hg: ev.hg, ag: ev.ag, min: { txt: ev.min, est: false }, st: "" } : null;
+        const manual = s.v == null && (!ev || ev.done || (l.r || "manual") === "manual") ? ((l.r || "manual") === "manual" || (ev && ev.done) ? `<div class="note">Da controllare: ${btns}</div>` : "") : s.src === "a mano" ? `<div class="note">${btns}</div>` : "";
+        html += slipLeg({ t: l.t, teams: `${TL(l.h)} – ${TL(l.a)}`, res, lv: lvx, pick: esc(l.pick === "Sì" ? l.mkt : l.pick), q: q2(l.odd), stl,
+          note: `${l.d !== today() ? esc(fmtShort(l.d)) + " · " : ""}${l.pick === "Sì" ? "" : esc(l.mkt)}${ev && ev.done && ev.hl.length >= 2 ? ` · 1° t. ${ev.hl[0]}-${ev.al[0]}` : ""}${ev && ev.off ? " · rinviata" : ""}${s.src ? ` · ${esc(s.src)}` : ""}` }).replace(/<\/div><\/div>$/, manual + "</div></div>").replace('<div class="lp">', manual ? '<div class="lp">' : '<div class="lp">');
       });
       html += `<div class="res"><div class="money-box ${r.win ? "win" : r.lost ? "lose" : ""}">
           <div><span>Giocata</span><b class="num">${euro(20)}</b></div>
@@ -2706,7 +2705,7 @@ if (typeof module !== "undefined") module.exports = Model;
   // aggiornamento della pagina: l'app sulla schermata Home tiene in memoria la versione vecchia.
   // Ogni volta che si riapre (e ogni 10 minuti) controllo se c'è una versione nuova e mi ricarico da solo.
   // numero di versione crescente (BUILD): mi ricarico solo se sul server ce n'è uno PIÙ ALTO, e al massimo una volta ogni 5 minuti
-  const BUILD = 2026112204;
+  const BUILD = 2026112205;
   async function checkNewVersion() {
     try {
       let last = 0; try { last = +sessionStorage.getItem("pr.reload") || 0; } catch (e) {}
