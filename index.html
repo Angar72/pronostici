@@ -42,10 +42,15 @@
 .slip .note b{font-family:inherit!important;font-size:inherit!important;color:var(--ink)!important}
 .slip .money-box{margin:8px 10px 0;background:rgba(255,255,255,.5);border:2px solid var(--metal-ink);border-radius:6px}
 .slip .money-box span{font-family:"Special Elite",monospace;color:var(--muted)}
-.slip .money-box b{font-family:"Special Elite",monospace!important;font-size:clamp(15px,4.6vw,20px)!important;color:#111!important;white-space:nowrap}.slip .money-box{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+.slip .money-box{display:grid!important;grid-template-columns:1fr!important;gap:0!important;padding:4px 10px!important}
+.slip .money-box>div{display:flex!important;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:2px 10px;padding:5px 0;border-bottom:1px dashed var(--line);min-width:0}
+.slip .money-box>div:last-child{border-bottom:0}
+.slip .money-box span{font-size:12px;min-width:0}
+.slip .money-box b{font-family:"Special Elite",monospace!important;font-size:18px!important;color:#111!important;text-align:right;margin-left:auto;overflow-wrap:anywhere}
 .slip>.note,.slip>div>.note,.slip>p,.slip>.day{margin:8px 10px 0}
 .slip .ok{color:#0f6e2f;font-weight:700}.slip .ko{color:#a3190f;font-weight:700}
 .slip.sis,.slip.extra{}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 </style><title>Pronostici Calcio e Lotto</title><link rel="apple-touch-icon" href="https://angar72.github.io/pronostici/apple-touch-icon.png?v=2"><link rel="apple-touch-icon" sizes="180x180" href="https://angar72.github.io/pronostici/apple-touch-icon.png?v=2"><link rel="icon" type="image/png" sizes="512x512" href="https://angar72.github.io/pronostici/assets/icona-512.png?v=2"><link rel="manifest" href="manifest.json?v=2"><meta name="apple-mobile-web-app-title" content="Pronostici"></head><body>
 <title>Pronostici Calcio e Lotto</title>
 <meta name="robots" content="noindex,nofollow">
@@ -319,7 +324,7 @@ body[data-sec="lotto"] .ball{background:var(--chip);color:var(--ink)}
       <div style="display:grid;justify-items:end;gap:4px">
         <div class="stamp" id="stamp">In caricamento…</div>
         <a id="refresh" class="refresh" target="_blank" rel="noopener" href="https://angar72.github.io/pronostici/" style="text-decoration:none">Apri con risultati in diretta ↗</a>
-        <div class="stamp">Versione 22 nov · risultato sotto</div>
+        <div class="stamp">Versione 22 nov · riquadri sistemati</div>
       </div>
     </div>
     <div class="seg" role="group" aria-label="Sezione">
@@ -2526,6 +2531,13 @@ if (typeof module !== "undefined") module.exports = Model;
       return slipLeg({ t: m.t, teams: `${esc(m.player)} <span class="note">(${TL(m.team)})</span>`, res: null, lv: scored || done ? null : lv,
         note: `${TL(m.h)} – ${TL(m.a)} · a segno in <b>${m.n5} delle ultime ${m.of}</b> partite (${m.g} gol) · ${esc(m.team)} vince al ${Math.round(m.pw * 100)}% secondo le quote${liveG.length ? ` · gol al ${esc(liveG.map(x => x[2]).filter(Boolean).join(", "))}` : ""}`,
         pick: "Segna", q: m.odd ? m.odd.toFixed(2).replace(".", ",") : "", stl: scored ? "scored" : done ? "noscore" : "" }).replace('class="leg scored"', 'class="leg win"').replace('class="leg noscore"', 'class="leg lose"'); }).join("")}
+      ${(() => { const qs = M.map(m => m.odd).filter(Boolean); if (!qs.length) return "";
+        const qt = qs.reduce((a, x) => a * x, 1), won = M.every(m => m.res === "si"), lost = M.some(m => m.res === "no");
+        return `<div class="res"><div class="money-box">
+          <div><span>Giocata</span><b class="num">${euro(20)}</b></div>
+          ${M.length > 1 ? M.map(m => m.odd ? `<div><span>${esc(m.player)} da solo</span><b class="num">${m.odd.toFixed(2).replace(".", ",")} → ${euro(20 * m.odd)}</b></div>` : "").join("") : ""}
+          <div><span>${qs.length > 1 ? "Quota insieme (multipla)" : "Quota"}</span><b class="num">${qt.toFixed(2).replace(".", ",")}</b></div>
+          <div><span>Vincita possibile</span><b class="num">${euro(20 * qt)}</b></div></div></div>`; })()}
       <p class="note">Solo da seguire. Si aggiorna in diretta mentre si gioca. ${M.some(m => m.odd) ? "La quota è indicativa: Planetwin non la pubblica nel servizio delle quote, è la media dei bookmaker che la pubblicano. Su Planetwin la trovi alla voce Marcatori, di solito simile." : "Quota non disponibile: su Planetwin la trovi alla voce Marcatori, di solito tra 1,50 e 2,50."}</p></div>`;
   }
   // last minute: giocate suggerite durante le partite (le trova da sola il controllo ogni 15 minuti)
@@ -2708,7 +2720,7 @@ if (typeof module !== "undefined") module.exports = Model;
   // aggiornamento della pagina: l'app sulla schermata Home tiene in memoria la versione vecchia.
   // Ogni volta che si riapre (e ogni 10 minuti) controllo se c'è una versione nuova e mi ricarico da solo.
   // numero di versione crescente (BUILD): mi ricarico solo se sul server ce n'è uno PIÙ ALTO, e al massimo una volta ogni 5 minuti
-  const BUILD = 2026112206;
+  const BUILD = 2026112207;
   async function checkNewVersion() {
     try {
       let last = 0; try { last = +sessionStorage.getItem("pr.reload") || 0; } catch (e) {}
