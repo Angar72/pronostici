@@ -13,16 +13,18 @@
   font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:13px;line-height:1.25;border-bottom:2px solid var(--line);text-shadow:0 1px 0 rgba(255,255,255,.5)}
 .slip .conc{display:grid;place-items:center;min-width:54px;padding:2px 6px 4px;border:3px double var(--metal-ink);background:rgba(255,255,255,.35);color:var(--metal-ink);text-shadow:none}
 .slip .conc small{font-size:9px;letter-spacing:.08em}.slip .conc b{font-size:30px;line-height:1}
-.slip .leg{counter-increment:riga;display:grid;grid-template-columns:56px minmax(0,1fr) auto;gap:4px 10px;align-items:start;margin:0 10px;padding:10px 0;border-top:1px solid var(--line)}
+.slip .leg{counter-increment:riga;display:grid;grid-template-columns:50px minmax(0,1fr) auto;gap:4px 10px;align-items:start;margin:0 10px;padding:10px 0;border-top:1px solid var(--line)}
 .slip .sub+.leg{border-top:0}
 .slip .lt{display:grid;justify-items:center;gap:2px;padding-right:8px;border-right:1px solid var(--line)}
 .slip .lt::before{content:counter(riga);font-family:"Special Elite",monospace;font-size:12px;color:var(--muted)}
-.slip .lt .hr{font-family:"Oswald",sans-serif;font-size:20px;line-height:1;background:rgba(255,255,255,.45);border:2px solid var(--metal-ink);border-radius:4px;padding:3px 4px;color:#111}
+.slip .lt .hr{font-family:"Oswald",sans-serif;font-size:17px;line-height:1;background:rgba(255,255,255,.45);border:2px solid var(--metal-ink);border-radius:4px;padding:3px 4px;color:#111}
 .slip .lt small{font-size:10px;text-transform:uppercase;color:var(--muted)}
-.slip .teams{overflow-wrap:anywhere;font-size:16px;font-weight:700;text-transform:uppercase;letter-spacing:.02em;line-height:1.2;color:var(--ink)}
-.slip .sc{font-family:"Special Elite",monospace;font-size:14px;margin-top:2px}.slip .sc b{font-size:18px}
+.slip .teams{overflow-wrap:break-word;hyphens:auto;font-size:15px;font-weight:700;text-transform:uppercase;letter-spacing:.02em;line-height:1.2;color:var(--ink)}
+.slip .sc{grid-column:1/-1;display:flex;align-items:center;gap:6px;justify-content:center;margin-top:4px;padding:5px 8px;border:2px solid var(--metal-ink);border-radius:6px;background:rgba(255,255,255,.55);font-family:"Oswald",sans-serif;font-size:14px;text-transform:uppercase;letter-spacing:.04em;color:#111}
+.slip .sc b{font-size:20px;font-family:"Oswald",sans-serif}.slip .sc.live{background:#fff3c4}
+.slip .tlogo{width:16px!important;height:16px!important;margin:0 3px 0 0;vertical-align:-2px;display:inline-block}
 .slip .lm .note{margin-top:3px}
-.slip .lp{max-width:42vw;overflow-wrap:anywhere;display:grid;justify-items:center;gap:2px;min-width:74px;padding:6px 8px;background:rgba(255,255,255,.55);border:2px solid var(--metal-ink);border-radius:6px;text-align:center}
+.slip .lp{max-width:30vw;overflow-wrap:anywhere;display:grid;justify-items:center;gap:2px;min-width:62px;padding:5px 6px;background:rgba(255,255,255,.55);border:2px solid var(--metal-ink);border-radius:6px;text-align:center}
 .slip .lp .pick{font-family:"Caveat",cursive;font-size:clamp(18px,6vw,26px);word-break:break-word;line-height:1;color:#123a8c;font-weight:700}
 .slip .lp .q{font-family:"Special Elite",monospace;font-size:16px;color:#111}
 .slip .lp small{font-family:"Special Elite",monospace;font-size:10px;color:var(--muted)}
@@ -40,7 +42,7 @@
 .slip .note b{font-family:inherit!important;font-size:inherit!important;color:var(--ink)!important}
 .slip .money-box{margin:8px 10px 0;background:rgba(255,255,255,.5);border:2px solid var(--metal-ink);border-radius:6px}
 .slip .money-box span{font-family:"Special Elite",monospace;color:var(--muted)}
-.slip .money-box b{font-family:"Special Elite",monospace!important;font-size:20px!important;color:#111!important}
+.slip .money-box b{font-family:"Special Elite",monospace!important;font-size:clamp(15px,4.6vw,20px)!important;color:#111!important;white-space:nowrap}.slip .money-box{grid-template-columns:repeat(2,minmax(0,1fr))!important}
 .slip>.note,.slip>div>.note,.slip>p,.slip>.day{margin:8px 10px 0}
 .slip .ok{color:#0f6e2f;font-weight:700}.slip .ko{color:#a3190f;font-weight:700}
 .slip.sis,.slip.extra{}
@@ -317,7 +319,7 @@ body[data-sec="lotto"] .ball{background:var(--chip);color:var(--ink)}
       <div style="display:grid;justify-items:end;gap:4px">
         <div class="stamp" id="stamp">In caricamento…</div>
         <a id="refresh" class="refresh" target="_blank" rel="noopener" href="https://angar72.github.io/pronostici/" style="text-decoration:none">Apri con risultati in diretta ↗</a>
-        <div class="stamp">Versione 22 nov · extra in ordine</div>
+        <div class="stamp">Versione 22 nov · risultato sotto</div>
       </div>
     </div>
     <div class="seg" role="group" aria-label="Sezione">
@@ -1760,10 +1762,10 @@ if (typeof module !== "undefined") module.exports = Model;
           return `<div class="leg ${stl}">
             <div class="lt"><b class="hr">${r.m.t ? esc(r.m.t) : "--:--"}</b>${r.m.d !== state.day ? `<small>${esc(dayLabel(r.m.d))}</small>` : ""}</div>
             <div class="lm"><div class="teams">${TL(r.m.h)}${RCt(r.id, r.m.h, r.m.a, r.m.h)} – ${TL(r.m.a)}${RCt(r.id, r.m.h, r.m.a, r.m.a)}</div>
-              ${r.res ? `<div class="sc">Finale <b>${r.res.hg}-${r.res.ag}</b></div>` : lv ? `<div class="sc live-inline"><span class="dot"></span>In corso <b>${lv.hg}-${lv.ag}</b> ${liveWhen(lv)}</div>` : ""}
               <div class="note">${esc(r.L.d.name)} · indice di favore <b>${pct(r.s.prob)}</b> (${r.s.mkt == null ? `solo modello ${pct(r.s.model)}%, prudenzialmente ${pct(r.s.prob)}, quota stimata` : `modello ${pct(r.s.model)}%, bookmaker ${pct(r.s.mkt)}%${r.s.edge ? ", con valore" : ""}`})</div>
               ${(() => { const g = SCORERS[r.id + "|" + r.m.h + "|" + r.m.a]; return g && g.length ? eventsHtml({ goals: g, reds: [] }) : lv ? eventsHtml(lv) : ""; })()}</div>
             <div class="lp"><span class="pick">${esc(r.s.k)}</span><span class="q">${fmtQ(r.s.odd)}${r.s.est ? "*" : ""}</span>${r.s.odd0 != null && r.s.odd0 !== r.s.odd ? `<small>era ${fmtQ(r.s.odd0)}</small>` : ""}${stl ? `<span class="esito">${stl === "win" ? "✓ VINTA" : stl === "lose" ? "✗ PERSA" : stl === "live-ok" ? "✓ per ora" : "✗ per ora"}</span>` : ""}</div>
+            ${r.res ? `<div class="sc">Finale <b>${r.res.hg}-${r.res.ag}</b></div>` : lv ? `<div class="sc live"><span class="dot"></span>In corso <b>${lv.hg}-${lv.ag}</b> ${liveWhen(lv)}</div>` : ""}
           </div>`; }).join("")}
         <div class="note">Quota: ${tk.map(r => fmtQ(r.s.odd) + (r.s.est ? "*" : "")).join(" × ")} = <b>${fmtQ(q)}</b>${frozen?.qAt ? ` · quote Planetwin aggiornate alle ${esc(frozen.qAt)}` : ""}${anyEst ? `<br>* quota stimata dal modello: il bookmaker non l'ha ancora pubblicata, controlla la quota reale prima di giocare.` : ""}</div>
         ${(() => {
@@ -2505,8 +2507,9 @@ if (typeof module !== "undefined") module.exports = Model;
   // riga di schedina "retrò": orario a sinistra, partita al centro, giocata a destra (verde se vinta, rossa se persa)
   function slipLeg({ t, teams, res, lv, note, pick, q, odd0, stl }) {
     return `<div class="leg ${stl || ""}"><div class="lt"><b class="hr">${t ? esc(t) : "--:--"}</b></div>
-      <div class="lm"><div class="teams">${teams}</div>${res ? `<div class="sc">Finale <b>${res.hg}-${res.ag}</b></div>` : lv ? `<div class="sc live-inline"><span class="dot"></span>In corso <b>${lv.hg}-${lv.ag}</b> ${liveWhen(lv)}</div>` : ""}${note ? `<div class="note">${note}</div>` : ""}</div>
-      <div class="lp"><span class="pick">${pick}</span>${q ? `<span class="q">${q}</span>` : ""}${odd0 ? `<small>era ${odd0}</small>` : ""}${stl ? `<span class="esito">${{ win: "✓ VINTA", lose: "✗ PERSA", "live-ok": "✓ per ora", "live-ko": "✗ per ora", scored: "✓ HA SEGNATO", noscore: "✗ NON HA SEGNATO" }[stl] || ""}</span>` : ""}</div></div>`;
+      <div class="lm"><div class="teams">${teams}</div>${note ? `<div class="note">${note}</div>` : ""}</div>
+      <div class="lp"><span class="pick">${pick}</span>${q ? `<span class="q">${q}</span>` : ""}${odd0 ? `<small>era ${odd0}</small>` : ""}${stl ? `<span class="esito">${{ win: "✓ VINTA", lose: "✗ PERSA", "live-ok": "✓ per ora", "live-ko": "✗ per ora", scored: "✓ HA SEGNATO", noscore: "✗ NON HA SEGNATO" }[stl] || ""}</span>` : ""}</div>
+      ${res ? `<div class="sc">Finale <b>${res.hg}-${res.ag}</b></div>` : lv ? `<div class="sc live"><span class="dot"></span>In corso <b>${lv.hg}-${lv.ag}</b> ${liveWhen(lv)}</div>` : ""}</div>`;
   }
   // marcatori del giorno (21/11): 1 o 2 attaccanti in forma di squadre nettamente favorite, solo da seguire
   function marcatoriHtml(day) {
@@ -2705,7 +2708,7 @@ if (typeof module !== "undefined") module.exports = Model;
   // aggiornamento della pagina: l'app sulla schermata Home tiene in memoria la versione vecchia.
   // Ogni volta che si riapre (e ogni 10 minuti) controllo se c'è una versione nuova e mi ricarico da solo.
   // numero di versione crescente (BUILD): mi ricarico solo se sul server ce n'è uno PIÙ ALTO, e al massimo una volta ogni 5 minuti
-  const BUILD = 2026112205;
+  const BUILD = 2026112206;
   async function checkNewVersion() {
     try {
       let last = 0; try { last = +sessionStorage.getItem("pr.reload") || 0; } catch (e) {}
