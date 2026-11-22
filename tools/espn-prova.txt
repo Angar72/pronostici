@@ -1,33 +1,17 @@
-4 partite
-2026-11-22T11:15Z | FC Twente | Willem II | post | ids {'home': '152', 'away': '156'}
-   det: Yellow Card sp=False og=False team=156 ['Nathan Tjoe-A-On']
-   det: Red Card sp=False og=False team=156 ['Nathan Tjoe-A-On']
-   det: Goal sp=True og=False team=156 ['Devin Haen']
-   det: Goal sp=True og=False team=152 ['Ramiz Zerrouki']
-   det: Goal - Header sp=True og=False team=152 ['Marko Pjaca']
-   det: Yellow Card sp=False og=False team=152 ['Ruud Nijstad']
-2026-11-22T13:30Z | Ajax Amsterdam | ADO Den Haag | post | ids {'home': '139', 'away': '2726'}
-   det: Goal sp=True og=False team=139 ['Davy Klaassen']
-   det: Goal sp=True og=False team=139 ['Jorthy Mokio']
-   det: Red Card sp=False og=False team=2726 ['Matteo Waem']
-   det: Goal sp=True og=False team=139 ['Davy Klaassen']
-   det: Yellow Card sp=False og=False team=139 ['Anton Gaaei']
-2026-11-22T13:30Z | Sparta Rotterdam | AZ Alkmaar | post | ids {'home': '151', 'away': '140'}
-   det: Goal sp=True og=False team=151 ['Isaac Babadi']
-   det: Goal sp=True og=False team=140 ['Mateo Chávez']
-   det: Yellow Card sp=False og=False team=151 ['Isaac Babadi']
-   det: Goal sp=True og=False team=140 ['Calvin Stengs']
-   det: Goal sp=True og=False team=140 ['Dave Kwakman']
-   det: Yellow Card sp=False og=False team=140 ['Peer Koopmeiners']
-   det: Yellow Card sp=False og=False team=151 ['Bruno Martins Indi']
-   det: Yellow Card sp=False og=False team=151 ['Andrej Kostic']
-   det: Goal sp=True og=False team=140 ['Ro-Zangelo Daal']
-   det: Red Card sp=False og=False team=151 ['Bruno Martins Indi']
-   det: Yellow Card sp=False og=False team=151 ['Julian Baas']
-   det: Goal sp=True og=False team=140 ['Seiya Maikuma']
-2026-11-22T15:45Z | Go Ahead Eagles | Fortuna Sittard | post | ids {'home': '3706', 'away': '143'}
-   det: Yellow Card sp=False og=False team=143 ['Shiloh ’t Zand']
-   det: Goal sp=True og=False team=143 ['Anthony Descotte']
-   det: Yellow Card sp=False og=False team=3706 ['Joris Kramer']
-   det: Yellow Card sp=False og=False team=143 ['Mohamed Ihattaren']
-   det: Yellow Card sp=False og=False team=3706 ['Gerrit Nauber']
+3 partite
+2026-11-22T14:00Z | Paris FC | Angers | post | ids {'home': '6851', 'away': '7868'}
+   det: Yellow Card sp=False og=False team=6851 ['Luca Koleosho']
+   det: Goal sp=True og=False team=6851 ['Zabi Gueu']
+   det: Goal sp=True og=False team=6851 ['Luca Koleosho']
+   det: Goal sp=True og=False team=6851 ['Maxime López']
+   det: Goal - Header sp=True og=False team=6851 ['Diego Coppola']
+   det: Yellow Card sp=False og=False team=7868 ['Jim Allevinah']
+2026-11-22T16:15Z | Lorient | Stade Rennais | post | ids {'home': '273', 'away': '169'}
+   det: Goal sp=True og=False team=169 ['Boulaye Dia']
+   det: Yellow Card sp=False og=False team=169 ['Sebastian Szymanski']
+   det: Goal - Header sp=True og=False team=273 ['Montassar Talbi']
+   det: Yellow Card sp=False og=False team=169 ['Mahamadou Nagida']
+   det: Yellow Card sp=False og=False team=273 ['Souleymane Faye']
+   det: Yellow Card sp=False og=False team=273 ['Noah Cadiou']
+   det: Red Card sp=False og=False team=169 ['Adrien Thomasson']
+2026-11-22T19:45Z | Marseille | Le Mans | pre | ids {'home': '176', 'away': '2697'}
