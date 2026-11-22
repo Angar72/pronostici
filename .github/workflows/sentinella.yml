@@ -28,10 +28,12 @@ jobs:
       - name: Giro ogni 5 minuti
         run: |
           git config user.name "pronostici-bot"; git config user.email "pronostici-bot@users.noreply.github.com"
-          end=$((SECONDS + 340*60)); lotto=0
+          end=$((SECONDS + 340*60)); lotto=0; ris=0
           while [ $SECONDS -lt $end ]; do
             git fetch -q origin main && git reset -q --hard origin/main
-            ONLY_IF_MISSING=true timeout 300 node tools/auto.mjs || true
+            # ogni 20 minuti giro completo (risultati e marcatori salvati; con le schedine già pronte non chiede quote),
+            # altrimenti solo il controllo delle schedine mancanti (22/11)
+            if [ $SECONDS -ge $ris ]; then timeout 300 node tools/auto.mjs || true; ris=$((SECONDS + 20*60)); else ONLY_IF_MISSING=true timeout 300 node tools/auto.mjs || true; fi
             timeout 240 node tools/avvisi.mjs || true
             # quote aggiornate prima del calcio d'inizio; a partite finite, le schedine del giorno dopo
             p=$(timeout 120 node tools/quote.mjs | tee /dev/stderr | sed -n 's/^PROSSIMA=//p') || true

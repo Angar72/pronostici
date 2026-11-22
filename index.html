@@ -22,6 +22,7 @@
 .slip .teams{overflow-wrap:break-word;hyphens:auto;font-size:15px;font-weight:700;text-transform:uppercase;letter-spacing:.02em;line-height:1.2;color:var(--ink)}
 .slip .sc{grid-column:1/-1;display:flex;align-items:center;gap:6px;justify-content:center;margin-top:4px;padding:5px 8px;border:2px solid var(--metal-ink);border-radius:6px;background:rgba(255,255,255,.55);font-family:"Oswald",sans-serif;font-size:14px;text-transform:uppercase;letter-spacing:.04em;color:#111}
 .slip .sc b{font-size:20px;font-family:"Oswald",sans-serif}.slip .sc.live{background:#fff3c4}
+.slip .gols{grid-column:1/-1;font-family:"Special Elite",monospace;font-size:12px;line-height:1.5;padding:4px 8px;background:rgba(255,255,255,.35);border-radius:4px}.slip .gols b{font-family:"Oswald",sans-serif;font-size:12px;text-transform:uppercase}.slip .gols .tlogo{display:none}
 .slip .tlogo{width:16px!important;height:16px!important;margin:0 3px 0 0;vertical-align:-2px;display:inline-block}
 .slip .lm .note{margin-top:3px}
 .slip .lp{max-width:30vw;overflow-wrap:anywhere;display:grid;justify-items:center;gap:2px;min-width:62px;padding:5px 6px;background:rgba(255,255,255,.55);border:2px solid var(--metal-ink);border-radius:6px;text-align:center}
@@ -324,7 +325,7 @@ body[data-sec="lotto"] .ball{background:var(--chip);color:var(--ink)}
       <div style="display:grid;justify-items:end;gap:4px">
         <div class="stamp" id="stamp">In caricamento…</div>
         <a id="refresh" class="refresh" target="_blank" rel="noopener" href="https://angar72.github.io/pronostici/" style="text-decoration:none">Apri con risultati in diretta ↗</a>
-        <div class="stamp">Versione 22 nov · riquadri sistemati</div>
+        <div class="stamp">Versione 22 nov · marcatori con risultato</div>
       </div>
     </div>
     <div class="seg" role="group" aria-label="Sezione">
@@ -687,7 +688,7 @@ if (typeof module !== "undefined") module.exports = Model;
   const pct = v => Math.round(v * 100);
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   // stemmi delle squadre (solo sul sito: arrivano da ESPN) ed espulsioni lette dai risultati in diretta
-  const LOGOS = {}, REDS = {}, EXTRA_EV = {}, SCORERS = {}, SCORERN = {};
+  const LOGOS = {}, REDS = {}, EXTRA_EV = {}, SCORERS = {}, SCORERN = {}, FINALS = {};
   // nazionali (Nations League): bandiera e nome in italiano
   const NAT = {"Albania": ["🇦🇱", "Albania"], "Andorra": ["🇦🇩", "Andorra"], "Armenia": ["🇦🇲", "Armenia"], "Austria": ["🇦🇹", "Austria"], "Azerbaijan": ["🇦🇿", "Azerbaigian"], "Belarus": ["🇧🇾", "Bielorussia"], "Belgium": ["🇧🇪", "Belgio"], "Bosnia-Herzegovina": ["🇧🇦", "Bosnia ed Erzegovina"], "Bosnia and Herzegovina": ["🇧🇦", "Bosnia ed Erzegovina"], "Bulgaria": ["🇧🇬", "Bulgaria"], "Croatia": ["🇭🇷", "Croazia"], "Cyprus": ["🇨🇾", "Cipro"], "Czechia": ["🇨🇿", "Rep. Ceca"], "Czech Republic": ["🇨🇿", "Rep. Ceca"], "Denmark": ["🇩🇰", "Danimarca"], "England": ["🏴󠁧󠁢󠁥󠁮󠁧󠁿", "Inghilterra"], "Estonia": ["🇪🇪", "Estonia"], "Faroe Islands": ["🇫🇴", "Isole Far Oer"], "Finland": ["🇫🇮", "Finlandia"], "France": ["🇫🇷", "Francia"], "Georgia": ["🇬🇪", "Georgia"], "Germany": ["🇩🇪", "Germania"], "Gibraltar": ["🇬🇮", "Gibilterra"], "Greece": ["🇬🇷", "Grecia"], "Hungary": ["🇭🇺", "Ungheria"], "Iceland": ["🇮🇸", "Islanda"], "Israel": ["🇮🇱", "Israele"], "Italy": ["🇮🇹", "Italia"], "Kazakhstan": ["🇰🇿", "Kazakistan"], "Kosovo": ["🇽🇰", "Kosovo"], "Latvia": ["🇱🇻", "Lettonia"], "Liechtenstein": ["🇱🇮", "Liechtenstein"], "Lithuania": ["🇱🇹", "Lituania"], "Luxembourg": ["🇱🇺", "Lussemburgo"], "Malta": ["🇲🇹", "Malta"], "Moldova": ["🇲🇩", "Moldavia"], "Montenegro": ["🇲🇪", "Montenegro"], "Netherlands": ["🇳🇱", "Paesi Bassi"], "North Macedonia": ["🇲🇰", "Macedonia del Nord"], "Northern Ireland": ["🇬🇧", "Irlanda del Nord"], "Norway": ["🇳🇴", "Norvegia"], "Poland": ["🇵🇱", "Polonia"], "Portugal": ["🇵🇹", "Portogallo"], "Republic of Ireland": ["🇮🇪", "Irlanda"], "Ireland": ["🇮🇪", "Irlanda"], "Romania": ["🇷🇴", "Romania"], "Russia": ["🇷🇺", "Russia"], "San Marino": ["🇸🇲", "San Marino"], "Scotland": ["🏴󠁧󠁢󠁳󠁣󠁴󠁿", "Scozia"], "Serbia": ["🇷🇸", "Serbia"], "Slovakia": ["🇸🇰", "Slovacchia"], "Slovenia": ["🇸🇮", "Slovenia"], "Spain": ["🇪🇸", "Spagna"], "Sweden": ["🇸🇪", "Svezia"], "Switzerland": ["🇨🇭", "Svizzera"], "Turkey": ["🇹🇷", "Turchia"], "Türkiye": ["🇹🇷", "Turchia"], "Ukraine": ["🇺🇦", "Ucraina"], "Wales": ["🏴󠁧󠁢󠁷󠁬󠁳󠁿", "Galles"]};
   const TL = n => NAT[n] ? `<span class="tlogo" aria-hidden="true" style="width:auto;height:auto;font-size:1.05em">${NAT[n][0]}</span>${esc(NAT[n][1])}` : (LOGOS[n] ? `<img class="tlogo" src="${esc(LOGOS[n])}" alt="" loading="lazy" decoding="async">` : "") + esc(n);
@@ -2523,14 +2524,20 @@ if (typeof module !== "undefined") module.exports = Model;
       // in diretta: marcatori letti da ESPN mentre si gioca; a fine partita anche dai dati salvati
       const key = m.id + "|" + m.h + "|" + m.a, lv = liveFor(m.id, m.h, m.a, m.t), saved = state.raw?.[m.id]?.sc?.[m.d + "|" + m.h + "|" + m.a];
       const liveG = (SCORERN[key] || []).filter(([sd, n]) => sd === m.side && n === m.player);
-      const done = !!saved || (state.raw?.[m.id]?.played || []).some(x => x.startsWith(m.d + "|" + m.h + "|" + m.a + "|"));
+      const pl = (state.raw?.[m.id]?.played || []).find(x => x.startsWith(m.d + "|" + m.h + "|" + m.a + "|"));
+      const fin = FINALS[key] || (pl ? pl.split("|").slice(3, 5).map(Number) : null), done = !!saved || !!fin;
+      // tutti i marcatori della partita, per vedere chi ha segnato davvero (22/11)
+      const allG = (SCORERN[key] && SCORERN[key].length ? SCORERN[key] : (saved || []).map(([sd, n]) => [sd, n, ""]));
+      const gl = side => { const c = {}; allG.filter(x => x[0] === side).forEach(x => { const k2 = x[1].split(" ").slice(-1)[0]; c[k2] = (c[k2] || []).concat(x[2] || []); }); return Object.entries(c).map(([n, mins]) => n + (mins.filter(Boolean).length ? " " + mins.filter(Boolean).join(", ") : mins.length > 1 ? " ×" + mins.length : "")).join(", ") || "nessuno"; };
+      const resLine = fin || lv ? `<div class="sc${lv && !fin ? " live" : ""}">${fin ? "Finale" : `<span class="dot"></span>In corso`} <b>${(fin || [lv.hg, lv.ag]).join("-")}</b>${!fin && lv ? " " + liveWhen(lv) : ""}</div>
+        <div class="gols"><b>${TL(m.h)}:</b> ${esc(gl("h"))}<br><b>${TL(m.a)}:</b> ${esc(gl("a"))}</div>` : "";
       const scored = liveG.length || (saved || []).some(([sd, n]) => sd === m.side && n === m.player);
       const mk = scored ? `<span class="ok">✓ ha segnato${liveG.length ? " " + liveG.map(x => x[2]).filter(Boolean).join(", ") : ""}</span>` : done ? '<span class="ko">✗ non ha segnato</span>' : lv ? `<span class="note">in corso ${lv.hg}-${lv.ag} ${liveWhen(lv)}</span>` : "·";
       const q = m.odd ? ` · ${m.odd.toFixed(2).replace(".", ",")}` : "";
       const stl = scored ? "win" : done ? "lose" : lv ? "" : "";
-      return slipLeg({ t: m.t, teams: `${esc(m.player)} <span class="note">(${TL(m.team)})</span>`, res: null, lv: scored || done ? null : lv,
+      return slipLeg({ t: m.t, teams: `${esc(m.player)} <span class="note">(${TL(m.team)})</span>`, res: null, lv: null,
         note: `${TL(m.h)} – ${TL(m.a)} · a segno in <b>${m.n5} delle ultime ${m.of}</b> partite (${m.g} gol) · ${esc(m.team)} vince al ${Math.round(m.pw * 100)}% secondo le quote${liveG.length ? ` · gol al ${esc(liveG.map(x => x[2]).filter(Boolean).join(", "))}` : ""}`,
-        pick: "Segna", q: m.odd ? m.odd.toFixed(2).replace(".", ",") : "", stl: scored ? "scored" : done ? "noscore" : "" }).replace('class="leg scored"', 'class="leg win"').replace('class="leg noscore"', 'class="leg lose"'); }).join("")}
+        pick: "Segna", q: m.odd ? m.odd.toFixed(2).replace(".", ",") : "", stl: scored ? "scored" : done ? "noscore" : "" }).replace('class="leg scored"', 'class="leg win"').replace('class="leg noscore"', 'class="leg lose"').replace(/<\/div>$/, resLine + "</div>"); }).join("")}
       ${(() => { const qs = M.map(m => m.odd).filter(Boolean); if (!qs.length) return "";
         const qt = qs.reduce((a, x) => a * x, 1), won = M.every(m => m.res === "si"), lost = M.some(m => m.res === "no");
         return `<div class="res"><div class="money-box">
@@ -2720,7 +2727,7 @@ if (typeof module !== "undefined") module.exports = Model;
   // aggiornamento della pagina: l'app sulla schermata Home tiene in memoria la versione vecchia.
   // Ogni volta che si riapre (e ogni 10 minuti) controllo se c'è una versione nuova e mi ricarico da solo.
   // numero di versione crescente (BUILD): mi ricarico solo se sul server ce n'è uno PIÙ ALTO, e al massimo una volta ogni 5 minuti
-  const BUILD = 2026112207;
+  const BUILD = 2026112208;
   async function checkNewVersion() {
     try {
       let last = 0; try { last = +sessionStorage.getItem("pr.reload") || 0; } catch (e) {}
@@ -2991,6 +2998,7 @@ if (typeof module !== "undefined") module.exports = Model;
           m.goals = det.filter(x => x.scoringPlay).map(lab).join(";");
           SCORERS[m.id + "|" + m.h + "|" + m.a] = det.filter(x => x.scoringPlay).map(lab);
           // per i marcatori del giorno: lato, nome completo e minuto (senza autogol)
+          if (s.completed) FINALS[m.id + "|" + m.h + "|" + m.a] = [hg, ag];
           SCORERN[m.id + "|" + m.h + "|" + m.a] = det.filter(x => x.scoringPlay && !x.ownGoal).map(x => [who(x) === m.h ? "h" : "a", x.athletesInvolved?.[0]?.displayName || "", x.clock?.displayValue || ""]);
         }
         if (m.evOnly) return;
