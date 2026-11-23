@@ -214,7 +214,35 @@ function boxOggi(){
   return ok ? `<div class="oggi ok">✅ Allenamento di oggi completato!<small>Codice di oggi: <b>${codiceDel(oggiStr())}</b>${s>1?` · 🔥 ${s} giorni di fila`:''}</small><a class="wa" href="${linkPapa()}" target="_blank" rel="noopener">📲 Manda il codice a papà</a></div>`
             : `<div class="oggi todo">📅 Allenamento di oggi: <b>da fare</b><small>Fai almeno ${SOGLIA} su 10 per ricevere il codice di sblocco${s>0?` · 🔥 serie di ${s} giorni, non perderla!`:''}</small></div>`;
 }
-function linkPapa(p){ const t=`Ciao papà! Ho fatto l'allenamento di oggi${p!=null?': '+p+'/10':''} ✅ Codice di sblocco: ${codiceDel(oggiStr())}`; return 'https://wa.me/?text='+encodeURIComponent(t); }
+const NOMI_MODO = {e:'e / è', a:'a / ha', mix:'Tutto mescolato', p:'Problemi + e −'};
+function pulisci(s){ return String(s).replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim(); }
+function creaReport(punti, totale, errs, superato){
+  const s = stats();
+  let t = superato
+    ? `Ciao papà! Ho fatto l'allenamento di oggi ✅\n*Esercizio:* ${NOMI_MODO[modo]||modo}\n*Punteggio:* ${punti}/${totale}\n*Codice di sblocco:* ${codiceDel(oggiStr())}`
+    : `Ciao papà! Ho provato l'allenamento ma non ho ancora superato la prova 💪\n*Esercizio:* ${NOMI_MODO[modo]||modo}\n*Punteggio:* ${punti}/${totale} (ne servono ${SOGLIA})`;
+  if(errs.length){
+    t += `\n\n❌ *Errori (${errs.length}):*`;
+    errs.forEach(([f,g,sc,it],i)=>{
+      const fr = pulisci(f);
+      if(fr.includes('___')) t += `\n${i+1}. ${fr.replace('___','['+sc+']')} → giusto: *${g}*`;
+      else {
+        let nota = '';
+        if(it && it[2]==='p' && sc===it[6]) nota = it[7] ? ' _(ho fatto la sottrazione invece dell\'addizione)_' : ' _(ho fatto l\'addizione invece della sottrazione)_';
+        else if(it && it[2]==='p') nota = ' _(operazione giusta, errore di calcolo)_';
+        t += `\n${i+1}. ${fr} → ho risposto ${sc}, giusto: *${g}*${nota}`;
+      }
+    });
+  } else t += `\n\n🌟 Nessun errore!`;
+  t += `\n\n📚 In tutto: ${s.tot} esercizi, ${s.ok} risposte giuste`;
+  return t;
+}
+function linkPapa(p){
+  let t = leggi('report_'+oggiStr());
+  if(!t) t = `Ciao papà! Ho fatto l'allenamento di oggi${p!=null?': '+p+'/10':''} ✅ Codice di sblocco: ${codiceDel(oggiStr())}`;
+  return 'https://wa.me/?text='+encodeURIComponent(t);
+}
+function linkReport(t){ return 'https://wa.me/?text='+encodeURIComponent(t); }
 function num(k){ return parseInt(leggi(k)||'0')||0 }
 function stats(){ return {tot:num('tot_esercizi'), ok:num('tot_giuste'), partite:num('tot_partite')} }
 function statBox(){ const s=stats(); return `<div class="stats"><div><b>${s.tot}</b><span>esercizi fatti</span></div><div><b>${s.ok}</b><span>risposte giuste</span></div><div><b>${s.partite}</b><span>partite finite</span></div></div>`; }
@@ -375,7 +403,7 @@ function creaProblema(){
   const spieg = somma
     ? `Qualcosa si <b>aggiunge</b> o si mette <b>insieme</b>, quindi è un'<b>addizione</b>: ${a} + ${b} = <b>${ris}</b>.`
     : `Qualcosa si <b>toglie</b> (o si cerca quanto <b>manca</b>), quindi è una <b>sottrazione</b>: ${a} − ${b} = <b>${ris}</b>.`;
-  return [testo, String(ris), 'p', scelte, spieg, somma?'pA':'pG'];
+  return [testo, String(ris), 'p', scelte, spieg, somma?'pA':'pG', String(sbagliata), somma];
 }
 
 function inizia(m){
@@ -438,7 +466,7 @@ function rispondi(btn, scelta){
     : guida(gk, G.ko, scaduto ? 'Tempo scaduto! ⏰ La prossima volta sii più veloce!' : pick(G.ko_frasi), 'shake');
   fb.innerHTML = `<b>${ok ? 'Risposta giusta: "'+giusta+'"' : (scaduto?'⏰ Tempo scaduto! ':'')+'Ci voleva "'+giusta+'" 🙂'}</b><br>${spieg}
     ${tipo==='p' ? '' : `<div class="trick">Prova con "${prova}": «${fraseProva}» → ${haSenso?'ha senso ✅':'non ha senso ❌'}</div>`}`;
-  if(ok) punti++; else errori.push([frase,giusta,scaduto?'tempo scaduto':scelta]);
+  if(ok) punti++; else errori.push([frase,giusta,scaduto?'tempo scaduto':scelta, giro[idx]]);
   salva('tot_esercizi', num('tot_esercizi')+1); if(ok) salva('tot_giuste', num('tot_giuste')+1);
   const tt=document.getElementById('totq'); if(tt) tt.textContent=num('tot_esercizi');
   suona(ok?'ok':'ko');
@@ -456,6 +484,8 @@ function fine(){
   const nuovo = punti>rec; if(nuovo) salva(k,punti);
   salva('tot_partite', num('tot_partite')+1);
   const superato = punti>=SOGLIA; if(superato) salva('sblocco_'+oggiStr(),'1');
+  const report = creaReport(punti, giro.length, errori, superato);
+  if(superato) salva('report_'+oggiStr(), report);
   suona('fine');
   const perc = punti/giro.length;
   const emoji = perc===1?'🏆':perc>=.8?'🌟':perc>=.6?'😊':'💪';
@@ -466,7 +496,7 @@ function fine(){
     <div class="score">${punti} su ${giro.length}</div>
     <div class="msg">${msg}${nuovo&&rec>0?'<br>🎊 Nuovo record!':''}</div>
     ${superato ? `<div class="sblocco"><div>🔓 Ce l'hai fatta! Ecco il codice di oggi</div><div class="cod">${codiceDel(oggiStr())}</div><div class="small">Mandalo a papà per sbloccare il telefono</div><a class="wa wabig" href="${linkPapa(punti)}" target="_blank" rel="noopener">📲 Manda il codice a papà</a></div>`
-               : `<div class="sblocco no"><div>🔒 Servono almeno ${SOGLIA} risposte giuste su 10 per il codice di sblocco.</div><div class="small">Ne hai fatte ${punti}: riprova, ce la puoi fare! 💪</div></div>`}
+               : `<div class="sblocco no"><div>🔒 Servono almeno ${SOGLIA} risposte giuste su 10 per il codice di sblocco.</div><div class="small">Ne hai fatte ${punti}: riprova, ce la puoi fare! 💪</div><a class="wa" href="${linkReport(report)}" target="_blank" rel="noopener">📲 Manda il resoconto a papà</a></div>`}
     ${errori.length?`<b>Da ripassare:</b><div class="rev">${errori.map(([f,g,s])=>`<div>${f.includes('___') ? f.replace('___',`<span class="c">${g}</span>`) : f+' → <span class="c">'+g+'</span>'} <span style="color:var(--muted)">(avevi messo "${s}")</span></div>`).join('')}</div>`:''}
     <div class="btns">
       <button class="btn" onclick="inizia(modo)">Gioca ancora</button>
