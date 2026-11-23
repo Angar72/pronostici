@@ -107,6 +107,8 @@
   .probl{display:block;font-size:1.15rem;line-height:1.5;text-align:left;font-weight:700;background:#f7f4fb;border-radius:14px;padding:12px 14px;margin-bottom:10px}
   .rlab{font-size:1.2rem}
   .ver{text-align:center;color:var(--muted);font-size:.75rem;margin-top:12px;opacity:.7}
+  .tb{display:block;margin-top:6px;font-weight:700;font-size:.9rem;opacity:.85}
+  .capito{margin-top:10px;font:inherit;font-weight:900;border:none;border-radius:12px;padding:10px 22px;background:var(--pri);color:#fff;cursor:pointer}
   .big{font-size:3.5rem;text-align:center;margin:6px 0}
   .score{font-size:1.5rem;text-align:center;font-weight:900}
   .msg{text-align:center;color:var(--muted);margin:8px 0 18px}
@@ -136,7 +138,7 @@
   <h1>✏️ Allenamento di Alice</h1>
   <div class="sub">Allenati con le parole e con i numeri</div>
   <div class="card" id="app"></div>
-  <div class="ver">versione 23 novembre · resoconto con errori</div>
+  <div class="ver">versione 23 novembre · spiegazioni di Alice e Giulia</div>
 </div>
 
 <script>
@@ -225,12 +227,12 @@ function creaReport(punti, totale, errs, superato){
     t += `\n\n❌ *Errori (${errs.length}):*`;
     errs.forEach(([f,g,sc,it],i)=>{
       const fr = pulisci(f);
-      if(fr.includes('___')) t += `\n${i+1}. ${fr.replace('___','['+sc+']')} → giusto: *${g}*`;
+      if(fr.includes('___')) t += `\n${i+1}. ${fr.replace('___','['+sc+']')} → giusto: *${g}*` + (it ? `\n   💡 ${nomeGuida(it)}: ${pulisci(spiegaDi(it))}` : '');
       else {
         let nota = '';
         if(it && it[2]==='p' && sc===it[6]) nota = it[7] ? ' _(ho fatto la sottrazione invece dell\'addizione)_' : ' _(ho fatto l\'addizione invece della sottrazione)_';
         else if(it && it[2]==='p') nota = ' _(operazione giusta, errore di calcolo)_';
-        t += `\n${i+1}. ${fr} → ho risposto ${sc}, giusto: *${g}*${nota}`;
+        t += `\n${i+1}. ${fr} → ho risposto ${sc}, giusto: *${g}*${nota}` + (it ? `\n   💡 ${nomeGuida(it)}: ${pulisci(spiegaDi(it))}` : '');
       }
     });
   } else t += `\n\n🌟 Nessun errore!`;
@@ -440,6 +442,21 @@ function domanda(){
 
 function avviaTempo(){}
 
+function spiegaDi(it){
+  const [frase, giusta, tipo] = it;
+  if(tipo==='p') return it[4];
+  const haSenso = (giusta==='è'||giusta==='ha');
+  return tipo==='e'
+    ? (haSenso ? `Qui c'è il verbo <b>essere</b>, quindi ci vuole <b>è</b> con l'accento.` : `Qui <b>e</b> serve a unire due cose, come "e anche". Niente accento!`)
+    : (haSenso ? `Qui c'è il verbo <b>avere</b>, quindi ci vuole <b>ha</b> con l'acca.` : `Qui <b>a</b> è una preposizione (dove? a chi? quando?). Niente acca!`);
+}
+function trucco(it){
+  const [frase, giusta, tipo] = it; if(tipo==='p') return '';
+  const prova = tipo==='e' ? 'era' : 'aveva'; const haSenso = (giusta==='è'||giusta==='ha');
+  return `Prova con "${prova}": «${pulisci(frase.replace('___', prova))}» → ${haSenso?'ha senso, quindi ci vuole '+giusta:'non ha senso, quindi ci vuole '+giusta}`;
+}
+function nomeGuida(it){ const gk = it[2]==='p' ? it[5] : it[2]; return GUIDE[gk].nome; }
+
 function rispondi(btn, scelta){
   const [frase, giusta, tipo] = giro[idx];
   clearInterval(countdown);
@@ -463,14 +480,15 @@ function rispondi(btn, scelta){
   const G = GUIDE[gk];
   document.getElementById('guida').innerHTML = ok
     ? guida(gk, pick(G.ok), pick(BRAVO), 'pop')
-    : guida(gk, G.ko, scaduto ? 'Tempo scaduto! ⏰ La prossima volta sii più veloce!' : pick(G.ko_frasi), 'shake');
-  fb.innerHTML = `<b>${ok ? 'Risposta giusta: "'+giusta+'"' : (scaduto?'⏰ Tempo scaduto! ':'')+'Ci voleva "'+giusta+'" 🙂'}</b><br>${spieg}
-    ${tipo==='p' ? '' : `<div class="trick">Prova con "${prova}": «${fraseProva}» → ${haSenso?'ha senso ✅':'non ha senso ❌'}</div>`}`;
+    : guida(gk, G.ko, `${pick(['Ops!','Quasi!','Niente paura!','Ci sei quasi!'])} Ci voleva <b>"${giusta}"</b>.<br>${spieg}${tipo==='p'?'':'<br><span class="tb">🔎 '+trucco(giro[idx])+'</span>'}`, 'shake');
+  fb.innerHTML = ok ? `<b>Risposta giusta: "${giusta}"</b><br>${spieg}
+    ${tipo==='p' ? '' : `<div class="trick">Prova con "${prova}": «${fraseProva}» → ${haSenso?'ha senso ✅':'non ha senso ❌'}</div>`}`
+    : `<b>Leggi bene cosa ti spiega ${GUIDE[gk].nome} 👆</b><br><button class="capito" onclick="avanti()">Ho capito ➜</button>`;
   if(ok) punti++; else errori.push([frase,giusta,scaduto?'tempo scaduto':scelta, giro[idx]]);
   salva('tot_esercizi', num('tot_esercizi')+1); if(ok) salva('tot_giuste', num('tot_giuste')+1);
   const tt=document.getElementById('totq'); if(tt) tt.textContent=num('tot_esercizi');
   suona(ok?'ok':'ko');
-  const attesa = ok ? 2500 : 5000;
+  const attesa = ok ? 2500 : 9000;
   const auto = document.getElementById('auto'), bar = document.getElementById('autobar');
   auto.style.display = 'block';
   requestAnimationFrame(()=>{ bar.style.transition = `width ${attesa}ms linear`; bar.style.width = '0%'; });
