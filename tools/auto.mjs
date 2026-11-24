@@ -250,6 +250,18 @@ const hit = (k, h, a) => ({ "1": h > a, "X": h === a, "2": h < a, "1X": h >= a, 
 const resultOf = l => { const L = leagues[l.id]; const p = L?.played.find(x => { const q = x.split("|"); return q[1] === l.h && q[2] === l.a && Math.abs(dayDiff(q[0], l.d)) <= 4; }); if (!p) return null; const q = p.split("|"); return { hg: +q[3], ag: +q[4] }; };
 const ticketState = tk => { const r = tk.map(resultOf); if (tk.some((l, i) => r[i] && !hit(l.k, r[i].hg, r[i].ag))) return "lost"; return r.every(Boolean) ? "won" : "open"; };
 
+// stato della squadra nel SUO campionato (Toni, 24/11): per coppe europee e Nations League, dove la classifica
+// della coppa non basta. Punti a partita, posizione, forma delle ultime 5 (3=vittoria, 1=pari, 0=sconfitta)
+const DOM = {};
+function domStat(team) {
+  const n = eNorm(team); if (n in DOM) return DOM[n];
+  for (const [id, L] of Object.entries(leagues)) {
+    if (L.cup || ["cl", "el", "ecl", "unl"].includes(id) || !(L.teams || []).some(t => eNorm(t) === n)) continue;
+    const st = stats(id), T = Object.entries(st.T).find(([t]) => eNorm(t) === n)?.[1]; if (!T || T.n < 4) continue;
+    return DOM[n] = { id, ppg: T.p / T.n, pos: T.pos, of: st.n, n: T.n, w5: T.last.slice(-5).filter(x => x === 3).length, l3: T.last.slice(-3).filter(x => x === 0).length };
+  }
+  return DOM[n] = null;
+}
 function stats(id) {
   const L = leagues[id], y = +TODAY.slice(0, 4), m = +TODAY.slice(5, 7);
   const from = (id === "se_1" || id === "no_1") ? `${y}-03-01` : `${m >= 7 ? y : y - 1}-07-01`;
@@ -297,8 +309,13 @@ function candidates(relaxed = false) {
         const s0 = 1 / o1 + 1 / oX + 1 / o2, e1 = 1 / o1 / s0, eX = 1 / oX / s0, e2 = 1 / o2 / s0;
         const dcE = DC[id + "|" + h + "|" + a] || (BACKTEST ? { "1X": Math.round(0.95 / (1 / o1 + 1 / oX) * 100) / 100, "X2": Math.round(0.95 / (1 / o2 + 1 / oX) * 100) / 100 } : {});
         const pushE = (k, odd, prob) => odd && odd > 1.01 && out.push({ id, d, t, h, a, k, odd, prob: Math.round(prob * 1000) / 1000, why: "coppa europea", key: id + "|" + h + "|" + a, secca: k === "1" || k === "2" });
-        if (o1 <= 1.35) pushE("1", o1, e1); else if (o1 <= 1.6) pushE("1X", dcE["1X"], e1 + eX);
-        if (o2 <= 1.35) pushE("2", o2, e2); else if (o2 <= 1.6) pushE("X2", dcE["X2"], e2 + eX);
+        // la favorita deve andare bene anche nel suo campionato: almeno 1,8 punti a partita, nella metà alta,
+        // in forma (2 vittorie nelle ultime 5, non 2 sconfitte nelle ultime 3) e, se conosco l'avversaria,
+        // almeno 0,4 punti a partita più di lei nel rispettivo campionato
+        const okDom = (f, o) => { const F = domStat(f), O = domStat(o); if (!F) return true;
+          return F.ppg >= 1.8 && F.pos <= F.of / 2 && F.w5 >= 2 && F.l3 < 2 && (!O || F.ppg - O.ppg >= 0.4); };
+        if (okDom(h, a)) { if (o1 <= 1.35) pushE("1", o1, e1); else if (o1 <= 1.6) pushE("1X", dcE["1X"], e1 + eX); }
+        if (okDom(a, h)) { if (o2 <= 1.35) pushE("2", o2, e2); else if (o2 <= 1.6) pushE("X2", dcE["X2"], e2 + eX); }
         continue;
       }
       const H = st.T[h], A = st.T[a]; if (!H || !A || H.n < 4 || A.n < 4) continue;
