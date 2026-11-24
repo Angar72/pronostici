@@ -474,14 +474,14 @@ if (!BACKTEST) {
         const side = p1 >= 0.58 ? "h" : p2 >= 0.58 ? "a" : null; if (!side) continue;
         const team = side === "h" ? h : a, pw = side === "h" ? p1 : p2;
         // ultime 5 partite della squadra in TUTTE le competizioni (campionato, coppe, Champions...) con i marcatori noti (24/11)
-        const all = [];
-        for (const L2 of Object.values(leagues)) for (const x of L2.played || []) { const q2 = x.split("|"); if (q2[0] < TODAY && (q2[1] === team || q2[2] === team) && L2.sc?.[q2[0] + "|" + q2[1] + "|" + q2[2]]) all.push([...q2, L2]); }
+        const all = [], tn = eNorm(team);
+        for (const L2 of Object.values(leagues)) for (const x of L2.played || []) { const q2 = x.split("|"); if (q2[0] < TODAY && (eNorm(q2[1]) === tn || eNorm(q2[2]) === tn) && L2.sc?.[q2[0] + "|" + q2[1] + "|" + q2[2]]) all.push([...q2, L2]); }
         all.sort((x, y) => x[0] < y[0] ? -1 : 1);
         const last = all.slice(-5);
         const cnt = {}, tot = {}; let known = 0;
         for (const x of last) {
           const g = x[x.length - 1].sc[x[0] + "|" + x[1] + "|" + x[2]]; if (!g) continue; known++;
-          const sd = x[1] === team ? "h" : "a", nm = new Set();
+          const sd = eNorm(x[1]) === tn ? "h" : "a", nm = new Set();
           for (const [ss, n] of g) if (ss === sd) { nm.add(n); tot[n] = (tot[n] || 0) + 1; }
           nm.forEach(n => cnt[n] = (cnt[n] || 0) + 1);
         }
