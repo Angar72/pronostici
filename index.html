@@ -325,7 +325,7 @@ body[data-sec="lotto"] .ball{background:var(--chip);color:var(--ink)}
       <div style="display:grid;justify-items:end;gap:4px">
         <div class="stamp" id="stamp">In caricamento…</div>
         <a id="refresh" class="refresh" target="_blank" rel="noopener" href="https://angar72.github.io/pronostici/" style="text-decoration:none">Apri con risultati in diretta ↗</a>
-        <div class="stamp">Versione 22 nov · marcatori con risultato</div>
+        <div class="stamp">Versione 24 nov · media punti</div>
       </div>
     </div>
     <div class="seg" role="group" aria-label="Sezione">
@@ -748,6 +748,21 @@ if (typeof module !== "undefined") module.exports = Model;
   }
 
   // ---- analisi: forma, posizione in campionato, assenze ----
+  // media punti della squadra nel SUO campionato (anche per partite di coppa), mostrata nelle schedine (24/11)
+  const MP_CACHE = {};
+  function mediaPunti(id, team) {
+    const n = normName(team);
+    for (const lid of [id, ...Object.keys(state.leagues || {})]) {
+      const d = state.leagues?.[lid]; if (!d || d.cup || ["cl", "el", "ecl", "unl"].includes(lid)) continue;
+      const nm = (d.teams || []).find(t => normName(t) === n); if (!nm) continue;
+      const L = league(lid); if (!L) continue;
+      const tab = MP_CACHE[lid + "|" + L.playedM.length] ||= Model.standings(L.playedM, L.teams), r = tab.find(x => x.n === nm);
+      if (r && r.g) return { v: r.pt / r.g, pos: tab.indexOf(r) + 1 };
+    }
+    return null;
+  }
+  const mpTxt = (id, h, a) => { const H = mediaPunti(id, h), A = mediaPunti(id, a); if (!H && !A) return "";
+    const f = x => x ? `${x.v.toFixed(2).replace(".", ",")} (${x.pos}°)` : "–"; return ` · media punti <b>${f(H)} – ${f(A)}</b>`; };
   function domCtx(code) { const D = league(code.replace(".", "_")); return D ? { fit: D.fit, played: D.playedM, D } : null; }
   // impegni di Champions delle squadre di un campionato nazionale: giorni dalla/alla partita di coppa più vicina (entro 3)
   const cupCache = {};
@@ -1768,7 +1783,7 @@ if (typeof module !== "undefined") module.exports = Model;
           return `<div class="leg ${stl}">
             <div class="lt"><b class="hr">${r.m.t ? esc(r.m.t) : "--:--"}</b>${r.m.d !== state.day ? `<small>${esc(dayLabel(r.m.d))}</small>` : ""}</div>
             <div class="lm"><div class="teams">${TL(r.m.h)}${RCt(r.id, r.m.h, r.m.a, r.m.h)} – ${TL(r.m.a)}${RCt(r.id, r.m.h, r.m.a, r.m.a)}</div>
-              <div class="note">${esc(r.L.d.name)} · indice di favore <b>${pct(r.s.prob)}</b> (${r.s.mkt == null ? `solo modello ${pct(r.s.model)}%, prudenzialmente ${pct(r.s.prob)}, quota stimata` : `modello ${pct(r.s.model)}%, bookmaker ${pct(r.s.mkt)}%${r.s.edge ? ", con valore" : ""}`})</div>
+              <div class="note">${esc(r.L.d.name)}${mpTxt(r.id, r.m.h, r.m.a)} · indice di favore <b>${pct(r.s.prob)}</b> (${r.s.mkt == null ? `solo modello ${pct(r.s.model)}%, prudenzialmente ${pct(r.s.prob)}, quota stimata` : `modello ${pct(r.s.model)}%, bookmaker ${pct(r.s.mkt)}%${r.s.edge ? ", con valore" : ""}`})</div>
               ${(() => { const g = SCORERS[r.id + "|" + r.m.h + "|" + r.m.a]; return g && g.length ? eventsHtml({ goals: g, reds: [] }) : lv ? eventsHtml(lv) : ""; })()}</div>
             <div class="lp"><span class="pick">${esc(r.s.k)}</span><span class="q">${fmtQ(r.s.odd)}${r.s.est ? "*" : ""}</span>${r.s.odd0 != null && r.s.odd0 !== r.s.odd ? `<small>era ${fmtQ(r.s.odd0)}</small>` : ""}${stl ? `<span class="esito">${stl === "win" ? "✓ VINTA" : stl === "lose" ? "✗ PERSA" : stl === "live-ok" ? "✓ per ora" : "✗ per ora"}</span>` : ""}</div>
             ${r.res ? `<div class="sc">Finale <b>${r.res.hg}-${r.res.ag}</b></div>` : lv ? `<div class="sc live"><span class="dot"></span>In corso <b>${lv.hg}-${lv.ag}</b> ${liveWhen(lv)}</div>` : ""}
@@ -2493,7 +2508,7 @@ if (typeof module !== "undefined") module.exports = Model;
       return `<div class="day">${esc(dayLabel(d))} · sistema ${E.n - 1}/${E.n} · ${head}</div><div class="card slip sis"><div class="slip-head">Sistema ${E.n - 1}/${E.n} · 1 errore permesso</div>
         ${E.legs.map((r, i) => { const lv = !r.res && liveFor(r.id, r.m.h, r.m.a);
           const stl = E.st[i] > 0 ? "win" : E.st[i] < 0 ? "lose" : lv ? (hit(r.s.k, lv) ? "live-ok" : "live-ko") : "";
-          return slipLeg({ t: r.m.t, teams: `${TL(r.m.h)}${RCt(r.id, r.m.h, r.m.a, r.m.h)} – ${TL(r.m.a)}${RCt(r.id, r.m.h, r.m.a, r.m.a)}`, res: r.res, lv, note: esc(r.L.d.name || ""), pick: esc(r.s.k), q: q(r.s.odd), odd0: r.s.odd0 != null && r.s.odd0 !== r.s.odd ? q(r.s.odd0) : "", stl }); }).join("")}
+          return slipLeg({ t: r.m.t, teams: `${TL(r.m.h)}${RCt(r.id, r.m.h, r.m.a, r.m.h)} – ${TL(r.m.a)}${RCt(r.id, r.m.h, r.m.a, r.m.a)}`, res: r.res, lv, note: esc(r.L.d.name || "") + mpTxt(r.id, r.m.h, r.m.a), pick: esc(r.s.k), q: q(r.s.odd), odd0: r.s.odd0 != null && r.s.odd0 !== r.s.odd ? q(r.s.odd0) : "", stl }); }).join("")}
         <div class="res" style="display:grid;gap:8px;grid-template-columns:1fr">
           <div class="money-box ${E.state === "won" ? "win" : E.state === "lost" ? "lose" : ""}">
             <div><span>Giocata</span><b class="num">${euro(E.cost)}</b></div>
@@ -2570,11 +2585,11 @@ if (typeof module !== "undefined") module.exports = Model;
     const X = extraTally();
     // da sinistra: l'altro ieri, ieri, oggi (come le schedine); si apre su oggi
     const t = today(), lastD = sl => sl.legs.map(l => l.d).sort().pop();
-    const xs = new Set(Object.keys(state.sistemi?.byDay || {}).concat(Object.keys(state.lastminute?.byDay || {}), X.rows.map(r => lastD(r.sl))).filter(d => d >= addDays(t, -2) && d <= addDays(t, 1)));
+    const xs = new Set(Object.keys(state.sistemi?.byDay || {}).concat(Object.keys(state.lastminute?.byDay || {}), Object.keys(state.marcatori?.byDay || {}).filter(d => state.marcatori.byDay[d]?.length), X.rows.map(r => lastD(r.sl))).filter(d => d >= addDays(t, -2) && d <= addDays(t, 1)));
     xs.add(t);
     const xdays = [...xs].sort();
     // a sera, con le partite di oggi finite, si apre sul sistema di domani se c'è già (21/11)
-    if (!xdays.includes(state.xday)) { const tom = addDays(t, 1), S0 = state.sistemi?.byDay?.[t]; state.xday = xdays.includes(tom) && (!S0 || sistemaEval(S0).state !== "open") ? tom : t; }
+    if (!xdays.includes(state.xday)) { const tom = addDays(t, 1), S0 = state.sistemi?.byDay?.[t]; const fT = frozenFor(t), todayDone = !fT || fT.tickets.every(tk => tk.every(r => r.res) || tk.some(r => r.res && !hit(r.s.k, r.res))); state.xday = xdays.includes(tom) && (S0 ? sistemaEval(S0).state !== "open" : todayDone) ? tom : t; }
     state.xd = state.xday;
     const chips = xdays.length > 1 ? `<div class="chips" role="group" aria-label="Giorno">${xdays.map(d => `<button class="chip" data-xday="${d}" aria-pressed="${d === state.xd}">${dayLabel(d)}</button>`).join("")}</div>` : "";
     const SIS2 = sistemiHtml() + marcatoriHtml(state.xd) + lastMinuteHtml(state.xd);
@@ -2727,7 +2742,7 @@ if (typeof module !== "undefined") module.exports = Model;
   // aggiornamento della pagina: l'app sulla schermata Home tiene in memoria la versione vecchia.
   // Ogni volta che si riapre (e ogni 10 minuti) controllo se c'è una versione nuova e mi ricarico da solo.
   // numero di versione crescente (BUILD): mi ricarico solo se sul server ce n'è uno PIÙ ALTO, e al massimo una volta ogni 5 minuti
-  const BUILD = 2026112208;
+  const BUILD = 2026112401;
   async function checkNewVersion() {
     try {
       let last = 0; try { last = +sessionStorage.getItem("pr.reload") || 0; } catch (e) {}
