@@ -2535,7 +2535,7 @@ if (typeof module !== "undefined") module.exports = Model;
       const mk = scored ? `<span class="ok">✓ ha segnato${liveG.length ? " " + liveG.map(x => x[2]).filter(Boolean).join(", ") : ""}</span>` : done ? '<span class="ko">✗ non ha segnato</span>' : lv ? `<span class="note">in corso ${lv.hg}-${lv.ag} ${liveWhen(lv)}</span>` : "·";
       const q = m.odd ? ` · ${m.odd.toFixed(2).replace(".", ",")}` : "";
       const stl = scored ? "win" : done ? "lose" : lv ? "" : "";
-      return slipLeg({ t: m.t, teams: `${esc(m.player)} <span class="note">(${TL(m.team)})</span>`, res: null, lv: null,
+      return slipLeg({ t: m.t, teams: `${esc(m.player)} <span class="note">(${TL(m.team)})${m.weak ? " · meno sicuro" : ""}</span>`, res: null, lv: null,
         note: `${TL(m.h)} – ${TL(m.a)} · a segno in <b>${m.n5} delle ultime ${m.of}</b> partite (${m.g} gol) · ${esc(m.team)} vince al ${Math.round(m.pw * 100)}% secondo le quote${liveG.length ? ` · gol al ${esc(liveG.map(x => x[2]).filter(Boolean).join(", "))}` : ""}`,
         pick: "Segna", q: m.odd ? m.odd.toFixed(2).replace(".", ",") : "", stl: scored ? "scored" : done ? "noscore" : "" }).replace('class="leg scored"', 'class="leg win"').replace('class="leg noscore"', 'class="leg lose"').replace(/<\/div>$/, resLine + "</div>"); }).join("")}
       ${(() => { const qs = M.map(m => m.odd).filter(Boolean); if (!qs.length) return "";
