@@ -55,6 +55,46 @@ if (OP_KEY && Q && first !== null && first - now <= 15 && first - now >= 3 && (Q
 }
 if (changed) await seal("live", live);
 
+// ---------- 1b. formazioni: manca il capocannoniere? (Toni, 26/11: Bayern senza attaccante) ----------
+// Da circa 75 minuti prima del calcio d'inizio ESPN pubblica le formazioni. Per ogni partita delle schedine
+// guardo i migliori marcatori delle due squadre (ultime 10 partite, tutte le competizioni) e se uno di loro
+// non è tra i titolari lo scrivo sulla partita (avviso "⚠") e mando una notifica una volta sola. Nessuna quota consumata.
+const ESPN_LG = { it_1: "ita.1", it_2: "ita.2", en_1: "eng.1", es_1: "esp.1", de_1: "ger.1", fr_1: "fra.1", nl_1: "ned.1", pt_1: "por.1", be_1: "bel.1", no_1: "nor.1", se_1: "swe.1", cl: "uefa.champions", el: "uefa.europa", ecl: "uefa.europa.conf", unl: "uefa.nations" };
+const nrm = x => String(x || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim();
+const sameTeam = (a, b) => { const A = nrm(a).split(" ").filter(w => w.length >= 3 && !["club", "calcio", "football", "real", "sporting", "united", "city"].includes(w)), B = new Set(nrm(b).split(" ")); return nrm(a) === nrm(b) || A.some(w => B.has(w)); };
+const topScorers = team => {
+  const all = [];
+  for (const L of Object.values(leagues)) for (const x of L.played || []) { const q = x.split("|"); if (q[0] < TODAY && (nrm(q[1]) === nrm(team) || nrm(q[2]) === nrm(team)) && L.sc?.[q[0] + "|" + q[1] + "|" + q[2]]) all.push([q, L.sc[q[0] + "|" + q[1] + "|" + q[2]]]); }
+  all.sort((x, y) => x[0][0] < y[0][0] ? -1 : 1);
+  const g = {}; for (const [q, sc] of all.slice(-10)) { const sd = nrm(q[1]) === nrm(team) ? "h" : "a"; for (const [s2, n] of sc) if (s2 === sd) g[n] = (g[n] || 0) + 1; }
+  return Object.entries(g).filter(([, c]) => c >= 3).sort((x, y) => y[1] - x[1]).slice(0, 2);
+};
+const lineupLegs = legs.filter(l => l.t && mins(l.t) - now <= 75 && mins(l.t) - now >= -5 && !l.xi && ESPN_LG[l.id]);
+let lchanged = false; const alerts = [];
+for (const l of lineupLegs) {
+  try {
+    const sb = await (await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${ESPN_LG[l.id]}/scoreboard?dates=${TODAY.replace(/-/g, "")}`)).json();
+    const ev = (sb.events || []).find(e => { const c = e.competitions?.[0]?.competitors || [], H = c.find(x => x.homeAway === "home"), A = c.find(x => x.homeAway === "away"); return H && A && sameTeam(l.h, H.team?.displayName) && sameTeam(l.a, A.team?.displayName); });
+    if (!ev) continue;
+    const sm = await (await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${ESPN_LG[l.id]}/summary?event=${ev.id}`)).json();
+    const ros = sm.rosters || []; if (!ros.length || !ros.some(r => (r.roster || []).some(p => p.starter))) continue; // formazioni non ancora uscite
+    const miss = [];
+    for (const [side, team] of [["home", l.h], ["away", l.a]]) {
+      const R = ros.find(r => r.homeAway === side) || ros[side === "home" ? 0 : 1]; if (!R) continue;
+      const xi = new Set((R.roster || []).filter(p => p.starter).map(p => nrm(p.athlete?.displayName)));
+      for (const [n, c] of topScorers(team)) if (!xi.has(nrm(n))) miss.push(`${n} (${team}, ${c} gol nelle ultime 10) non è titolare`);
+    }
+    l.xi = NOWT; l.warn = miss.join(" · "); lchanged = true;
+    if (miss.length) alerts.push(`${l.h} – ${l.a} (${l.k}): ${miss.join("; ")}`);
+  } catch (e) { console.log("formazioni: errore", e.message); }
+}
+if (lchanged) { await seal("live", live); console.log("formazioni controllate:", lineupLegs.length, "avvisi:", alerts.length); }
+const topic = (process.env.NTFY_TOPIC || "").trim();
+if (alerts.length && topic) {
+  const q = new URLSearchParams({ title: "⚠ Formazioni: manca un marcatore", tags: "warning", priority: "4" });
+  await fetch("https://ntfy.sh/" + encodeURIComponent(topic) + "?" + q, { method: "POST", body: alerts.join("\n") + "\nControlla la schedina prima di giocarla." }).catch(() => {});
+}
+
 // ---------- 2. prossima schedina ----------
 const TOM = addDays(TODAY, 1);
 const tomFix = Object.values(leagues).some(L => (L.fixtures || []).some(f => f.startsWith(TOM)));

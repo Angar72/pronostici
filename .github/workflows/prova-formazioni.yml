@@ -1,0 +1,15 @@
+name: Prova formazioni
+on:
+  workflow_dispatch:
+    inputs:
+      lg: { default: "uefa.champions" }
+      day: { default: "20261125" }
+      team: { default: "Lille" }
+jobs:
+  prova:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: LG=${{ inputs.lg }} DAY=${{ inputs.day }} TEAM=${{ inputs.team }} node tools/prova-formazioni.mjs
