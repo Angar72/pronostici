@@ -22,6 +22,7 @@
 .slip .teams{overflow-wrap:break-word;hyphens:auto;font-size:15px;font-weight:700;text-transform:uppercase;letter-spacing:.02em;line-height:1.2;color:var(--ink)}
 .slip .sc{grid-column:1/-1;display:flex;align-items:center;gap:6px;justify-content:center;margin-top:4px;padding:5px 8px;border:2px solid var(--metal-ink);border-radius:6px;background:rgba(255,255,255,.55);font-family:"Oswald",sans-serif;font-size:14px;text-transform:uppercase;letter-spacing:.04em;color:#111}
 .slip .sc b{font-size:20px;font-family:"Oswald",sans-serif}.slip .sc.live{background:#fff3c4}
+.slip .warn{display:block;margin:3px 0;padding:4px 6px;background:#b3261e;color:#fff!important;font-family:"Oswald",sans-serif;font-size:13px;border-radius:4px}
 .slip .gols{grid-column:1/-1;font-family:"Special Elite",monospace;font-size:12px;line-height:1.5;padding:4px 8px;background:rgba(255,255,255,.35);border-radius:4px}.slip .gols b{font-family:"Oswald",sans-serif;font-size:12px;text-transform:uppercase}.slip .gols .tlogo{display:none}
 .slip .tlogo{width:16px!important;height:16px!important;margin:0 3px 0 0;vertical-align:-2px;display:inline-block}
 .slip .lm .note{margin-top:3px}
@@ -325,7 +326,7 @@ body[data-sec="lotto"] .ball{background:var(--chip);color:var(--ink)}
       <div style="display:grid;justify-items:end;gap:4px">
         <div class="stamp" id="stamp">In caricamento…</div>
         <a id="refresh" class="refresh" target="_blank" rel="noopener" href="https://angar72.github.io/pronostici/" style="text-decoration:none">Apri con risultati in diretta ↗</a>
-        <div class="stamp">Versione 24 nov · media punti</div>
+        <div class="stamp">Versione 26 nov · formazioni</div>
       </div>
     </div>
     <div class="seg" role="group" aria-label="Sezione">
@@ -1783,7 +1784,7 @@ if (typeof module !== "undefined") module.exports = Model;
           return `<div class="leg ${stl}">
             <div class="lt"><b class="hr">${r.m.t ? esc(r.m.t) : "--:--"}</b>${r.m.d !== state.day ? `<small>${esc(dayLabel(r.m.d))}</small>` : ""}</div>
             <div class="lm"><div class="teams">${TL(r.m.h)}${RCt(r.id, r.m.h, r.m.a, r.m.h)} – ${TL(r.m.a)}${RCt(r.id, r.m.h, r.m.a, r.m.a)}</div>
-              <div class="note">${esc(r.L.d.name)}${mpTxt(r.id, r.m.h, r.m.a)} · indice di favore <b>${pct(r.s.prob)}</b> (${r.s.mkt == null ? `solo modello ${pct(r.s.model)}%, prudenzialmente ${pct(r.s.prob)}, quota stimata` : `modello ${pct(r.s.model)}%, bookmaker ${pct(r.s.mkt)}%${r.s.edge ? ", con valore" : ""}`})</div>
+              ${r.s.warn ? `<div class="warn">⚠ ${esc(r.s.warn)}</div>` : ""}<div class="note">${esc(r.L.d.name)}${mpTxt(r.id, r.m.h, r.m.a)} · indice di favore <b>${pct(r.s.prob)}</b> (${r.s.mkt == null ? `solo modello ${pct(r.s.model)}%, prudenzialmente ${pct(r.s.prob)}, quota stimata` : `modello ${pct(r.s.model)}%, bookmaker ${pct(r.s.mkt)}%${r.s.edge ? ", con valore" : ""}`})</div>
               ${(() => { const g = SCORERS[r.id + "|" + r.m.h + "|" + r.m.a]; return g && g.length ? eventsHtml({ goals: g, reds: [] }) : lv ? eventsHtml(lv) : ""; })()}</div>
             <div class="lp"><span class="pick">${esc(r.s.k)}</span><span class="q">${fmtQ(r.s.odd)}${r.s.est ? "*" : ""}</span>${r.s.odd0 != null && r.s.odd0 !== r.s.odd ? `<small>era ${fmtQ(r.s.odd0)}</small>` : ""}${stl ? `<span class="esito">${stl === "win" ? "✓ VINTA" : stl === "lose" ? "✗ PERSA" : stl === "live-ok" ? "✓ per ora" : "✗ per ora"}</span>` : ""}</div>
             ${r.res ? `<div class="sc">Finale <b>${r.res.hg}-${r.res.ag}</b></div>` : lv ? `<div class="sc live"><span class="dot"></span>In corso <b>${lv.hg}-${lv.ag}</b> ${liveWhen(lv)}</div>` : ""}
@@ -2108,7 +2109,7 @@ if (typeof module !== "undefined") module.exports = Model;
   }
   // ---- schedine "giocate": fissate il giorno stesso (non cambiano più se cambiano le quote) e schedina di recupero ----
   // salvate nel documento live/schedine: { byDay: { "AAAA-MM-GG": { stake, tickets: [[giocata]], recovery: { lost, stake, need, legs: [giocata] } } } }
-  const dehyd = r => ({ id: r.id, d: r.m.d, t: r.m.t || "", h: r.m.h, a: r.m.a, k: r.s.k, odd: r.s.odd, ...(r.s.odd0 != null ? { odd0: r.s.odd0 } : {}), prob: r.s.prob, model: r.s.model, mkt: r.s.mkt, est: !!r.s.est });
+  const dehyd = r => ({ id: r.id, d: r.m.d, t: r.m.t || "", h: r.m.h, a: r.m.a, k: r.s.k, odd: r.s.odd, ...(r.s.odd0 != null ? { odd0: r.s.odd0 } : {}), ...(r.s.warn ? { warn: r.s.warn } : {}), prob: r.s.prob, model: r.s.model, mkt: r.s.mkt, est: !!r.s.est });
   const playedCache = {};
   function playedOf(id) {
     const lg = state.leagues[id]; if (!lg) return [];
@@ -2122,7 +2123,7 @@ if (typeof module !== "undefined") module.exports = Model;
     let t = x.t;
     if (!t && lg) { const f = (lg.fixtures || []).find(r => { const q = r.split("|"); return q[2] === x.h && q[3] === x.a; }); if (f) t = f.split("|")[1]; }
     return { id: x.id, L: { d: lg || { name: x.id } }, m: { d: x.d, t: t || "", h: x.h, a: x.a },
-      s: { k: x.k, odd: x.odd, odd0: x.odd0, prob: x.prob, model: x.model, mkt: x.mkt, est: !!x.est, edge: 0, score: x.prob }, res };
+      s: { k: x.k, odd: x.odd, odd0: x.odd0, warn: x.warn, prob: x.prob, model: x.model, mkt: x.mkt, est: !!x.est, edge: 0, score: x.prob }, res };
   }
   // statistica: quante schedine vinte per numero di stelle, su tutti i giorni salvati con almeno 2 schedine
   function starStats() {
@@ -2508,7 +2509,7 @@ if (typeof module !== "undefined") module.exports = Model;
       return `<div class="day">${esc(dayLabel(d))} · sistema ${E.n - 1}/${E.n} · ${head}</div><div class="card slip sis"><div class="slip-head">Sistema ${E.n - 1}/${E.n} · 1 errore permesso</div>
         ${E.legs.map((r, i) => { const lv = !r.res && liveFor(r.id, r.m.h, r.m.a);
           const stl = E.st[i] > 0 ? "win" : E.st[i] < 0 ? "lose" : lv ? (hit(r.s.k, lv) ? "live-ok" : "live-ko") : "";
-          return slipLeg({ t: r.m.t, teams: `${TL(r.m.h)}${RCt(r.id, r.m.h, r.m.a, r.m.h)} – ${TL(r.m.a)}${RCt(r.id, r.m.h, r.m.a, r.m.a)}`, res: r.res, lv, note: esc(r.L.d.name || "") + mpTxt(r.id, r.m.h, r.m.a), pick: esc(r.s.k), q: q(r.s.odd), odd0: r.s.odd0 != null && r.s.odd0 !== r.s.odd ? q(r.s.odd0) : "", stl }); }).join("")}
+          return slipLeg({ t: r.m.t, teams: `${TL(r.m.h)}${RCt(r.id, r.m.h, r.m.a, r.m.h)} – ${TL(r.m.a)}${RCt(r.id, r.m.h, r.m.a, r.m.a)}`, res: r.res, lv, note: (r.s.warn ? `<span class="warn">⚠ ${esc(r.s.warn)}</span><br>` : "") + esc(r.L.d.name || "") + mpTxt(r.id, r.m.h, r.m.a), pick: esc(r.s.k), q: q(r.s.odd), odd0: r.s.odd0 != null && r.s.odd0 !== r.s.odd ? q(r.s.odd0) : "", stl }); }).join("")}
         <div class="res" style="display:grid;gap:8px;grid-template-columns:1fr">
           <div class="money-box ${E.state === "won" ? "win" : E.state === "lost" ? "lose" : ""}">
             <div><span>Giocata</span><b class="num">${euro(E.cost)}</b></div>
@@ -2742,7 +2743,7 @@ if (typeof module !== "undefined") module.exports = Model;
   // aggiornamento della pagina: l'app sulla schermata Home tiene in memoria la versione vecchia.
   // Ogni volta che si riapre (e ogni 10 minuti) controllo se c'è una versione nuova e mi ricarico da solo.
   // numero di versione crescente (BUILD): mi ricarico solo se sul server ce n'è uno PIÙ ALTO, e al massimo una volta ogni 5 minuti
-  const BUILD = 2026112401;
+  const BUILD = 2026112601;
   async function checkNewVersion() {
     try {
       let last = 0; try { last = +sessionStorage.getItem("pr.reload") || 0; } catch (e) {}
