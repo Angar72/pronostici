@@ -92,17 +92,37 @@ for (const l of lineupLegs) {
     if (miss.length) alerts.push(`${l.h} – ${l.a} (${l.k}): ${miss.join("; ")}`);
   } catch (e) { console.log("formazioni: errore", e.message); }
 }
+// gli avvisi non partono subito: vanno nel riepilogo di 30 minuti prima (Toni, 26/11)
+if (alerts.length && D) { (D.coda ||= []).push(...alerts.map(x => "⚠ " + x)); lchanged = true; }
 // schedine da rifare: c'è una partita con un'assenza che conta e nessuna partita della schedina è iniziata (Toni, 26/11)
 const rifare = [];
 (D?.tickets || []).forEach((tk, i) => { if (tk.some(l => l.sost) && tk.every(l => l.d > TODAY || (l.d === TODAY && l.t && mins(l.t) > now))) rifare.push(i); else tk.forEach(l => { if (l.sost) delete l.sost; }); });
 if (lchanged) { await seal("live", live); console.log("formazioni controllate:", lineupLegs.length, "avvisi:", alerts.length); }
-const topic = (process.env.NTFY_TOPIC || "").trim();
-if (alerts.length && topic) {
-  const q = new URLSearchParams({ title: "⚠ Formazioni: manca un marcatore", tags: "warning", priority: "4" });
-  await fetch("https://ntfy.sh/" + encodeURIComponent(topic) + "?" + q, { method: "POST", body: alerts.join("\n") + "\nControlla la schedina prima di giocarla." }).catch(() => {});
-}
 
 for (const i of rifare) console.log("SOSTITUISCI=" + i);
+
+// ---------- 1c. una sola notifica: 30 minuti prima della prima partita (Toni, 26/11) ----------
+// Riepilogo delle schedine del giorno con gli avvisi raccolti (formazioni, schedine cambiate). Dopo, solo se
+// arriva qualcosa di nuovo, un altro riepilogo 30 minuti prima della partita successiva.
+const topic = (process.env.NTFY_TOPIC || "").trim();
+if (D && topic && !D.none) {
+  const tl = (D.tickets || []).flat().filter(l => l.d === TODAY && l.t), first = tl.length ? Math.min(...tl.map(l => mins(l.t))) : null;
+  const nextP = tl.filter(l => mins(l.t) > now).map(l => mins(l.t)), next = nextP.length ? Math.min(...nextP) : null;
+  let send = null;
+  if (!D.notif0 && first !== null && now >= first - 30 && now < first + 90) {
+    const pr = t => t.reduce((a, l) => a * (l.prob || 0), 1), ord = D.tickets.map((t, i) => i).sort((x, y) => pr(D.tickets[y]) - pr(D.tickets[x]));
+    const lines = ord.map((i, r) => `${["🥇", "🥈", "🥉"][r] || "•"} Schedina ${i + 1} · quota ${D.tickets[i].reduce((a, l) => a * l.odd, 1).toFixed(2).replace(".", ",")}${(D.sconsigliata || []).includes(i) ? " ⛔ da non giocare" : ""}\n` + D.tickets[i].map(l => `   ${l.t} ${l.h}-${l.a}: ${l.k} ${String(l.odd).replace(".", ",")}`).join("\n"));
+    send = { title: `⚽ Schedine di oggi${D.low ? " (quota bassa)" : ""} · prima partita alle ${tl.find(l => mins(l.t) === first).t}`, body: lines.join("\n") + ((D.coda || []).length ? "\n\nAvvisi:\n" + D.coda.join("\n") : "") };
+    D.notif0 = NOWT;
+  } else if (D.notif0 && (D.coda || []).length && next !== null && now >= next - 30) {
+    send = { title: "⚠ Aggiornamento schedine", body: D.coda.join("\n") };
+  }
+  if (send) {
+    const q = new URLSearchParams({ title: send.title, tags: "soccer", priority: "4", click: "https://angar72.github.io/pronostici/" });
+    await fetch("https://ntfy.sh/" + encodeURIComponent(topic) + "?" + q, { method: "POST", body: send.body }).catch(() => {});
+    D.coda = []; await seal("live", live); console.log("notifica riepilogo inviata:", send.title);
+  }
+}
 
 // ---------- 2. prossima schedina ----------
 const TOM = addDays(TODAY, 1);

@@ -2553,7 +2553,7 @@ if (typeof module !== "undefined") module.exports = Model;
       const q = m.odd ? ` · ${m.odd.toFixed(2).replace(".", ",")}` : "";
       const stl = scored ? "win" : done ? "lose" : lv ? "" : "";
       return slipLeg({ t: m.t, teams: `${esc(m.player)} <span class="note">(${TL(m.team)})${m.weak ? " · meno sicuro" : ""}</span>`, res: null, lv: null,
-        note: `${TL(m.h)} – ${TL(m.a)} · a segno in <b>${m.n5} delle ultime ${m.of}</b> partite (${m.g} gol) · ${esc(m.team)} vince al ${Math.round(m.pw * 100)}% secondo le quote${liveG.length ? ` · gol al ${esc(liveG.map(x => x[2]).filter(Boolean).join(", "))}` : ""}`,
+        note: `${TL(m.h)} – ${TL(m.a)} · ${m.g10 ? `<b>${m.g10} gol nelle ultime ${m.of10}</b> partite · ` : ""}a segno in ${m.n5} delle ultime ${m.of} · ${esc(m.team)} vince al ${Math.round(m.pw * 100)}% secondo le quote${liveG.length ? ` · gol al ${esc(liveG.map(x => x[2]).filter(Boolean).join(", "))}` : ""}`,
         pick: "Segna", q: m.odd ? m.odd.toFixed(2).replace(".", ",") : "", stl: scored ? "scored" : done ? "noscore" : "" }).replace('class="leg scored"', 'class="leg win"').replace('class="leg noscore"', 'class="leg lose"').replace(/<\/div>$/, resLine + "</div>"); }).join("")}
       ${(() => { const qs = M.map(m => m.odd).filter(Boolean); if (!qs.length) return "";
         const qt = qs.reduce((a, x) => a * x, 1), won = M.every(m => m.res === "si"), lost = M.some(m => m.res === "no");
@@ -2744,7 +2744,7 @@ if (typeof module !== "undefined") module.exports = Model;
   // aggiornamento della pagina: l'app sulla schermata Home tiene in memoria la versione vecchia.
   // Ogni volta che si riapre (e ogni 10 minuti) controllo se c'è una versione nuova e mi ricarico da solo.
   // numero di versione crescente (BUILD): mi ricarico solo se sul server ce n'è uno PIÙ ALTO, e al massimo una volta ogni 5 minuti
-  const BUILD = 2026112602;
+  const BUILD = 2026112603;
   async function checkNewVersion() {
     try {
       let last = 0; try { last = +sessionStorage.getItem("pr.reload") || 0; } catch (e) {}

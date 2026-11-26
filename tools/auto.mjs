@@ -465,9 +465,9 @@ if (SOST !== null && sch.byDay[TODAY]?.tickets?.[SOST]) {
   (D.cambi ||= []).push(cambio); changed.live = true;
   await seal("live", live);
   log(nt ? `schedina ${SOST + 1} rifatta: ${nt.map(c => c.h + "-" + c.a + " " + c.k).join(", ")}` : `schedina ${SOST + 1}: nessuna sostituzione possibile, sconsigliata`);
-  const topic = (process.env.NTFY_TOPIC || "").trim();
-  if (topic) { const q = new URLSearchParams({ title: nt ? `🔄 Schedina ${SOST + 1} cambiata` : `⛔ Schedina ${SOST + 1} da non giocare`, tags: "warning", priority: "4", click: "https://angar72.github.io/pronostici/" });
-    await fetch("https://ntfy.sh/" + encodeURIComponent(topic) + "?" + q, { method: "POST", body: (nt ? "Nuova schedina: " + nt.map(c => `${c.h}-${c.a} ${c.k} ${c.odd}`).join(" · ") + ` (quota ${nt.reduce((a, c) => a * c.odd, 1).toFixed(2)})` : "Nessuna sostituzione sicura.") + "\nMotivo: " + notes.join("; ") }).catch(() => {}); }
+  // la notifica parte nel riepilogo di 30 minuti prima (tools/quote.mjs)
+  (D.coda ||= []).push(nt ? `🔄 Schedina ${SOST + 1} cambiata: ` + nt.map(c => `${c.h}-${c.a} ${c.k} ${c.odd}`).join(" · ") + ` (quota ${nt.reduce((a, c) => a * c.odd, 1).toFixed(2)}) — ${notes.join("; ")}` : `⛔ Schedina ${SOST + 1} da non giocare — ${notes.join("; ")}`);
+  await seal("live", live);
   process.exit(0);
 }
 if (process.env.ASS_ONLY === "true") { await computeAssenze(); if (changed.leagues) await seal("leagues", leagues); process.exit(0); }
@@ -553,6 +553,9 @@ if (!BACKTEST) {
         const all = [], tn = canon(team);
         for (const L2 of Object.values(leagues)) for (const x of L2.played || []) { const q2 = x.split("|"); if (q2[0] < TODAY && (canon(q2[1]) === tn || canon(q2[2]) === tn) && L2.sc?.[q2[0] + "|" + q2[1] + "|" + q2[2]]) all.push([...q2, L2]); }
         all.sort((x, y) => x[0] < y[0] ? -1 : 1);
+        // gol nelle ultime 10 partite della squadra (Toni, 26/11: almeno 7); "a segno nelle ultime 5" solo come informazione
+        const g10 = {}; for (const x of all.slice(-10)) { const g = x[x.length - 1].sc[x[0] + "|" + x[1] + "|" + x[2]]; const sd = canon(x[1]) === tn ? "h" : "a"; for (const [ss, n] of g) if (ss === sd) g10[n] = (g10[n] || 0) + 1; }
+        const of10 = Math.min(10, all.length);
         const last = all.slice(-5);
         const cnt = {}, tot = {}; let known = 0;
         for (const x of last) {
@@ -561,14 +564,13 @@ if (!BACKTEST) {
           for (const [ss, n] of g) if (ss === sd) { nm.add(n); tot[n] = (tot[n] || 0) + 1; }
           nm.forEach(n => cnt[n] = (cnt[n] || 0) + 1);
         }
-        if (known < 4) continue;
+        if (known < 4 || of10 < 8) continue;
         const fx = (L.fixtures.find(f => { const z = f.split("|"); return z[2] === h && z[3] === a; }) || "").split("|");
-        for (const [n, c] of Object.entries(cnt)) if (c >= 2) cand.push({ id, d: TODAY, t: fx[1] || "", h, a, side, team, player: n, n5: c, of: known, g: tot[n], pw: Math.round(pw * 100) / 100, score: c / known * pw });
+        for (const [n, c] of Object.entries(cnt)) if ((g10[n] || 0) >= 7) cand.push({ id, d: TODAY, t: fx[1] || "", h, a, side, team, player: n, n5: c, of: known, g: tot[n], g10: g10[n], of10, pw: Math.round(pw * 100) / 100, score: c / known * pw });
       }
     }
     // prima quelli a segno in almeno 3 delle ultime 5; se non bastano, anche 2 su 5 (segnati come "meno sicuri")
-    cand.sort((x, y) => (y.n5 >= 3) - (x.n5 >= 3) || y.score - x.score || y.g - x.g);
-    cand.forEach(c => { if (c.n5 < 3) c.weak = true; });
+    cand.sort((x, y) => y.g10 - x.g10 || y.score - x.score);
     const pick = [], seen = new Set();
     for (const c of cand) { if (seen.has(c.id + c.h)) continue; pick.push(c); seen.add(c.id + c.h); if (pick.length === 2) break; }
     // quota del marcatore: Planetwin (e i bookmaker italiani) su OddsPapi non pubblicano il mercato "gol del giocatore";
