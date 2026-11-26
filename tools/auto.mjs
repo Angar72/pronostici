@@ -253,12 +253,15 @@ const ticketState = tk => { const r = tk.map(resultOf); if (tk.some((l, i) => r[
 
 // stato della squadra nel SUO campionato (Toni, 24/11): per coppe europee e Nations League, dove la classifica
 // della coppa non basta. Punti a partita, posizione, forma delle ultime 5 (3=vittoria, 1=pari, 0=sconfitta)
+// stesso club con nomi diversi tra coppe e campionato (Bayern Monaco / Bayern München): uso la tabella "dom" delle coppe
+let CANON = null;
+const canon = t => { if (!CANON) { CANON = {}; for (const L of Object.values(leagues)) for (const [c, v] of Object.entries(L.dom || {})) if (v?.[1]) CANON[eNorm(c)] = eNorm(v[1]); } return CANON[eNorm(t)] || eNorm(t); };
 const DOM = {};
 function domStat(team) {
-  const n = eNorm(team); if (n in DOM) return DOM[n];
+  const n = canon(team); if (n in DOM) return DOM[n];
   for (const [id, L] of Object.entries(leagues)) {
-    if (L.cup || ["cl", "el", "ecl", "unl"].includes(id) || !(L.teams || []).some(t => eNorm(t) === n)) continue;
-    const st = stats(id), T = Object.entries(st.T).find(([t]) => eNorm(t) === n)?.[1]; if (!T || T.n < 4) continue;
+    if (L.cup || ["cl", "el", "ecl", "unl"].includes(id) || !(L.teams || []).some(t => canon(t) === n)) continue;
+    const st = stats(id), T = Object.entries(st.T).find(([t]) => canon(t) === n)?.[1]; if (!T || T.n < 4) continue;
     return DOM[n] = { id, ppg: T.p / T.n, pos: T.pos, of: st.n, n: T.n, w5: T.last.slice(-5).filter(x => x === 3).length, l3: T.last.slice(-3).filter(x => x === 0).length };
   }
   return DOM[n] = null;
@@ -313,7 +316,7 @@ function candidates(relaxed = false) {
         // la favorita deve andare bene anche nel suo campionato: almeno 1,8 punti a partita, nella metà alta,
         // in forma (2 vittorie nelle ultime 5, non 2 sconfitte nelle ultime 3) e, se conosco l'avversaria,
         // almeno 0,4 punti a partita più di lei nel rispettivo campionato
-        const okDom = (f, o) => { if (ASS[eNorm(f)]) return false; const F = domStat(f), O = domStat(o); if (!F) return true;
+        const okDom = (f, o) => { if (ASS[canon(f)]) return false; const F = domStat(f), O = domStat(o); if (!F) return true;
           return F.ppg >= 1.8 && F.pos <= F.of / 2 && F.w5 >= 2 && F.l3 < 2 && (!O || F.ppg - O.ppg >= 0.4); };
         if (okDom(h, a)) { if (o1 <= 1.35) pushE("1", o1, e1); else if (o1 <= 1.6) pushE("1X", dcE["1X"], e1 + eX); }
         if (okDom(a, h)) { if (o2 <= 1.35) pushE("2", o2, e2); else if (o2 <= 1.6) pushE("X2", dcE["X2"], e2 + eX); }
@@ -343,7 +346,7 @@ function candidates(relaxed = false) {
       const l5 = fav.last.slice(-5), l3 = fav.last.slice(-3);
       const formaOk = l5.filter(x => x === 3).length >= 2 && l3.filter(x => x === 0).length < 2;
       const scontroAlto = opp.pos <= 6;
-      const assente = !!ASS[eNorm(favH ? h : a)];
+      const assente = !!ASS[canon(favH ? h : a)];
       if ((!favH && FUORI_RISCHIO) || !formaOk || scontroAlto || assente) { /* niente 1 / 2 / 1X / X2 */ } else {
       if (favH && gap >= (CASA_FORTE ? Math.max(3, st.n / 8) : Math.max(3, st.n / 6)) && hppg >= 1.5 && appg <= 1.5) leg("1X", dc["1X"], p1 + pX, CASA_FORTE ? "doppia chance (grande in casa)" : "doppia chance");
       if (!favH && gap >= Math.max(4, st.n / 5) && fav.pos <= half && appg >= 1.6 && hppg <= 1.3) leg("X2", dc["X2"], p2 + pX, "doppia chance");
@@ -426,15 +429,15 @@ async function computeAssenze() {
   for (const [id, O] of Object.entries(odds)) for (const row of O.rows || []) { const q = row.split("|"); if (q[0] === TODAY) { teams.add(q[1]); teams.add(q[2]); } }
   const sumCache = {}; let chk = 0;
   for (const team of teams) {
-    const tn = eNorm(team), all = [];
-    for (const L of Object.values(leagues)) for (const x of L.played || []) { const q = x.split("|"), k = q[0] + "|" + q[1] + "|" + q[2]; if (q[0] < TODAY && (eNorm(q[1]) === tn || eNorm(q[2]) === tn)) all.push([q, L.sc?.[k], L.ev?.[k]]); }
+    const tn = canon(team), all = [];
+    for (const L of Object.values(leagues)) for (const x of L.played || []) { const q = x.split("|"), k = q[0] + "|" + q[1] + "|" + q[2]; if (q[0] < TODAY && (canon(q[1]) === tn || canon(q[2]) === tn)) all.push([q, L.sc?.[k], L.ev?.[k]]); }
     all.sort((x, y) => x[0][0] < y[0][0] ? -1 : 1);
-    const g = {}; for (const [q, sc] of all.slice(-10)) if (sc) { const sd = eNorm(q[1]) === tn ? "h" : "a"; for (const [s2, n] of sc) if (s2 === sd) g[n] = (g[n] || 0) + 1; }
+    const g = {}; for (const [q, sc] of all.slice(-10)) if (sc) { const sd = canon(q[1]) === tn ? "h" : "a"; for (const [s2, n] of sc) if (s2 === sd) g[n] = (g[n] || 0) + 1; }
     const tops = Object.entries(g).filter(([, c]) => c >= 3); if (!tops.length) continue;
     const last = [...all].reverse().find(x => x[2]); if (!last || dayDiff(TODAY, last[0][0]) > 21) continue;
     const [lgE, evId] = last[2].split(":");
     const sm = sumCache[last[2]] ||= await fetchJ(`https://site.api.espn.com/apis/site/v2/sports/soccer/${lgE}/summary?event=${evId}`);
-    const side = eNorm(last[0][1]) === tn ? "home" : "away", R = (sm?.rosters || []).find(x => x.homeAway === side);
+    const side = canon(last[0][1]) === tn ? "home" : "away", R = (sm?.rosters || []).find(x => x.homeAway === side);
     if (!R || !(R.roster || []).length) continue;
     const squad = new Set(R.roster.map(p => eNorm(p.athlete?.displayName || ""))); chk++;
     const miss = tops.filter(([n]) => !squad.has(eNorm(n))).map(([n, c]) => `${n} (${c} gol)`);
@@ -523,14 +526,14 @@ if (!BACKTEST) {
         const side = p1 >= 0.58 ? "h" : p2 >= 0.58 ? "a" : null; if (!side) continue;
         const team = side === "h" ? h : a, pw = side === "h" ? p1 : p2;
         // ultime 5 partite della squadra in TUTTE le competizioni (campionato, coppe, Champions...) con i marcatori noti (24/11)
-        const all = [], tn = eNorm(team);
-        for (const L2 of Object.values(leagues)) for (const x of L2.played || []) { const q2 = x.split("|"); if (q2[0] < TODAY && (eNorm(q2[1]) === tn || eNorm(q2[2]) === tn) && L2.sc?.[q2[0] + "|" + q2[1] + "|" + q2[2]]) all.push([...q2, L2]); }
+        const all = [], tn = canon(team);
+        for (const L2 of Object.values(leagues)) for (const x of L2.played || []) { const q2 = x.split("|"); if (q2[0] < TODAY && (canon(q2[1]) === tn || canon(q2[2]) === tn) && L2.sc?.[q2[0] + "|" + q2[1] + "|" + q2[2]]) all.push([...q2, L2]); }
         all.sort((x, y) => x[0] < y[0] ? -1 : 1);
         const last = all.slice(-5);
         const cnt = {}, tot = {}; let known = 0;
         for (const x of last) {
           const g = x[x.length - 1].sc[x[0] + "|" + x[1] + "|" + x[2]]; if (!g) continue; known++;
-          const sd = eNorm(x[1]) === tn ? "h" : "a", nm = new Set();
+          const sd = canon(x[1]) === tn ? "h" : "a", nm = new Set();
           for (const [ss, n] of g) if (ss === sd) { nm.add(n); tot[n] = (tot[n] || 0) + 1; }
           nm.forEach(n => cnt[n] = (cnt[n] || 0) + 1);
         }
