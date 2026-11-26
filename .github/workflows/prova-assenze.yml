@@ -1,0 +1,26 @@
+name: Prova assenze
+on:
+  workflow_dispatch:
+    inputs:
+      giorno: { description: "giorno da controllare (aaaa-mm-gg)", default: "" }
+      back: { default: "14" }
+permissions:
+  contents: write
+concurrency:
+  group: dati
+  cancel-in-progress: false
+jobs:
+  prova:
+    runs-on: ubuntu-latest
+    env:
+      SITE_CODE: ${{ secrets.SITE_CODE }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: |
+          G="${{ inputs.giorno }}"; [ -n "$G" ] || G=$(TZ=Europe/Rome date +%F)
+          NOW="${G}T07:00:00Z" SC_BACK=${{ inputs.back }} ASS_ONLY=true node tools/auto.mjs
+          git config user.name "pronostici-bot"; git config user.email "pronostici-bot@users.noreply.github.com"
+          git add data/leagues.enc; git commit -qm "Rose convocate per le assenze" || exit 0
+          for i in 1 2 3; do git pull --rebase -q && git push -q && break; sleep 5; done

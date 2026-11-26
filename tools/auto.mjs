@@ -160,6 +160,7 @@ for (const [id, lg] of Object.entries(ESPN_LG)) {
       if (st.completed) {
         // marcatori (Toni, 21/11): "data|casa|ospite" -> [[h/a, nome], ...] senza autogol
         const det = e.competitions?.[0]?.details || [], sk = when.d + "|" + h + "|" + a;
+        if (e.id && !(L.ev && L.ev[sk])) { (L.ev ||= {})[sk] = lg + ":" + e.id; changed.leagues = true; } // per leggere la rosa convocata (assenze)
         if (det.length && !(L.sc && L.sc[sk])) {
           const g = det.filter(x => x.scoringPlay && !x.ownGoal && x.athletesInvolved?.[0]?.displayName).map(x => [String(x.team?.id) === String(H.team?.id) ? "h" : "a", x.athletesInvolved[0].displayName]);
           (L.sc ||= {})[sk] = g; changed.leagues = true;
@@ -312,7 +313,7 @@ function candidates(relaxed = false) {
         // la favorita deve andare bene anche nel suo campionato: almeno 1,8 punti a partita, nella metà alta,
         // in forma (2 vittorie nelle ultime 5, non 2 sconfitte nelle ultime 3) e, se conosco l'avversaria,
         // almeno 0,4 punti a partita più di lei nel rispettivo campionato
-        const okDom = (f, o) => { const F = domStat(f), O = domStat(o); if (!F) return true;
+        const okDom = (f, o) => { if (ASS[eNorm(f)]) return false; const F = domStat(f), O = domStat(o); if (!F) return true;
           return F.ppg >= 1.8 && F.pos <= F.of / 2 && F.w5 >= 2 && F.l3 < 2 && (!O || F.ppg - O.ppg >= 0.4); };
         if (okDom(h, a)) { if (o1 <= 1.35) pushE("1", o1, e1); else if (o1 <= 1.6) pushE("1X", dcE["1X"], e1 + eX); }
         if (okDom(a, h)) { if (o2 <= 1.35) pushE("2", o2, e2); else if (o2 <= 1.6) pushE("X2", dcE["X2"], e2 + eX); }
@@ -342,7 +343,8 @@ function candidates(relaxed = false) {
       const l5 = fav.last.slice(-5), l3 = fav.last.slice(-3);
       const formaOk = l5.filter(x => x === 3).length >= 2 && l3.filter(x => x === 0).length < 2;
       const scontroAlto = opp.pos <= 6;
-      if ((!favH && FUORI_RISCHIO) || !formaOk || scontroAlto) { /* niente 1 / 2 / 1X / X2 */ } else {
+      const assente = !!ASS[eNorm(favH ? h : a)];
+      if ((!favH && FUORI_RISCHIO) || !formaOk || scontroAlto || assente) { /* niente 1 / 2 / 1X / X2 */ } else {
       if (favH && gap >= (CASA_FORTE ? Math.max(3, st.n / 8) : Math.max(3, st.n / 6)) && hppg >= 1.5 && appg <= 1.5) leg("1X", dc["1X"], p1 + pX, CASA_FORTE ? "doppia chance (grande in casa)" : "doppia chance");
       if (!favH && gap >= Math.max(4, st.n / 5) && fav.pos <= half && appg >= 1.6 && hppg <= 1.3) leg("X2", dc["X2"], p2 + pX, "doppia chance");
       // vittoria secca solo per favorita in alto, forte in casa/fuori, contro avversaria debole
@@ -413,7 +415,36 @@ function best(cands, { avoid = new Set(), differ = [], usedSecca = new Set(), mi
 }
 const legOut = c => ({ id: c.id, d: c.d, t: c.t, h: c.h, a: c.a, k: c.k, odd: c.odd, prob: c.prob, model: c.prob, mkt: c.prob, est: false });
 
+// ---------- assenze (Toni, 26/11: Bayern senza Kane infortunato) ----------
+// ESPN non pubblica gli infortunati del calcio. Per ogni squadra in campo oggi guardo i suoi migliori marcatori
+// (almeno 3 gol nelle ultime 10 partite, tutte le competizioni) e controllo se erano nella rosa convocata
+// (titolari + panchina) della sua ULTIMA partita: se uno manca, probabilmente è infortunato o squalificato.
+// In quel caso niente giocate sulla vittoria di quella squadra. Richieste solo a ESPN (gratis).
+const ASS = {};
+async function computeAssenze() {
+  const teams = new Set();
+  for (const [id, O] of Object.entries(odds)) for (const row of O.rows || []) { const q = row.split("|"); if (q[0] === TODAY) { teams.add(q[1]); teams.add(q[2]); } }
+  const sumCache = {};
+  for (const team of teams) {
+    const tn = eNorm(team), all = [];
+    for (const L of Object.values(leagues)) for (const x of L.played || []) { const q = x.split("|"), k = q[0] + "|" + q[1] + "|" + q[2]; if (q[0] < TODAY && (eNorm(q[1]) === tn || eNorm(q[2]) === tn)) all.push([q, L.sc?.[k], L.ev?.[k]]); }
+    all.sort((x, y) => x[0][0] < y[0][0] ? -1 : 1);
+    const g = {}; for (const [q, sc] of all.slice(-10)) if (sc) { const sd = eNorm(q[1]) === tn ? "h" : "a"; for (const [s2, n] of sc) if (s2 === sd) g[n] = (g[n] || 0) + 1; }
+    const tops = Object.entries(g).filter(([, c]) => c >= 3); if (!tops.length) continue;
+    const last = [...all].reverse().find(x => x[2]); if (!last || dayDiff(TODAY, last[0][0]) > 21) continue;
+    const [lgE, evId] = last[2].split(":");
+    const sm = sumCache[last[2]] ||= await fetchJ(`https://site.api.espn.com/apis/site/v2/sports/soccer/${lgE}/summary?event=${evId}`);
+    const side = eNorm(last[0][1]) === tn ? "home" : "away", R = (sm?.rosters || []).find(x => x.homeAway === side);
+    if (!R || !(R.roster || []).length) continue;
+    const squad = new Set(R.roster.map(p => eNorm(p.athlete?.displayName || "")));
+    const miss = tops.filter(([n]) => !squad.has(eNorm(n))).map(([n, c]) => `${n} (${c} gol)`);
+    if (miss.length) ASS[tn] = miss;
+  }
+  log("assenze probabili:", Object.entries(ASS).map(([t, m]) => t + ": " + m.join(", ")).join(" | ") || "nessuna");
+}
+if (process.env.ASS_ONLY === "true") { await computeAssenze(); if (changed.leagues) await seal("leagues", leagues); process.exit(0); }
 if (!sch.byDay[TODAY] || FORCE) {
+  if (!BACKTEST) await computeAssenze();
   const cands = candidates(); log("giocate possibili oggi:", cands.length);
   const tickets = [], usedSecca = new Set(), count = {};
   const inAll = () => new Set(Object.keys(count).filter(k => count[k] >= 2));
