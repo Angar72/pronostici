@@ -534,13 +534,28 @@ if (!sis.byDay[TODAY] || FORCE) {
   } else log("sistema: partite insufficienti");
 }
 
+// minuti giocati da ogni giocatore in una partita (ESPN summary): titolari 90 meno l'uscita, subentrati dal loro ingresso
+const SUMC = {};
+async function minutiPartita(evKey, side) {
+  if (!evKey) return null; const [lgE, evId] = evKey.split(":");
+  const sm = SUMC[evKey] ||= await fetchJ(`https://site.api.espn.com/apis/site/v2/sports/soccer/${lgE}/summary?event=${evId}`);
+  const R = (sm?.rosters || []).find(x => x.homeAway === side); if (!R || !(R.roster || []).length) return null;
+  const subs = {}; // nome -> [entrato, uscito]
+  for (const e of sm.keyEvents || []) { if (e.type?.type !== "substitution") continue; const m = /(?:^|\. )([^.]+?) replaces (.+?)\.?$/.exec(e.text || ""); if (!m) continue;
+    const min = Math.min(90, Math.round((e.clock?.value || 0) / 60)); subs[eNorm(m[1])] = [min, (subs[eNorm(m[1])] || [])[1]]; subs[eNorm(m[2])] = [(subs[eNorm(m[2])] || [])[0], min]; }
+  const out = {};
+  for (const p of R.roster) { const n = eNorm(p.athlete?.displayName || ""), sb = subs[n] || [];
+    if (p.starter) out[n] = sb[1] != null ? sb[1] : 90; else if (p.subbedIn || sb[0] != null) out[n] = 90 - (sb[0] ?? 75); }
+  return out;
+}
+
 // ---------- 4b. marcatori del giorno (Toni, 21/11): 1 o 2, solo da seguire ----------
 // Squadra nettamente favorita (almeno 62% secondo Planetwin) e giocatore che ha segnato in almeno 3 delle sue
 // ultime 5 partite (marcatori da ESPN). In ordine: partite a segno sulle ultime 5 x probabilità di vittoria.
 if (!BACKTEST) {
   const mc = live.marcatori || (live.marcatori = { byDay: {} });
   if (!mc.byDay[TODAY]?.length || FORCE || process.env.MC_FORCE === "true") {
-    const cand = [];
+    let cand = [];
     for (const [id, L] of Object.entries(leagues)) {
       const O = odds[id]; if (!O) continue;
       for (const row of O.rows || []) {
@@ -570,7 +585,17 @@ if (!BACKTEST) {
       }
     }
     // prima quelli a segno in almeno 3 delle ultime 5; se non bastano, anche 2 su 5 (segnati come "meno sicuri")
-    cand.sort((x, y) => y.g10 - x.g10 || y.score - x.score);
+    // gol rispetto ai minuti giocati (Toni, 26/11): media alta = almeno un gol ogni 130 minuti nelle ultime 10 partite
+    for (const c of cand) {
+      const tn = canon(c.team), all = [];
+      for (const L2 of Object.values(leagues)) for (const x of L2.played || []) { const q2 = x.split("|"), k = q2[0] + "|" + q2[1] + "|" + q2[2]; if (q2[0] < TODAY && (canon(q2[1]) === tn || canon(q2[2]) === tn) && L2.ev?.[k]) all.push([q2, L2.ev[k]]); }
+      all.sort((x, y) => x[0][0] < y[0][0] ? -1 : 1);
+      let min = 0, nOk = 0;
+      for (const [q2, ek] of all.slice(-10)) { const mp = await minutiPartita(ek, canon(q2[1]) === tn ? "home" : "away"); if (!mp) continue; nOk++; min += mp[eNorm(c.player)] || 0; }
+      if (nOk >= 6 && min > 0) { c.min = min; c.mpg = Math.round(min / c.g10); }
+    }
+    cand = cand.filter(c => c.mpg == null || c.mpg <= 130);
+    cand.sort((x, y) => (x.mpg ?? 999) - (y.mpg ?? 999) || y.g10 - x.g10 || y.score - x.score);
     const pick = [], seen = new Set();
     for (const c of cand) { if (seen.has(c.id + c.h)) continue; pick.push(c); seen.add(c.id + c.h); if (pick.length === 2) break; }
     // quota del marcatore: Planetwin (e i bookmaker italiani) su OddsPapi non pubblicano il mercato "gol del giocatore";
