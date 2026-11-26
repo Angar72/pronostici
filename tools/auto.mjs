@@ -424,7 +424,7 @@ const ASS = {};
 async function computeAssenze() {
   const teams = new Set();
   for (const [id, O] of Object.entries(odds)) for (const row of O.rows || []) { const q = row.split("|"); if (q[0] === TODAY) { teams.add(q[1]); teams.add(q[2]); } }
-  const sumCache = {};
+  const sumCache = {}; let chk = 0;
   for (const team of teams) {
     const tn = eNorm(team), all = [];
     for (const L of Object.values(leagues)) for (const x of L.played || []) { const q = x.split("|"), k = q[0] + "|" + q[1] + "|" + q[2]; if (q[0] < TODAY && (eNorm(q[1]) === tn || eNorm(q[2]) === tn)) all.push([q, L.sc?.[k], L.ev?.[k]]); }
@@ -436,10 +436,11 @@ async function computeAssenze() {
     const sm = sumCache[last[2]] ||= await fetchJ(`https://site.api.espn.com/apis/site/v2/sports/soccer/${lgE}/summary?event=${evId}`);
     const side = eNorm(last[0][1]) === tn ? "home" : "away", R = (sm?.rosters || []).find(x => x.homeAway === side);
     if (!R || !(R.roster || []).length) continue;
-    const squad = new Set(R.roster.map(p => eNorm(p.athlete?.displayName || "")));
+    const squad = new Set(R.roster.map(p => eNorm(p.athlete?.displayName || ""))); chk++;
     const miss = tops.filter(([n]) => !squad.has(eNorm(n))).map(([n, c]) => `${n} (${c} gol)`);
     if (miss.length) ASS[tn] = miss;
   }
+  log(`assenze: ${teams.size} squadre in campo, ${chk} controllate con la rosa dell'ultima partita`);
   log("assenze probabili:", Object.entries(ASS).map(([t, m]) => t + ": " + m.join(", ")).join(" | ") || "nessuna");
 }
 if (process.env.ASS_ONLY === "true") { await computeAssenze(); if (changed.leagues) await seal("leagues", leagues); process.exit(0); }
