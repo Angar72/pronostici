@@ -189,7 +189,8 @@ const BK = "planetwin365.it", DC = {};
 const NAMES_F = "tools/op-nomi.json"; let names = {}; try { names = JSON.parse(fs.readFileSync(NAMES_F, "utf8")); } catch {}
 let opFix = [];
 // se le schedine di oggi ci sono già (esecuzione di riserva), non spreco richieste di quote
-const ready = !!sch.byDay[TODAY] && !FORCE && !COPPE;
+const SOST = process.env.SOSTITUISCI != null && process.env.SOSTITUISCI !== "" ? +process.env.SOSTITUISCI : null;
+const ready = !!sch.byDay[TODAY] && !FORCE && !COPPE && SOST === null; // SOSTITUISCI: servono le quote fresche
 if (ready) log("schedine di oggi già pronte: aggiorno solo risultati e Lotto");
 if (OP_KEY && !ready) {
   // solo i campionati che giocano oggi o domani, al massimo 5 per richiesta (limite di OddsPapi)
@@ -445,6 +446,29 @@ async function computeAssenze() {
   }
   log(`assenze: ${teams.size} squadre in campo, ${chk} controllate con la rosa dell'ultima partita`);
   log("assenze probabili:", Object.entries(ASS).map(([t, m]) => t + ": " + m.join(", ")).join(" | ") || "nessuna");
+}
+// ---------- sostituzione di una schedina un'ora prima (Toni, 26/11) ----------
+// La Sentinella ha visto nelle formazioni che manca un giocatore importante per una partita di questa schedina
+// e nessuna partita della schedina è ancora iniziata: rifaccio la schedina con le partite che iniziano fra
+// almeno 30 minuti, senza quella partita, con tutti i controlli (assenze comprese).
+if (SOST !== null && sch.byDay[TODAY]?.tickets?.[SOST]) {
+  const D = sch.byDay[TODAY], old = D.tickets[SOST];
+  await computeAssenze();
+  const bad = new Set(), notes = [];
+  for (const l of old) if (l.warn && l.sost) { bad.add(l.id + "|" + l.h + "|" + l.a); notes.push(`${l.h}-${l.a}: ${l.warn}`); for (const t of l.sost) ASS[canon(t)] = ASS[canon(t)] || ["formazione"]; }
+  const cands = candidates().filter(c => !bad.has(c.key));
+  const others = D.tickets.filter((_, j) => j !== SOST).map(t => new Set(t.map(l => l.id + "|" + l.h + "|" + l.a + l.k)));
+  const nt = best(cands, { differ: others });
+  const cambio = { i: SOST, at: NOWT, tolte: [...bad].map(k => k.split("|").slice(1).join(" – ")), perche: notes.join(" · ") };
+  if (nt) { D.tickets[SOST] = nt.map(legOut); cambio.ok = true; } else { cambio.ok = false; D.sconsigliata = [...new Set([...(D.sconsigliata || []), SOST])]; }
+  for (const l of old) delete l.sost;
+  (D.cambi ||= []).push(cambio); changed.live = true;
+  await seal("live", live);
+  log(nt ? `schedina ${SOST + 1} rifatta: ${nt.map(c => c.h + "-" + c.a + " " + c.k).join(", ")}` : `schedina ${SOST + 1}: nessuna sostituzione possibile, sconsigliata`);
+  const topic = (process.env.NTFY_TOPIC || "").trim();
+  if (topic) { const q = new URLSearchParams({ title: nt ? `🔄 Schedina ${SOST + 1} cambiata` : `⛔ Schedina ${SOST + 1} da non giocare`, tags: "warning", priority: "4", click: "https://angar72.github.io/pronostici/" });
+    await fetch("https://ntfy.sh/" + encodeURIComponent(topic) + "?" + q, { method: "POST", body: (nt ? "Nuova schedina: " + nt.map(c => `${c.h}-${c.a} ${c.k} ${c.odd}`).join(" · ") + ` (quota ${nt.reduce((a, c) => a * c.odd, 1).toFixed(2)})` : "Nessuna sostituzione sicura.") + "\nMotivo: " + notes.join("; ") }).catch(() => {}); }
+  process.exit(0);
 }
 if (process.env.ASS_ONLY === "true") { await computeAssenze(); if (changed.leagues) await seal("leagues", leagues); process.exit(0); }
 if (!sch.byDay[TODAY] || FORCE) {

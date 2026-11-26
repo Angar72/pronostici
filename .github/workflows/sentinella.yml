@@ -36,7 +36,10 @@ jobs:
             if [ $SECONDS -ge $ris ]; then timeout 300 node tools/auto.mjs || true; ris=$((SECONDS + 20*60)); else ONLY_IF_MISSING=true timeout 300 node tools/auto.mjs || true; fi
             timeout 240 node tools/avvisi.mjs || true
             # quote aggiornate prima del calcio d'inizio; a partite finite, le schedine del giorno dopo
-            p=$(timeout 120 node tools/quote.mjs | tee /dev/stderr | sed -n 's/^PROSSIMA=//p') || true
+            out=$(timeout 180 node tools/quote.mjs | tee /dev/stderr) || true
+            p=$(echo "$out" | sed -n 's/^PROSSIMA=//p')
+            # assenze importanti nelle formazioni: rifaccio le schedine non ancora iniziate (26/11)
+            for i in $(echo "$out" | sed -n 's/^SOSTITUISCI=//p'); do SOSTITUISCI=$i timeout 300 node tools/auto.mjs || true; done
             if [ -n "$p" ]; then NOW="${p}T07:00:00Z" ONLY_IF_MISSING=true timeout 300 node tools/auto.mjs || true; fi
             d=$(TZ=Europe/Rome date +%u); hm=$(TZ=Europe/Rome date +%H%M)
             if [[ "$d" =~ ^(2|4|5|6)$ ]] && [ "$hm" -ge 2005 ] && [ "$hm" -le 2330 ] && [ $SECONDS -ge $lotto ]; then

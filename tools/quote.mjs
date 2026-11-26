@@ -78,22 +78,31 @@ for (const l of lineupLegs) {
     if (!ev) continue;
     const sm = await (await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${ESPN_LG[l.id]}/summary?event=${ev.id}`)).json();
     const ros = sm.rosters || []; if (!ros.length || !ros.some(r => (r.roster || []).some(p => p.starter))) continue; // formazioni non ancora uscite
-    const miss = [];
+    const miss = [], sides = [];
     for (const [side, team] of [["home", l.h], ["away", l.a]]) {
       const R = ros.find(r => r.homeAway === side) || ros[side === "home" ? 0 : 1]; if (!R) continue;
       const xi = new Set((R.roster || []).filter(p => p.starter).map(p => nrm(p.athlete?.displayName)));
-      for (const [n, c] of topScorers(team)) if (!xi.has(nrm(n))) miss.push(`${n} (${team}, ${c} gol nelle ultime 10) non è titolare`);
+      for (const [n, c] of topScorers(team)) if (!xi.has(nrm(n))) { miss.push(`${n} (${team}, ${c} gol nelle ultime 10) non è titolare`); sides.push(side === "home" ? "h" : "a"); }
     }
     l.xi = NOWT; l.warn = miss.join(" · "); lchanged = true;
+    // conta davvero? 1/1X dipendono dalla squadra di casa, 2/X2 dall'ospite, Goal/Over da tutte e due (Under/No Goal no)
+    const need = ["1", "1X"].includes(l.k) ? ["h"] : ["2", "X2"].includes(l.k) ? ["a"] : ["Goal", "Over 2,5", "Over 1,5"].includes(l.k) ? ["h", "a"] : [];
+    const rel = sides.filter(x => need.includes(x));
+    if (rel.length) l.sost = [...new Set(rel.map(x => x === "h" ? l.h : l.a))];
     if (miss.length) alerts.push(`${l.h} – ${l.a} (${l.k}): ${miss.join("; ")}`);
   } catch (e) { console.log("formazioni: errore", e.message); }
 }
+// schedine da rifare: c'è una partita con un'assenza che conta e nessuna partita della schedina è iniziata (Toni, 26/11)
+const rifare = [];
+(D?.tickets || []).forEach((tk, i) => { if (tk.some(l => l.sost) && tk.every(l => l.d > TODAY || (l.d === TODAY && l.t && mins(l.t) > now))) rifare.push(i); else tk.forEach(l => { if (l.sost) delete l.sost; }); });
 if (lchanged) { await seal("live", live); console.log("formazioni controllate:", lineupLegs.length, "avvisi:", alerts.length); }
 const topic = (process.env.NTFY_TOPIC || "").trim();
 if (alerts.length && topic) {
   const q = new URLSearchParams({ title: "⚠ Formazioni: manca un marcatore", tags: "warning", priority: "4" });
   await fetch("https://ntfy.sh/" + encodeURIComponent(topic) + "?" + q, { method: "POST", body: alerts.join("\n") + "\nControlla la schedina prima di giocarla." }).catch(() => {});
 }
+
+for (const i of rifare) console.log("SOSTITUISCI=" + i);
 
 // ---------- 2. prossima schedina ----------
 const TOM = addDays(TODAY, 1);

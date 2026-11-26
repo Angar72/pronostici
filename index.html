@@ -326,7 +326,7 @@ body[data-sec="lotto"] .ball{background:var(--chip);color:var(--ink)}
       <div style="display:grid;justify-items:end;gap:4px">
         <div class="stamp" id="stamp">In caricamento…</div>
         <a id="refresh" class="refresh" target="_blank" rel="noopener" href="https://angar72.github.io/pronostici/" style="text-decoration:none">Apri con risultati in diretta ↗</a>
-        <div class="stamp">Versione 26 nov · formazioni</div>
+        <div class="stamp">Versione 26 nov · cambio schedina</div>
       </div>
     </div>
     <div class="seg" role="group" aria-label="Sezione">
@@ -1780,6 +1780,7 @@ if (typeof module !== "undefined") module.exports = Model;
       const medal = tickets.length > 1 ? ["gold", "silver", "bronze"][Math.min(2, order.indexOf(i))] : "gold";
       html += `<div class="ticket slip ${medal}">
         <div class="sub"><span class="conc"><small>Schedina</small><b>${i + 1}</b></span><span class="tit">${names[i]} · ${tk.length} partite${(() => { const sh = tickets.slice(0, i).map((o, j) => o.some(x => tk.some(y => keyOf(x) === keyOf(y))) ? j + 1 : 0).filter(Boolean); return sh.length ? ` · ha partite in comune con la schedina ${sh.join(" e ")}` : ""; })()}</span></div>
+        ${(frozen?.cambi || []).filter(c => c.i === i).map(c => `<div class="warn">${c.ok ? "🔄 Cambiata" : "⛔ Da non giocare"} alle ${esc(c.at)}: tolta ${esc(c.tolte.join(", "))} — ${esc(c.perche)}</div>`).join("")}
         ${tk.map(r => { const lv = r.res ? null : liveFor(r.id, r.m.h, r.m.a), stl = r.res ? (hit(r.s.k, r.res) ? "win" : "lose") : lv ? (hit(r.s.k, lv) ? "live-ok" : "live-ko") : "";
           return `<div class="leg ${stl}">
             <div class="lt"><b class="hr">${r.m.t ? esc(r.m.t) : "--:--"}</b>${r.m.d !== state.day ? `<small>${esc(dayLabel(r.m.d))}</small>` : ""}</div>
@@ -2143,7 +2144,7 @@ if (typeof module !== "undefined") module.exports = Model;
     const D = state.saved?.byDay?.[day];
     if (!D || !D.tickets) return null;
     const R = D.recovery;
-    return { tickets: D.tickets.map(tk => tk.map(hydrate)), stake: D.stake, qAt: D.qAt,
+    return { tickets: D.tickets.map(tk => tk.map(hydrate)), stake: D.stake, qAt: D.qAt, cambi: D.cambi || [], sconsigliata: D.sconsigliata || [],
       recovery: R ? { lost: R.lost, stake: R.stake, need: R.need, legs: R.legs.map(hydrate) } : null };
   }
   let savingSched = false, schedFailed = false;
@@ -2743,7 +2744,7 @@ if (typeof module !== "undefined") module.exports = Model;
   // aggiornamento della pagina: l'app sulla schermata Home tiene in memoria la versione vecchia.
   // Ogni volta che si riapre (e ogni 10 minuti) controllo se c'è una versione nuova e mi ricarico da solo.
   // numero di versione crescente (BUILD): mi ricarico solo se sul server ce n'è uno PIÙ ALTO, e al massimo una volta ogni 5 minuti
-  const BUILD = 2026112601;
+  const BUILD = 2026112602;
   async function checkNewVersion() {
     try {
       let last = 0; try { last = +sessionStorage.getItem("pr.reload") || 0; } catch (e) {}
