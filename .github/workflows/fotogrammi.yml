@@ -15,7 +15,7 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 20 }
       - run: |
-          sudo apt-get install -y -qq ffmpeg >/dev/null
+          command -v ffmpeg || (sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg >/dev/null)
           curl -sL "${{ inputs.url }}" -o /tmp/v.mp4
           mkdir -p tools/fotogrammi; rm -f tools/fotogrammi/*
           for s in 1 3 5 7 9 11 13 15 17 19; do ffmpeg -nostdin -loglevel error -y -ss $s -i /tmp/v.mp4 -frames:v 1 -q:v 2 tools/fotogrammi/f$s.jpg; node tools/seal-file.mjs tools/fotogrammi/f$s.jpg; rm tools/fotogrammi/f$s.jpg; done
