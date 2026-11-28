@@ -7,7 +7,7 @@
   "background_color": "#070b16",
   "theme_color": "#070b16",
   "icons": [
-    { "src": "/pronostici/assets/icona-180.png", "sizes": "180x180", "type": "image/png" },
-    { "src": "/pronostici/assets/icona-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+    { "src": "/pronostici/assets/icona-180.png?v=3", "sizes": "180x180", "type": "image/png" },
+    { "src": "/pronostici/assets/icona-512.png?v=3", "sizes": "512x512", "type": "image/png", "purpose": "any" }
   ]
 }
