@@ -18,7 +18,7 @@ jobs:
           command -v ffmpeg || (sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg >/dev/null)
           curl -sL "${{ inputs.url }}" -o /tmp/v.mp4
           mkdir -p tools/fotogrammi; rm -f tools/fotogrammi/*
-          for s in 1 3 5 7 9 11 13 15 17 19; do ffmpeg -nostdin -loglevel error -y -ss $s -i /tmp/v.mp4 -frames:v 1 -q:v 2 tools/fotogrammi/f$s.jpg; node tools/seal-file.mjs tools/fotogrammi/f$s.jpg; rm tools/fotogrammi/f$s.jpg; done
+          for s in 1 3 5 7 9 11 13 15 17 19; do ffmpeg -nostdin -loglevel error -y -ss $s -i /tmp/v.mp4 -frames:v 1 -q:v 2 tools/fotogrammi/f$s.jpg; node tools/seal-file.mjs tools/fotogrammi/f$s.jpg; rm -f tools/fotogrammi/f$s.jpg; done
           git config user.name "pronostici-bot"; git config user.email "pronostici-bot@users.noreply.github.com"
           git add tools/fotogrammi; git commit -qm "Fotogrammi (cifrati)" || exit 0
           for i in 1 2 3; do git pull --rebase -q && git push -q && break; sleep 5; done
